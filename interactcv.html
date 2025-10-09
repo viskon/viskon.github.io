@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" class="scroll-smooth">
+<html lang="en" class="scroll-smooth" data-theme-active="default">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,29 +10,68 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;900&display=swap" rel="stylesheet">
-    <!-- Font Awesome for new icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" xintegrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <!-- Font Awesome for new icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" xintegrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
     <style>
-        /* Define custom colors based on Novo Nordisk aesthetic */
-        .color-primary { color: #003E6B; } /* Deep Blue */
-        .color-accent { color: #36A8A4; } /* Soft Teal/Green */
-        .bg-accent-light { background-color: #E6F7F7; } /* Very light teal/blue for pastel highlight */
+        :root, [data-theme-active="default"] {
+            --color-primary: #003E6B;
+            --color-accent: #36A8A4;
+            --color-accent-light: #E6F7F7;
+            --color-accent-translucent: rgba(54, 168, 164, 0.9);
+            --color-header-gradient-from: #003E6B;
+            --color-header-gradient-to: #36A8A4;
+        }
+
+        [data-theme-active="sunset"] {
+            --color-primary: #6D28D9; /* Deep Purple */
+            --color-accent: #F97316; /* Bright Orange */
+            --color-accent-light: #FFEDD5; /* Light Orange */
+            --color-accent-translucent: rgba(249, 115, 22, 0.9);
+            --color-header-gradient-from: #6D28D9;
+            --color-header-gradient-to: #F97316;
+        }
+
+        [data-theme-active="forest"] {
+            --color-primary: #166534; /* Dark Green */
+            --color-accent: #CA8A04; /* Gold/Yellow */
+            --color-accent-light: #FEFCE8; /* Light Yellow */
+            --color-accent-translucent: rgba(202, 138, 4, 0.9);
+            --color-header-gradient-from: #166534;
+            --color-header-gradient-to: #854d0e;
+        }
+
+        [data-theme-active="monochrome"] {
+            --color-primary: #1F2937; /* Dark Gray */
+            --color-accent: #6B7280; /* Mid Gray */
+            --color-accent-light: #F3F4F6; /* Light Gray */
+            --color-accent-translucent: rgba(107, 114, 128, 0.9);
+            --color-header-gradient-from: #111827;
+            --color-header-gradient-to: #6B7280;
+        }
+
+        /* Define custom colors based on CSS variables */
+        .color-primary { color: var(--color-primary); }
+        .color-accent { color: var(--color-accent); }
+        .bg-accent-light { background-color: var(--color-accent-light); }
 
         /* Skill Level Colors */
-        .skill-expert { background-color: #65A30D; } /* Dark Green */
-        .skill-advanced { background-color: #A3E635; } /* Mid Green */
-        .skill-proficient { background-color: #D9F99D; } /* Light Green */
+        .skill-expert { background-color: #65A30D; }
+        .skill-advanced { background-color: #A3E635; }
+        .skill-proficient { background-color: #D9F99D; }
 
         body {
             font-family: "Inter", "Noto Sans", sans-serif;
             -webkit-font-smoothing: antialiased;
-            background-color: #f7f9fb; /* Soft Light Gray */
-            color: #1A202C; /* Deep Gray Text */
+            background-color: #f7f9fb;
+            color: #1A202C;
         }
         
         .header-font {
             font-family: 'Poppins', sans-serif;
+        }
+
+        #navbar {
+             background-color: var(--color-accent-translucent);
         }
 
         .timeline-item::before {
@@ -42,80 +81,27 @@
             left: -0.5rem;
             width: 1rem;
             height: 1rem;
-            background-color: #003E6B; /* Deep Blue for timeline dot */
+            background-color: var(--color-primary);
             border-radius: 9999px;
             border: 4px solid #f7f9fb;
             z-index: 10;
         }
-        .details-content {
-            transition: all 0.3s ease-in-out;
-        }
-        .video-container {
-            position: relative;
-            width: 100%;
-            padding-bottom: 56.25%; /* 16:9 aspect ratio */
-            height: 0;
-            overflow: hidden;
-            border-radius: 0.75rem; /* rounded-xl */
-        }
-        .video-container iframe {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-        }
-        .recommendation-card {
-            border-left: 5px solid #36A8A4; /* Soft Teal accent */
-            padding-left: 1.5rem;
-        }
-        .timeline-header:hover {
-            background-color: #f0f4f8; 
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-        }
-        .accordion-header {
-            cursor: pointer;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .accordion-content {
-            overflow: hidden;
-            max-height: 0;
-            transition: max-height 0.3s ease-out, padding 0.3s ease-out;
-        }
-        .accordion-content.expanded {
-            max-height: 1000px; /* Increased max-height */
-            padding-top: 1rem;
-        }
-        .rotate-90 {
-            transform: rotate(90deg);
-        }
-        .progress-bar-fill {
-            transition: width 1.5s ease-out; /* Smooth animation for the bar fill */
-        }
-        .reference-bar-segment {
-            height: 0.75rem;
-            text-align: center;
-            color: #000; 
-            font-size: 0.75rem;
-            line-height: 0.75rem;
-            font-weight: 700;
-            padding: 0 0.5rem;
-            white-space: nowrap;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        nav a.active {
-            color: #003E6B;
-            transform: scale(1.1);
-        }
+        .details-content { transition: all 0.3s ease-in-out; }
+        .video-container { position: relative; width: 100%; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 0.75rem; }
+        .video-container iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+        .recommendation-card { border-left: 5px solid var(--color-accent); padding-left: 1.5rem; }
+        .timeline-header:hover { background-color: #f0f4f8; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); }
+        .accordion-header { cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+        .accordion-content { overflow: hidden; max-height: 0; transition: max-height 0.3s ease-out, padding 0.3s ease-out; }
+        .accordion-content.expanded { max-height: 1000px; padding-top: 1rem; }
+        .progress-bar-fill { transition: width 1.5s ease-out; }
+        .reference-bar-segment { height: 0.75rem; text-align: center; color: #000; font-size: 0.75rem; line-height: 0.75rem; font-weight: 700; padding: 0 0.5rem; white-space: nowrap; display: flex; justify-content: center; align-items: center; }
+        nav a.active { color: var(--color-primary); transform: scale(1.1); }
         #back-to-top {
             position: fixed;
             bottom: 2rem;
             right: 2rem;
-            background-color: #003E6B;
+            background-color: var(--color-primary);
             color: white;
             width: 3rem;
             height: 3rem;
@@ -130,68 +116,78 @@
             z-index: 100;
             box-shadow: 0 4px 12px rgba(0,0,0,0.2);
         }
-        #back-to-top.show {
-            display: flex;
-            opacity: 1;
-            transform: translateY(0);
-        }
-        .scroll-animate {
-            opacity: 0;
-            transform: translateY(30px);
-            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
-        }
-        .scroll-animate.is-visible {
-            opacity: 1;
-            transform: translateY(0);
-        }
-        .loader {
-            margin: 1rem auto;
+        #back-to-top.show { display: flex; opacity: 1; transform: translateY(0); }
+        .scroll-animate { opacity: 0; transform: translateY(30px); transition: opacity 0.6s ease-out, transform 0.6s ease-out; }
+        .scroll-animate.is-visible { opacity: 1; transform: translateY(0); }
+        .loader { margin: 1rem auto; width: 24px; height: 24px; border: 3px solid #f3f3f3; border-top: 3px solid var(--color-accent); border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .company-logo { width: 48px; height: 48px; object-fit: contain; }
+        .theme-button {
             width: 24px;
             height: 24px;
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #36A8A4;
             border-radius: 50%;
-            animation: spin 1s linear infinite;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: transform 0.2s, border-color 0.2s;
         }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        .theme-button:hover {
+            transform: scale(1.15);
         }
-        @keyframes fade-in-up {
-            from {
-                opacity: 0;
-                transform: translateY(20px) scale(0.95);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0) scale(1);
-            }
-        }
-        .animate-fade-in-up {
-            animation: fade-in-up 0.4s ease-out forwards;
+        .theme-button.active {
+            border-color: var(--color-accent);
+            box-shadow: 0 0 0 2px white;
         }
     </style>
 </head>
 <body class="antialiased">
     <div id="app-container" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <header class="text-center py-12 md:py-16 scroll-animate">
-            <h1 class="header-font text-5xl md:text-7xl font-black tracking-tighter bg-gradient-to-r from-[#003E6B] to-[#36A8A4] text-transparent bg-clip-text pb-2">VISHAL KONDABATHINI</h1>
+        <header class="text-center py-12 md:py-16">
+            <h1 class="header-font text-5xl md:text-7xl font-black tracking-tighter bg-gradient-to-r from-[var(--color-header-gradient-from)] to-[var(--color-header-gradient-to)] text-transparent bg-clip-text pb-2">VISHAL KONDABATHINI</h1>
             <h2 class="header-font mt-2 text-xl md:text-2xl font-medium text-gray-600 tracking-wide">Digital Transformation Leader | Data & AI Strategist</h2>
         </header>
 
-        <nav id="navbar" class="sticky top-4 z-50 bg-[#36A8A4]/90 backdrop-blur-sm shadow-md rounded-full mb-12">
-            <div class="max-w-5xl mx-auto px-4">
-                <div class="flex items-center justify-center h-16">
-                    <div class="flex items-center space-x-2 md:space-x-6 text-sm md:text-base font-bold">
-                        <a href="#summary" class="text-white hover:text-[#003E6B] transition-all px-2 py-1">Summary</a>
-                        <a href="#video" class="text-white hover:text-[#003E6B] transition-all px-2 py-1">Video Intro</a>
-                        <a href="#timeline" class="text-white hover:text-[#003E6B] transition-all px-2 py-1">Timeline</a>
-                        <a href="#skills" class="text-white hover:text-[#003E6B] transition-all px-2 py-1">Skills</a>
-                        <a href="#recommendations" class="text-white hover:text-[#003E6B] transition-all px-2 py-1">Recs</a>
-                        <a href="#education" class="text-white hover:text-[#003E6B] transition-all px-2 py-1">Education</a>
-                        <a href="#portfolio" class="text-white hover:text-[#003E6B] transition-all px-2 py-1">Portfolio</a>
-                        <a href="#contact" class="text-white hover:text-[#003E6B] transition-all px-2 py-1">Contact</a>
+        <div id="theme-switcher" class="flex justify-center items-center space-x-3 mb-10 p-2 bg-white/60 rounded-full shadow-inner backdrop-blur-sm max-w-min mx-auto">
+            <button data-theme="default" class="theme-button" title="Default Theme" style="background-color: #003E6B;"></button>
+            <button data-theme="sunset" class="theme-button" title="Sunset Theme" style="background: linear-gradient(to right, #6D28D9, #F97316);"></button>
+            <button data-theme="forest" class="theme-button" title="Forest Theme" style="background-color: #166534;"></button>
+            <button data-theme="monochrome" class="theme-button" title="Monochrome Theme" style="background-color: #1F2937;"></button>
+        </div>
+
+        <nav id="navbar" class="sticky top-4 z-50 backdrop-blur-sm shadow-lg rounded-full mb-12">
+            <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex items-center justify-between h-16">
+                    <div class="flex-shrink-0">
+                         <a href="#" class="text-white text-xl font-bold header-font tracking-wider">VK</a>
                     </div>
+                    <div class="hidden md:flex items-center space-x-1">
+                        <a href="#summary" class="text-white hover:text-[var(--color-primary)] transition-all px-3 py-2 rounded-md text-sm font-bold">Summary</a>
+                        <a href="#video" class="text-white hover:text-[var(--color-primary)] transition-all px-3 py-2 rounded-md text-sm font-bold">Video Intro</a>
+                        <a href="#timeline" class="text-white hover:text-[var(--color-primary)] transition-all px-3 py-2 rounded-md text-sm font-bold">Timeline</a>
+                        <a href="#skills" class="text-white hover:text-[var(--color-primary)] transition-all px-3 py-2 rounded-md text-sm font-bold">Skills</a>
+                        <a href="#recommendations" class="text-white hover:text-[var(--color-primary)] transition-all px-3 py-2 rounded-md text-sm font-bold">Recs</a>
+                        <a href="#education" class="text-white hover:text-[var(--color-primary)] transition-all px-3 py-2 rounded-md text-sm font-bold">Education</a>
+                        <a href="#portfolio" class="text-white hover:text-[var(--color-primary)] transition-all px-3 py-2 rounded-md text-sm font-bold">Portfolio</a>
+                        <a href="#contact" class="text-white hover:text-[var(--color-primary)] transition-all px-3 py-2 rounded-md text-sm font-bold">Contact</a>
+                    </div>
+                    <div class="-mr-2 flex md:hidden">
+                        <button type="button" id="mobile-menu-button" class="bg-white/20 inline-flex items-center justify-center p-2 rounded-md text-white hover:bg-white/30 focus:outline-none" aria-controls="mobile-menu" aria-expanded="false">
+                            <span class="sr-only">Open main menu</span>
+                            <svg id="hamburger-icon" class="block h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                            <svg id="close-icon" class="hidden h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="md:hidden hidden" id="mobile-menu">
+                <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3 text-center">
+                    <a href="#summary" class="text-white hover:bg-white/20 block px-3 py-2 rounded-md text-base font-medium">Summary</a>
+                    <a href="#video" class="text-white hover:bg-white/20 block px-3 py-2 rounded-md text-base font-medium">Video Intro</a>
+                    <a href="#timeline" class="text-white hover:bg-white/20 block px-3 py-2 rounded-md text-base font-medium">Timeline</a>
+                    <a href="#skills" class="text-white hover:bg-white/20 block px-3 py-2 rounded-md text-base font-medium">Skills</a>
+                    <a href="#recommendations" class="text-white hover:bg-white/20 block px-3 py-2 rounded-md text-base font-medium">Recs</a>
+                    <a href="#education" class="text-white hover:bg-white/20 block px-3 py-2 rounded-md text-base font-medium">Education</a>
+                    <a href="#portfolio" class="text-white hover:bg-white/20 block px-3 py-2 rounded-md text-base font-medium">Portfolio</a>
+                    <a href="#contact" class="text-white hover:bg-white/20 block px-3 py-2 rounded-md text-base font-medium">Contact</a>
                 </div>
             </div>
         </nav>
@@ -208,7 +204,7 @@
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                             </span>
                             <div>
-                                <h4 class="text-lg font-bold text-[#003E6B] mb-1">Strategic Leader with Technical Expertise</h4>
+                                <h4 class="text-lg font-bold text-[var(--color-primary)] mb-1">Strategic Leader with Technical Expertise</h4>
                                 <p>
                                     Led <strong class="bg-accent-light font-semibold p-1 rounded">transformative initiatives</strong> and high-impact projects for over 8 years, dedicated to harnessing the power of data, AI, and technology for impactful change and proven impact for 2.5 years within highly <strong class="bg-accent-light font-semibold p-1 rounded">regulated environments</strong>.
                                 </p>
@@ -219,7 +215,7 @@
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                             </span>
                              <div>
-                                <h4 class="text-lg font-bold text-[#003E6B] mb-1">Data-Driven Visionary</h4>
+                                <h4 class="text-lg font-bold text-[var(--color-primary)] mb-1">Data-Driven Visionary</h4>
                                 <p>Consistently delivered simplified digital solutions through the advocacy of digitalization and <strong class="bg-accent-light font-semibold p-1 rounded">process optimization</strong>, focusing on <strong class="bg-accent-light font-semibold p-1 rounded">Data-to-Value cultural alignment</strong> and fostering cross-functional collaboration.</p>
                             </div>
                         </li>
@@ -228,7 +224,7 @@
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                             </span>
                             <div>
-                                <h4 class="text-lg font-bold text-[#003E6B] mb-1">Innovation Catalyst</h4>
+                                <h4 class="text-lg font-bold text-[var(--color-primary)] mb-1">Innovation Catalyst</h4>
                                 <p>Proven track record of inventiveness, including <strong class="bg-accent-light font-semibold p-1 rounded">2 filed patents</strong> and numerous accepted IPR ideas at Sony, demonstrating a commitment to creating <strong class="bg-accent-light font-semibold p-1 rounded">ground-breaking innovation</strong> that resolves complex challenges.</p>
                             </div>
                         </li>
@@ -241,7 +237,7 @@
             <section id="video" class="scroll-mt-24 scroll-animate">
                 <div class="text-center">
                     <h3 class="header-font text-3xl md:text-4xl font-black text-gray-800 tracking-tight">
-                         <i class="fas fa-video color-accent mr-2"></i>A Personal Introduction
+                         <i class="fas fa-video color-accent mr-2"></i>How did I get things done?
                     </h3>
                     <p class="mt-4 max-w-3xl mx-auto text-lg text-gray-600">
                         Hear my story. In this short video, I share my passion for driving change and my leadership philosophy.
@@ -264,16 +260,14 @@
             <section id="timeline" class="scroll-mt-24 scroll-animate">
                 <h3 class="text-3xl font-bold text-center text-gray-800">Career Timeline</h3>
                 <p class="text-center mt-2 text-lg text-gray-600">Click on each company to see role details and key accomplishments.</p>
-                <div class="mt-12 max-w-3xl mx-auto border-l-2 border-primary pl-8">
-                    <!-- Timeline content generated by JS -->
-                </div>
+                <div class="mt-12 max-w-3xl mx-auto border-l-2 border-[var(--color-primary)] pl-8">
+                    <!-- Timeline content generated by JS --></div>
             </section>
 
             <section id="skills" class="scroll-mt-24 scroll-animate">
                 <h3 class="text-3xl font-bold text-center text-gray-800">Core Competencies</h3>
                 <p class="text-center mt-2 text-lg text-gray-600">A holistic view of my capabilities across strategic, data, and technical domains.</p>
                 
-                <!-- NEW Key Strengths Section -->
                 <div class="max-w-5xl mx-auto mt-8 grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
                     <div class="bg-white p-6 rounded-2xl shadow-xl border border-gray-100 flex flex-col items-center justify-start">
                         <div class="text-4xl color-primary mb-3">
@@ -308,8 +302,7 @@
                 </div>
                 
                 <div id="skills-grid" class="mt-12 grid grid-cols-1 md:grid-cols-2 gap-8 max-w-6xl mx-auto">
-                    <!-- Skills progress bars generated by JS -->
-                </div>
+                    <!-- Skills progress bars generated by JS --></div>
             </section>
             
             <div class="w-1/4 mx-auto my-12 h-px bg-gray-200"></div>
@@ -318,8 +311,7 @@
                 <h3 class="text-3xl font-bold text-center text-gray-800">Peer & Leader Recommendations</h3>
                 <p class="text-center mt-2 max-w-4xl mx-auto text-lg text-gray-600">Selected quotes that summarize feedback received from managers, guides, and peers across my career.</p>
                 <div id="recommendations-grid" class="mt-12 grid grid-cols-1 md:grid-cols-2 gap-8 max-w-6xl mx-auto">
-                    <!-- Recommendations content generated by JS -->
-                </div>
+                    <!-- Recommendations content generated by JS --></div>
             </section>
 
             <div class="w-1/4 mx-auto my-12 h-px bg-gray-200"></div>
@@ -329,16 +321,14 @@
                 <div class="mt-8 max-w-3xl mx-auto">
                     <div class="bg-white p-6 rounded-2xl shadow-lg border border-gray-100">
                         <div id="education-list" class="space-y-6">
-                            <!-- Education content generated by JS -->
-                        </div>
+                            <!-- Education content generated by JS --></div>
                     </div>
                 </div>
 
                 <h3 class="text-3xl font-bold text-center text-gray-800 mt-12">Key Recognitions & Achievements</h3>
                 <div class="mt-8 max-w-3xl mx-auto">
                     <div id="achievement-list" class="bg-white p-6 rounded-2xl shadow-lg border border-gray-100 space-y-6">
-                        <!-- Achievements content generated by JS -->
-                    </div>
+                        <!-- Achievements content generated by JS --></div>
                 </div>
                 
                 <h3 class="text-3xl font-bold text-center text-gray-800 mt-12">Continuous Learning</h3>
@@ -381,8 +371,7 @@
                 <p class="text-center mt-2 max-w-4xl mx-auto text-lg text-gray-600">A snapshot of enterprise-grade solutions where I acted as Solution Architect and Product Owner, delivering value in regulated environments.</p>
                 
                 <div id="project-portfolio" class="mt-8 space-y-4 max-w-4xl mx-auto">
-                    <!-- Project Cards generated by JS -->
-                </div>
+                    <!-- Project Cards generated by JS --></div>
             </section>
             
             <div class="w-1/4 mx-auto my-12 h-px bg-gray-200"></div>
@@ -401,33 +390,15 @@
                         <i class="fas fa-phone-square fa-3x"></i>
                      </a>
                 </div>
-                 <!-- Gemini Feature: Interview Question Suggester -->
-                <div class="mt-12 text-center">
-                    <button id="generate-questions-btn" class="bg-[#003E6B] text-white font-bold py-3 px-6 rounded-full hover:bg-[#002c4d] transition-colors text-lg transform hover:scale-105 shadow-lg">
-                        ✨ Ask Me the Right Questions
-                    </button>
-                    <p class="text-sm text-gray-500 mt-2">Let AI suggest some interview questions based on my profile.</p>
-                </div>
             </section>
 
         </main>
 
         <footer class="text-center py-8 border-t border-gray-200">
-            <p class="text-sm sm:text-base text-gray-600">© 2024 Vishal Kondabathini | Enhanced with Google Gemini AI</p>
+            <p class="text-sm sm:text-base text-gray-600">© 2024 Vishal Kondabathini</p>
         </footer>
     </div>
     
-    <!-- Gemini Feature: Modal for Interview Questions -->
-    <div id="questions-modal" class="fixed inset-0 bg-black bg-opacity-60 z-[100] hidden items-center justify-center p-4">
-        <div class="bg-white rounded-2xl shadow-2xl p-6 md:p-8 max-w-2xl w-full relative animate-fade-in-up">
-            <button id="close-modal-btn" class="absolute top-3 right-4 text-gray-400 hover:text-gray-800 text-3xl font-bold">&times;</button>
-            <h3 class="text-2xl font-bold color-primary mb-4 text-center">✨ AI-Suggested Interview Questions</h3>
-            <div id="modal-content" class="text-gray-700 space-y-4 max-h-[60vh] overflow-y-auto pr-2">
-                <!-- Questions will be populated here -->
-            </div>
-        </div>
-    </div>
-
     <button id="back-to-top" title="Go to top">
         <i class="fas fa-arrow-up"></i>
     </button>
@@ -436,15 +407,18 @@
 document.addEventListener('DOMContentLoaded', () => {
 
     function getCompanyBranding(companyName) {
+        // Using emojis as placeholders for logos for simplicity
         if (companyName.includes("Novo Nordisk")) {
-            return { icon: '⚕️', color: 'text-[#003E6B]' };
+            return { iconHtml: '<span class="text-3xl">⚕️</span>', color: 'text-[var(--color-primary)]' };
         } else if (companyName.includes("Jabra")) {
-            return { icon: '🎧', color: 'text-blue-700' };
+            return { iconHtml: '<span class="text-3xl">🎧</span>', color: 'text-blue-700' };
         } else if (companyName.includes("Sony")) {
-            return { icon: '📺', color: 'text-gray-900' };
+            return { iconHtml: '<span class="text-3xl">📺</span>', color: 'text-gray-900' };
         }
-        return { icon: '🏢', color: 'text-gray-600' };
+        return { iconHtml: '<span class="text-3xl">🏢</span>', color: 'text-gray-600' };
     }
+
+    // --- DATA DEFINITIONS ---
 
     const experienceData = [
         {
@@ -458,7 +432,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     points: [
                         "Strategized and guided aseptic manufacturing line-of-businesses through complex digital transformation, tailoring solutions to high-compliance processes and ensuring regulatory adherence.",
                         "Drove digitalization and process optimization projects across manufacturing, resulting in a measurable increase in process throughput and reduction in administration time.",
-                        "Cultivated a data-to-value culture by simplifying digital solutions and fostering collaboration between technical and operational teams."
+                        "Cultivated a data-to-value culture by simplifying digital solutions and fostering collaboration between technical and operational teams.",
+                        "Delivered digital solutions that saved over 20,000+ hours annually, significantly improving quality and reducing process deviations.",
+                        "Led diverse, cross-functional teams—including Data Scientists, Data Analysts, Digital Solution Developers, Validation Leads, System Managers, and Project Managers—to deliver high-value digital solutions."
                     ]
                 }
             ]
@@ -466,28 +442,39 @@ document.addEventListener('DOMContentLoaded', () => {
         {
             company: "GN Audio A/S - Jabra",
             duration: "4.3 Years",
-            period: "2018 – 2023",
+            period: "2018 – 2022",
             location: "Copenhagen, Denmark",
             roles: [
-                {
+                 {
                     title: "Digital Excellence Manager, R&D Excellence (1 Year)",
                     points: ["Led digital transformation efforts within Global R&D, exploring current digital capabilities and identifying improvement projects to optimize product development methodologies.","Spearheaded process improvements that enhanced development efficiency by 15% (e.g., improved data flow for test automation, reduced manual documentation)."]
                 },
                 {
                     title: "Data Manager, Global Quality (1.6 Years)",
                     points: ["Established and drove the data management strategy for Global Quality, managing a team of data analysts and overseeing the Quality KPI's data platform.","Introduced MLOps (DataRobot) practices to the Quality organization, enabling predictive insights that reduced quality issues in manufacturing by ~10%.","Collaborated with key stakeholders to surface relevant data insights, continuously creating business value and impact across the product lifecycle."]
+                },
+                {
+                    title: "Product Quality Manager, Software Quality (2 Years)",
+                    points: ["Getting Jabra products ready for launch by identifying key quality improvements.", "Utilize internal & external feedback to indicate the risks and prioritizing software quality improvements.", "Key quality driver & stakeholder of Jabra's Evolve2 series & Elite75t products."]
                 }
             ]
         },
         {
             company: "Sony Mobile Communications AB",
             duration: "8 Years",
-            period: "2012 – 2018",
+            period: "2011 – 2018",
             location: "Lund, Sweden",
             roles: [
                 {
                     title: "Project Manager, Quality",
-                    points: ["Inventiveness Track Record: Generated numerous accepted Sony IPR ideas and filed 2 patents, showcasing a consistent commitment to innovation.","Improved test efficiency by 20% through leveraging data to reduce tedious planning and administration overhead.","Managed effective communication and project delivery with globally distributed engineering teams."]
+                    points: ["Inventiveness Track Record: Generated numerous accepted Sony IPR ideas and filed 2 patents, showcasing a consistent commitment to innovation.","Improved test efficiency by 20% through leveraging data to reduce tedious planning and administration overhead.","Managed effective communication and project delivery with globally distributed engineering teams.","Key stakeholder & responsible for department level change of defect management tool from IBM DMS to Atlassian JIRA. Trained and developed competences for tools and process changes."]
+                },
+                {
+                    title: "Verification Engineer, Operators & Manufacture Verification (1 Year)",
+                    points: [
+                        "Test & Analysis of key areas within an Android Mobile Device.",
+                        "This position allowed me to understand the defect management & test management."
+                    ]
                 }
             ]
         }
@@ -520,11 +507,23 @@ document.addEventListener('DOMContentLoaded', () => {
     ];
 
     const achievementData = [
-        { text: "<a href='https://patents.justia.com/inventor/vishal-kondabathini' target='_blank' class='color-primary hover:underline font-bold'>2x Patents filed by Inventor Vishal Kondabathini</a>", icon: '💡' },
-        { text: "<a href='https://bth.diva-portal.org/smash/record.jsf?pid=diva2%3A835025&dswid=2680' target='_blank' class='color-primary hover:underline font-bold'>3x IEEE Publications (EDUCON 2010, ICL 2010, T4E 2011)</a>", icon: '📖' },
-        { text: "<a href='https://www.mynewsdesk.com/se/bth/pressreleases/international-indian-students-honored-with-best-thesis-scholarship-grants-in-sweden-529174' target='_blank' class='color-primary hover:underline font-bold'>Top 1 Master Thesis work with social purpose appreciation (Swedbank AB)</a>", icon: '🏆' }
+        { 
+            text: "2x Patents filed by Inventor Vishal Kondabathini", 
+            icon: '💡', 
+            url: 'https://patents.justia.com/inventor/vishal-kondabathini' 
+        },
+        { 
+            text: "3x IEEE Publications (EDUCON 2010, ICL 2010, T4E 2011)", 
+            icon: '📖', 
+            url: 'https://bth.diva-portal.org/smash/record.jsf?pid=diva2%3A835025&dswid=2680' 
+        },
+        { 
+            text: "Top 1 Master Thesis work with social purpose appreciation (Swedbank AB)", 
+            icon: '🏆', 
+            url: 'https://www.mynewsdesk.com/se/bth/pressreleases/international-indian-students-honored-with-best-thesis-scholarship-grants-in-sweden-529174' 
+        }
     ];
-    
+
     const projectPortfolioData = [
         {
             title: "GoGemba - Digital Companion for Process Confirmations & Daily Improvements",
@@ -559,8 +558,8 @@ document.addEventListener('DOMContentLoaded', () => {
             ]
         },
         {
-            title: "Plan View for PAS-X Scheduler (Power BI Dashboard)",
-            summary: "Dashboard designed to enhance planning and communication processes within production operations, transforming complex master data into easily digestible visual formats.",
+            title: "Plan View for PAS-X Scheduler",
+            summary: "A dashboard designed in Microsoft Fabric to enhance planning and communication processes within production operations, transforming complex master data into easily digestible visual formats.",
             features: ["Single, cohesive platform for visualizing production plans", "Real-time data visualization from PAS-X Scheduler", "One-week planning horizon visibility","User-Friendly Interface to reduce training time"],
             benefits: ["Enhanced Planning & Communication", "Proactive Adjustments to unplanned events", "Streamlined Operations (replaces Excel)", "Increased Transparency"],
             tags: [
@@ -660,33 +659,58 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     ];
 
+    // --- DOM MANIPULATION ---
+
     const timelineContainer = document.querySelector('#timeline .border-l-2');
-    experienceData.forEach((exp, index) => {
-        const { icon, color } = getCompanyBranding(exp.company);
+    experienceData.forEach((exp) => {
+        const { iconHtml } = getCompanyBranding(exp.company);
         const item = document.createElement('div');
         item.className = 'relative mb-10 timeline-item';
         let rolesHtml = '';
         exp.roles.forEach(role => {
-            let pointsHtml = '<ul class="list-disc list-inside mt-2 space-y-1 text-gray-600">';
+            let pointsHtml = '<ul class="list-disc pl-5 mt-3 space-y-2 text-gray-700">';
             role.points.forEach(point => { pointsHtml += `<li>${point}</li>`; });
             pointsHtml += '</ul>';
-            rolesHtml += `<div class="mt-4"><h5 class="font-semibold text-gray-800">${role.title}</h5>${pointsHtml}</div>`;
+            rolesHtml += `
+                <div class="mb-6 last:mb-0">
+                    <h5 class="text-lg font-bold color-primary">${role.title}</h5>
+                    <hr class="my-2 border-gray-200">
+                    ${pointsHtml}
+                </div>
+            `;
         });
         item.innerHTML = `
             <div class="cursor-pointer p-4 rounded-lg bg-white shadow-md transition-all duration-300 border border-gray-100 timeline-header">
-                <div class="flex justify-between items-center"><div class="flex items-center space-x-4"><span class="text-3xl ${color} leading-none">${icon}</span><div><h4 class="text-xl font-bold text-gray-900">${exp.company}</h4><p class="text-sm text-gray-500">${exp.period} | ${exp.duration}</p></div></div><svg class="w-6 h-6 color-primary transform transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg></div>
+                <div class="flex justify-between items-center">
+                    <div class="flex items-center space-x-4">
+                        ${iconHtml}
+                        <div>
+                            <h4 class="text-xl font-bold text-gray-900">${exp.company}</h4>
+                            <p class="text-sm text-gray-500">${exp.period} | ${exp.duration}</p>
+                        </div>
+                    </div>
+                    <svg class="w-6 h-6 color-primary transform transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </div>
             </div>
-            <div class="details-content overflow-hidden max-h-0 pl-4 mt-2"><div class="bg-gray-50 p-4 rounded-lg border border-gray-200">${rolesHtml}</div></div>`;
+            <div class="details-content overflow-hidden max-h-0 pl-4 mt-2"><div class="bg-gray-50 p-6 rounded-lg border border-gray-200">${rolesHtml}</div></div>`;
         timelineContainer.appendChild(item);
         const header = item.querySelector('.timeline-header'), content = item.querySelector('.details-content'), iconElement = item.querySelector('svg');
         header.addEventListener('click', () => {
             const currentlyOpen = document.querySelector('.details-content.max-h-screen');
             if (currentlyOpen && currentlyOpen !== content) {
-                currentlyOpen.classList.remove('max-h-screen'), currentlyOpen.classList.add('max-h-0'), currentlyOpen.previousElementSibling.querySelector('svg').classList.remove('rotate-180'), currentlyOpen.previousElementSibling.classList.remove('shadow-xl', 'bg-gray-100');
+                currentlyOpen.classList.remove('max-h-screen');
+                currentlyOpen.classList.add('max-h-0');
+                currentlyOpen.previousElementSibling.querySelector('svg').classList.remove('rotate-180');
+                currentlyOpen.previousElementSibling.classList.remove('shadow-xl', 'bg-gray-100');
             }
-            content.classList.toggle('max-h-0'), content.classList.toggle('max-h-screen'), iconElement.classList.toggle('rotate-180'), header.classList.toggle('shadow-xl'), header.classList.toggle('bg-gray-100');
+            content.classList.toggle('max-h-0');
+            content.classList.toggle('max-h-screen');
+            iconElement.classList.toggle('rotate-180');
+            header.classList.toggle('shadow-xl');
+            header.classList.toggle('bg-gray-100');
         });
-        header.classList.remove('shadow-md'), header.classList.add('shadow-lg');
+        header.classList.remove('shadow-md');
+        header.classList.add('shadow-lg');
         header.addEventListener('mouseenter', () => { if (!content.classList.contains('max-h-screen')) { header.classList.add('bg-gray-50'); } });
         header.addEventListener('mouseleave', () => { if (!content.classList.contains('max-h-screen')) { header.classList.remove('bg-gray-50'); } });
     });
@@ -710,7 +734,17 @@ document.addEventListener('DOMContentLoaded', () => {
     recommendationsData.forEach(rec => {
         const recItem = document.createElement('div');
         recItem.className = 'bg-white p-6 rounded-xl shadow-lg border border-gray-100 recommendation-card';
-        recItem.innerHTML = `<p class="text-lg font-medium text-gray-700 leading-relaxed">"${rec.summary}"</p><p class="mt-4 text-sm font-semibold color-primary">- ${rec.author}</p>`;
+        recItem.innerHTML = `
+            <p class="text-lg font-medium text-gray-700 leading-relaxed">
+                "${rec.summary}"
+            </p>
+            <div class="mt-4 flex items-center text-sm">
+                <p class="font-semibold color-primary">- ${rec.author}</p>
+                <a href="https://www.linkedin.com/in/vishalkondabathini/details/recommendations/" target="_blank" class="ml-2 text-blue-600 hover:text-blue-800" title="View on LinkedIn">
+                    <i class="fab fa-linkedin fa-lg"></i>
+                </a>
+            </div>
+        `;
         recommendationsGrid.appendChild(recItem);
     });
 
@@ -723,11 +757,25 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     const achievementList = document.getElementById('achievement-list');
+    achievementList.className = 'bg-white p-4 rounded-2xl shadow-lg border border-gray-100 space-y-3';
+    achievementList.innerHTML = ''; 
+
     achievementData.forEach(achieve => {
-        const achieveItem = document.createElement('div');
-        achieveItem.className = 'flex items-start space-x-3 text-lg';
-        achieveItem.innerHTML = `<span class="text-2xl color-accent">${achieve.icon}</span><p class="text-gray-700 font-medium">${achieve.text}</p>`;
-        achievementList.appendChild(achieveItem);
+        const achieveLink = document.createElement('a');
+        achieveLink.href = achieve.url;
+        achieveLink.target = '_blank';
+        achieveLink.rel = 'noopener noreferrer';
+        achieveLink.className = 'group flex items-center space-x-4 text-lg p-4 rounded-xl bg-gray-50 hover:bg-accent-light hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 cursor-pointer';
+        
+        achieveLink.innerHTML = `
+            <span class="text-3xl">${achieve.icon}</span>
+            <span class="text-gray-800 font-semibold flex-grow group-hover:color-primary transition-colors">${achieve.text}</span>
+            <span class="text-gray-400 group-hover:color-primary transition-colors">
+                <i class="fas fa-external-link-alt"></i>
+            </span>
+        `;
+        
+        achievementList.appendChild(achieveLink);
     });
 
     const portfolioContainer = document.getElementById('project-portfolio');
@@ -767,14 +815,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         <div><h5 class="font-bold text-gray-800 mb-2 border-b border-gray-100 pb-1">Key Features</h5><ul class="space-y-2 text-sm">${featuresHtml}</ul></div>
                         <div><h5 class="font-bold text-gray-800 mb-2 border-b border-gray-100 pb-1">Value & Benefits</h5><ul class="space-y-2 text-sm">${benefitsHtml}</ul></div>
                     </div>
-                     <!-- Gemini Feature: Project Summarizer -->
-                    <div class="mt-6 pt-4 border-t border-dashed text-center">
-                        <button class="generate-summary-btn bg-accent-light text-sm font-bold text-[#003E6B] py-2 px-4 rounded-full hover:bg-[#ccecec] transition-colors w-full md:w-auto transform hover:scale-105">
-                            ✨ Generate AI-Powered Summary
-                        </button>
-                        <div class="ai-summary-container mt-4 text-gray-700 bg-gray-50 p-4 rounded-lg" style="display: none;"></div>
-                        <div class="loader" style="display: none;"></div>
-                    </div>
                 </div>
             </div>`;
         portfolioContainer.appendChild(projectCard);
@@ -793,8 +833,15 @@ document.addEventListener('DOMContentLoaded', () => {
     navLinks.forEach(link => {
         link.addEventListener('click', (e) => {
             e.preventDefault();
-            const targetId = e.currentTarget.getAttribute('href'), targetElement = document.querySelector(targetId);
-            if(targetElement) { targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+            const targetId = e.currentTarget.getAttribute('href');
+            if (targetId === '#') {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                return;
+            }
+            const targetElement = document.querySelector(targetId);
+            if(targetElement) { 
+                targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' }); 
+            }
         });
     });
 
@@ -823,116 +870,59 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }, { rootMargin: "-30% 0px -30% 0px" });
     sections.forEach(section => { section.classList.add('scroll-animate'); observer.observe(section); });
-    document.querySelector('header').classList.add('scroll-animate');
-    observer.observe(document.querySelector('header'));
-
-
-    // --- GEMINI API INTEGRATION ---
-
-    async function callGeminiAPI(prompt, systemInstruction) {
-        const apiKey = ""; // API key will be provided by the environment
-        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
-        const payload = {
-            contents: [{ parts: [{ text: prompt }] }],
-            systemInstruction: { parts: [{ text: systemInstruction }] },
-        };
-        let attempts = 0, maxAttempts = 5, delay = 1000;
-        while (attempts < maxAttempts) {
-            try {
-                const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-                if (response.ok) {
-                    const result = await response.json();
-                    const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
-                    if (text) return text;
-                    throw new Error('Invalid response structure from Gemini API');
-                } else if (response.status === 429) {
-                    throw new Error('API rate limit exceeded.');
-                } else {
-                    throw new Error(`API request failed with status: ${response.status}`);
-                }
-            } catch (error) {
-                console.error(`Attempt ${attempts + 1} failed:`, error.message);
-                attempts++;
-                if (attempts >= maxAttempts) throw new Error('Failed to get a response from the API after multiple attempts.');
-                await new Promise(resolve => setTimeout(resolve, delay));
-                delay *= 2; // Exponential backoff
-            }
-        }
-    }
     
-    // Feature 1: AI Project Summarizer
-    document.querySelectorAll('.generate-summary-btn').forEach((button, index) => {
-        button.addEventListener('click', async () => {
-            const project = projectPortfolioData[index];
-            const container = button.nextElementSibling;
-            const loader = container.nextElementSibling;
+    // --- Mobile Menu Toggle ---
+    const mobileMenuButton = document.getElementById('mobile-menu-button');
+    const mobileMenu = document.getElementById('mobile-menu');
+    const hamburgerIcon = document.getElementById('hamburger-icon');
+    const closeIcon = document.getElementById('close-icon');
 
-            button.disabled = true;
-            button.classList.add('opacity-50');
-            loader.style.display = 'block';
-            container.style.display = 'none';
+    mobileMenuButton.addEventListener('click', () => {
+        const isExpanded = mobileMenuButton.getAttribute('aria-expanded') === 'true';
+        mobileMenuButton.setAttribute('aria-expanded', !isExpanded);
+        mobileMenu.classList.toggle('hidden');
+        hamburgerIcon.classList.toggle('hidden');
+        closeIcon.classList.toggle('hidden');
+    });
 
-            try {
-                const systemInstruction = "You are a professional tech recruiter summarizing a candidate's project experience for a hiring manager. Be concise, impactful, and focus on business value in a single paragraph. Use markdown for bolding key terms.";
-                const prompt = `Based on the following project details, generate a concise, one-paragraph elevator pitch highlighting the key business impact and the candidate's role as a leader.\n\nProject Title: ${project.title}\nSummary: ${project.summary}\nKey Features: ${project.features.join(', ')}\nValue & Benefits: ${project.benefits.join(', ')}`;
-                
-                let summary = await callGeminiAPI(prompt, systemInstruction);
-                summary = summary.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>'); // Basic markdown to HTML
-                container.innerHTML = summary;
-                container.style.display = 'block';
-            } catch (error) {
-                container.innerHTML = `<p class="text-red-600">Sorry, the AI summary could not be generated at this time. Please try again later.</p><p class="text-xs text-gray-500">${error.message}</p>`;
-                container.style.display = 'block';
-            } finally {
-                loader.style.display = 'none';
-                button.disabled = false;
-                button.classList.remove('opacity-50');
-            }
+    const mobileMenuLinks = mobileMenu.querySelectorAll('a');
+    mobileMenuLinks.forEach(link => {
+        link.addEventListener('click', () => {
+            mobileMenu.classList.add('hidden');
+            hamburgerIcon.classList.remove('hidden');
+            closeIcon.classList.add('hidden');
+            mobileMenuButton.setAttribute('aria-expanded', 'false');
         });
     });
 
-    // Feature 2: AI Interview Question Suggester
-    const modal = document.getElementById('questions-modal');
-    const openModalBtn = document.getElementById('generate-questions-btn');
-    const closeModalBtn = document.getElementById('close-modal-btn');
-    const modalContent = document.getElementById('modal-content');
+    // --- Theme Switcher ---
+    const themeButtons = document.querySelectorAll('.theme-button');
+    const root = document.documentElement;
 
-    const handleOpenModal = async () => {
-        modal.classList.remove('hidden');
-        modal.classList.add('flex');
-        modalContent.innerHTML = `<div class="loader" style="margin: 2rem auto; width: 32px; height: 32px; border: 4px solid #f3f3f3; border-top: 4px solid #36A8A4; border-radius: 50%; animation: spin 1s linear infinite;"></div>`;
+    function applyTheme(theme) {
+        root.setAttribute('data-theme-active', theme);
         
-        try {
-            const professionalSummary = `Strategic Leader with Technical Expertise, Data-Driven Visionary, and Innovation Catalyst.`;
-            const experienceString = experienceData.map(e => `${e.roles[0].title} at ${e.company} focusing on ${e.roles[0].points.join('. ')}`).join('\n');
-            const skillsString = Object.values(skillsData).map(cat => cat.skills.map(s => `${s.name} (${s.level})`).join(', ')).join(', ');
+        themeButtons.forEach(btn => {
+            btn.classList.remove('active');
+            if (btn.dataset.theme === theme) {
+                btn.classList.add('active');
+            }
+        });
+        
+        localStorage.setItem('cv-theme', theme);
+    }
 
-            const systemInstruction = "You are an expert hiring manager for a senior Digital Transformation leadership role in the pharmaceutical or high-tech manufacturing industry. Based on the provided CV summary, generate 4 insightful, open-ended interview questions that would effectively probe this candidate's strategic thinking, leadership skills, and technical depth. Format the response as an ordered list in HTML (e.g., <ol><li>Question 1?</li>...</ol>).";
-            const prompt = `Here is a summary of a candidate's CV:\n\n**Summary:**\n${professionalSummary}\n\n**Experience:**\n${experienceString}\n\n**Skills:**\n${skillsString}\n\nGenerate 4 interview questions.`;
-            
-            const questions = await callGeminiAPI(prompt, systemInstruction);
-            modalContent.innerHTML = questions;
-        } catch (error) {
-            modalContent.innerHTML = `<p class="text-red-600 text-center">Sorry, the questions could not be generated. Please try again later.</p><p class="text-xs text-gray-500 text-center">${error.message}</p>`;
-        }
-    };
-    
-    const handleCloseModal = () => {
-        modal.classList.add('hidden');
-        modal.classList.remove('flex');
-    };
-
-    openModalBtn.addEventListener('click', handleOpenModal);
-    closeModalBtn.addEventListener('click', handleCloseModal);
-    modal.addEventListener('click', (e) => {
-        if (e.target === modal) {
-            handleCloseModal();
-        }
+    themeButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            applyTheme(button.dataset.theme);
+        });
     });
+
+    const savedTheme = localStorage.getItem('cv-theme') || 'default';
+    applyTheme(savedTheme);
 
 });
 </script>
 </body>
 </html>
-
 
