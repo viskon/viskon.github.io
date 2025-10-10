@@ -105,8 +105,8 @@ function applyTheme(theme) {
 
 I'm always open to connecting with fellow professionals, discussing new ideas, or exploring opportunities. Feel free to reach out\!
 
-  * **LinkedIn:** [linkedin.com/in/vishalkondabathini](https://www.google.com/search?q=https://linkedin.com/in/vishalkondabathini)
+  * **LinkedIn:** [linkedin.com/in/vishalkondabathini](https://linkedin.com/in/vishalkondabathini)
   * **Email:** [vishal@digitalcubes.org](mailto:vishal@digitalcubes.org)
-  * **Book a Meeting:** [Schedule a call via my booking page](https://www.google.com/search?q=https://cal.com/YOUR_BOOKING_LINK)
+  * **Book a Meeting:** [Schedule a call via my booking page](https://outlook.office.com/bookwithme/user/88884629b7904992b18f1c1af463c9b7@digitalcubes.org/meetingtype/cqT9-JX9ikyppCIkSQ7u3A2?anonymous&ismsaljsauthenabled&ep=mLinkFromTile)
 
 Thank you for visiting\!
