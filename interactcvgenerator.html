@@ -122,6 +122,14 @@
                     <span class="text-xs font-medium bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full">Your usage is not tracked</span>
                     <span class="text-xs font-medium bg-green-100 text-green-800 px-3 py-1 rounded-full">No personal data is collected, saved or used</span>
                 </div>
+                <div class="mt-6 border-t pt-4 flex justify-center items-center gap-4">
+                    <a href="https://create.microsoft.com/en-us/templates/ats-resumes" target="_blank" class="text-xs text-gray-500 hover:text-blue-600 font-semibold transition">
+                        <i class="fas fa-file-alt mr-1"></i> ATS Resume Templates
+                    </a>
+                    <a href="https://create.microsoft.com/en-us/templates/cover-letters" target="_blank" class="text-xs text-gray-500 hover:text-blue-600 font-semibold transition">
+                        <i class="fas fa-envelope-open-text mr-1"></i> Cover Letter Templates
+                    </a>
+                </div>
             </div>
         </div>
 
@@ -730,9 +738,9 @@
             <div class="${type}-skill flex items-center space-x-2">
                 <input type="text" name="skill-name" placeholder="Skill Name" class="input-field" value="${skill.name || ''}" oninput="handleValidation()">
                 <select name="skill-level" class="input-field" onchange="handleValidation()">
-                    <option value="Proficient" ${skill.level === 'Proficient' ? 'selected': ''}>Proficient</option>
-                    <option value="Advanced" ${skill.level === 'Advanced' ? 'selected': ''}>Advanced</option>
-                    <option value="Expert" ${skill.level === 'Expert' ? 'selected': ''}>Expert</option>
+                    <option value="Proficient">Proficient</option>
+                    <option value="Advanced">Advanced</option>
+                    <option value="Expert">Expert</option>
                 </select>
                 <button onclick="removeSkill('${type}', ${i})" class="remove-btn">&times;</button>
             </div>`).join('');
