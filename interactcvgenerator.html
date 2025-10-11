@@ -116,7 +116,7 @@
                     </a>
                 </div>
                  <div class="mt-6 flex flex-wrap justify-center gap-2">
-                    <span class="text-xs font-medium bg-gray-100 text-gray-800 px-3 py-1 rounded-full">Designed to be highly ATS-friendly</span>
+                    <span class="text-xs font-medium bg-gray-100 text-gray-800 px-3 py-1 rounded-full">Applicant tracking system (ATS) Optimized</span>
                     <span class="text-xs font-medium bg-purple-100 text-purple-800 px-3 py-1 rounded-full">Works best on PC</span>
                     <span class="text-xs font-medium bg-blue-100 text-blue-800 px-3 py-1 rounded-full">Generates an interactive CV on your browser and downloads it to your PC</span>
                     <span class="text-xs font-medium bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full">Your usage is not tracked</span>
@@ -730,9 +730,9 @@
             <div class="${type}-skill flex items-center space-x-2">
                 <input type="text" name="skill-name" placeholder="Skill Name" class="input-field" value="${skill.name || ''}" oninput="handleValidation()">
                 <select name="skill-level" class="input-field" onchange="handleValidation()">
-                    <option value="Proficient">Proficient</option>
-                    <option value="Advanced">Advanced</option>
-                    <option value="Expert">Expert</option>
+                    <option value="Proficient" ${skill.level === 'Proficient' ? 'selected': ''}>Proficient</option>
+                    <option value="Advanced" ${skill.level === 'Advanced' ? 'selected': ''}>Advanced</option>
+                    <option value="Expert" ${skill.level === 'Expert' ? 'selected': ''}>Expert</option>
                 </select>
                 <button onclick="removeSkill('${type}', ${i})" class="remove-btn">&times;</button>
             </div>`).join('');
