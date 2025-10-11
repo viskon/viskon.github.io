@@ -164,7 +164,7 @@
                 </div>
             </div>
 
-            <!-- Live Preview Section (will be cloned for printing) -->
+            <!-- Live Preview Section -->
             <div id="print-area-container" class="w-full bg-white rounded-2xl shadow-2xl p-8 mt-8 lg:mt-0">
                 <div id="preview-section">
                     <h3 class="text-center font-bold text-gray-500 mb-4 uppercase tracking-wider" id="preview-title">Live Preview</h3>
@@ -274,7 +274,7 @@
         }
 
         function updatePreview() {
-            // Header
+            // This function now generates a complete, detailed live preview.
             previewName.textContent = cvData.personal.name || 'Your Name';
             previewSubtitle.textContent = cvData.personal.subtitle || 'Your Subtitle';
             const themeColors = themes[cvData.theme];
@@ -282,8 +282,7 @@
             
             let previewHTML = '';
 
-            // Summary
-            if (cvData.summary.length > 0) {
+            if (cvData.summary.length > 0 && cvData.summary.some(p => p.trim() !== '')) {
                 previewHTML += `
                 <section>
                     <h3 class="text-xl font-bold text-center text-gray-700 mb-4 border-b-2 pb-2">Professional Summary</h3>
@@ -294,13 +293,13 @@
                 `;
             }
 
-            // Experience
             if (cvData.experience.length > 0) {
                 previewHTML += `
                 <section class="mt-8">
                     <h3 class="text-xl font-bold text-center text-gray-700 mb-4 border-b-2 pb-2">Work Experience</h3>
                     <div class="space-y-4">
                     ${cvData.experience.map(exp => {
+                        if (!exp.company) return '';
                         const endPeriod = exp.isCurrent ? 'Present' : `${exp.endMonth} ${exp.endYear}`;
                         const period = `${exp.startMonth} ${exp.startYear} – ${endPeriod}`;
                         return `
@@ -310,14 +309,16 @@
                                 <p class="text-xs text-gray-500">${period}</p>
                             </div>
                             <div class="pl-4 mt-1 space-y-2">
-                            ${exp.roles.map(role => `
+                            ${(exp.roles || []).map(role => {
+                                if (!role.title) return '';
+                                return `
                                 <div>
                                     <h5 class="font-semibold text-sm text-gray-800">${role.title}</h5>
                                     <ul class="list-disc pl-5 mt-1 space-y-1 text-gray-700 text-xs">
-                                        ${role.points.map(p => `<li>${p}</li>`).join('')}
+                                        ${(role.points || []).map(p => p ? `<li>${p}</li>` : '').join('')}
                                     </ul>
                                 </div>
-                            `).join('')}
+                            `}).join('')}
                             </div>
                         </div>
                         `;
@@ -327,49 +328,50 @@
                 `;
             }
 
-            // Skills
             if (cvData.skills.leadership.length > 0 || cvData.skills.technical.length > 0) {
                 previewHTML += `
                 <section class="mt-8">
                     <h3 class="text-xl font-bold text-center text-gray-700 mb-4 border-b-2 pb-2">Core Competencies</h3>
                     <div class="grid grid-cols-2 gap-6 text-xs">
+                        ${cvData.skills.leadership.length > 0 ? `
                         <div>
                             <h4 class="font-bold mb-2 text-center">Leadership</h4>
                             <ul class="list-disc pl-5">${cvData.skills.leadership.map(s => `<li>${s.name} <span class="text-gray-500">(${s.level})</span></li>`).join('')}</ul>
-                        </div>
+                        </div>` : ''}
+                        ${cvData.skills.technical.length > 0 ? `
                         <div>
                             <h4 class="font-bold mb-2 text-center">Technical</h4>
                             <ul class="list-disc pl-5">${cvData.skills.technical.map(s => `<li>${s.name} <span class="text-gray-500">(${s.level})</span></li>`).join('')}</ul>
-                        </div>
+                        </div>` : ''}
                     </div>
                 </section>
                 `;
             }
 
-            // Projects
             if (cvData.projects.length > 0) {
                 previewHTML += `
                 <section class="mt-8">
                     <h3 class="text-xl font-bold text-center text-gray-700 mb-4 border-b-2 pb-2">Projects</h3>
                     <div class="space-y-3">
-                    ${cvData.projects.map(p => `
+                    ${cvData.projects.map(p => {
+                        if (!p.title) return '';
+                        return `
                         <div>
                             <h4 class="font-bold">${p.title}</h4>
                             <p class="text-xs text-gray-700 pl-2 italic">${p.summary}</p>
                         </div>
-                    `).join('')}
+                    `}).join('')}
                     </div>
                 </section>
                 `;
             }
             
-            // Education & Achievements in a grid
             if (cvData.education.length > 0 || cvData.achievements.length > 0) {
-                previewHTML += '<section class="mt-8 grid grid-cols-2 gap-6">';
-                if (cvData.education.length > 0) {
+                previewHTML += '<section class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">';
+                if (cvData.education.length > 0 && cvData.education.some(e => e.degree)) {
                     previewHTML += `
                         <div>
-                            <h3 class="text-xl font-bold text-center text-gray-700 mb-4 border-b-2 pb-2">Education</h3>
+                            <h3 class="text-lg font-bold text-center text-gray-700 mb-4 border-b pb-2">Education</h3>
                             <div class="space-y-3 text-xs">
                             ${cvData.education.map(e => `
                                 <div>
@@ -382,10 +384,10 @@
                         </div>
                     `;
                 }
-                 if (cvData.achievements.length > 0) {
+                 if (cvData.achievements.length > 0 && cvData.achievements.some(a => a.text)) {
                     previewHTML += `
                         <div>
-                            <h3 class="text-xl font-bold text-center text-gray-700 mb-4 border-b-2 pb-2">Achievements</h3>
+                            <h3 class="text-lg font-bold text-center text-gray-700 mb-4 border-b pb-2">Achievements</h3>
                             <ul class="list-disc pl-5 space-y-1 text-xs">
                                 ${cvData.achievements.map(a => `<li>${a.text}</li>`).join('')}
                             </ul>
@@ -840,32 +842,174 @@
         prevBtn.addEventListener('click', () => navigate('prev'));
         closeModalBtn.addEventListener('click', () => githubModal.classList.add('hidden'));
 
+        function generatePdfHtml(data) {
+            const themeColors = themes[data.theme];
+            let html = `
+                <!DOCTYPE html>
+                <html lang="en">
+                <head>
+                    <meta charset="UTF-8">
+                    <title>CV - ${data.personal.name}</title>
+                    <link rel="preconnect" href="https://fonts.googleapis.com">
+                    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+                    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;700;900&display=swap" rel="stylesheet">
+                    <style>
+                        body { font-family: 'Poppins', sans-serif; color: #333; }
+                        .container { width: 100%; max-width: 8.5in; min-height: 11in; padding: 0.5in; box-sizing: border-box; margin: 0 auto; }
+                        h1 { font-size: 26pt; font-weight: 900; margin: 0; color: ${themeColors.from}; }
+                        h2 { font-size: 14pt; font-weight: 500; margin: 0 0 20pt 0; color: #555; }
+                        h3 { font-size: 14pt; font-weight: 700; color: ${themeColors.to}; border-bottom: 2px solid ${themeColors.from}; padding-bottom: 4px; margin: 20pt 0 10pt 0; }
+                        h4 { font-size: 11pt; font-weight: 700; margin: 8pt 0 2pt 0; }
+                        h5 { font-size: 10pt; font-weight: 700; margin: 4pt 0 2pt 0; }
+                        p, li { font-size: 9pt; line-height: 1.4; }
+                        ul { list-style-type: disc; padding-left: 20px; margin: 0; }
+                        .header { text-align: center; margin-bottom: 0.4in; }
+                        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24pt; page-break-inside: avoid; margin-top: 20pt; }
+                        .section { page-break-inside: avoid; }
+                        .exp-item { margin-bottom: 12pt; page-break-inside: avoid; }
+                        .exp-header { display: flex; justify-content: space-between; align-items: baseline; }
+                        .role-item { padding-left: 15px; }
+                    </style>
+                </head>
+                <body>
+                    <div class="container">
+                        <header class="header">
+                            <h1>${data.personal.name}</h1>
+                            <h2>${data.personal.subtitle}</h2>
+                        </header>
+                        <main>
+            `;
+
+            if (data.summary.length > 0) {
+                html += `
+                    <section class="section">
+                        <h3>Professional Summary</h3>
+                        <ul>${data.summary.map(p => `<li>${p}</li>`).join('')}</ul>
+                    </section>
+                `;
+            }
+
+            if (data.experience.length > 0) {
+                html += `
+                    <section class="section">
+                        <h3>Work Experience</h3>
+                        ${data.experience.map(exp => {
+                            const endPeriod = exp.isCurrent ? 'Present' : `${exp.endMonth} ${exp.endYear}`;
+                            return `
+                            <div class="exp-item">
+                                <div class="exp-header">
+                                    <h4>${exp.company}</h4>
+                                    <p>${exp.startMonth} ${exp.startYear} – ${endPeriod}</p>
+                                </div>
+                                ${exp.roles.map(role => `
+                                    <div class="role-item">
+                                        <h5>${role.title}</h5>
+                                        <ul>${role.points.map(p => p ? `<li>${p}</li>` : '').join('')}</ul>
+                                    </div>
+                                `).join('')}
+                            </div>
+                            `;
+                        }).join('')}
+                    </section>
+                `;
+            }
+            
+            if (data.projects.length > 0) {
+                 html += `
+                    <section class="section">
+                        <h3>Projects</h3>
+                         ${data.projects.map(p => `
+                            <div class="exp-item">
+                                <h4>${p.title}</h4>
+                                <p>${p.summary}</p>
+                            </div>
+                        `).join('')}
+                    </section>
+                `;
+            }
+            
+            if (data.skills.leadership.length > 0 || data.skills.technical.length > 0) {
+                html += `<section class="section"><h3>Core Competencies</h3><div class="grid-2">`;
+                if (data.skills.leadership.length > 0) {
+                    html +=`
+                        <div>
+                            <h4>Leadership & Soft Skills</h4>
+                            <ul>${data.skills.leadership.map(s => `<li>${s.name} (${s.level})</li>`).join('')}</ul>
+                        </div>
+                    `;
+                }
+                if (data.skills.technical.length > 0) {
+                     html +=`
+                        <div>
+                            <h4>Technical & Tools</h4>
+                            <ul>${data.skills.technical.map(s => `<li>${s.name} (${s.level})</li>`).join('')}</ul>
+                        </div>
+                    `;
+                }
+                html += `</div></section>`;
+            }
+            
+            if (data.education.length > 0 || data.achievements.length > 0) {
+                html += '<section class="section grid-2">';
+                 if (data.education.length > 0) {
+                    html += `
+                        <div>
+                            <h3>Education</h3>
+                            ${data.education.map(e => `
+                                <div>
+                                    <h4>${e.degree}</h4>
+                                    <p>${e.institution} - ${e.year}</p>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                }
+                if (data.achievements.length > 0) {
+                     html += `
+                        <div>
+                            <h3>Achievements</h3>
+                            <ul>${data.achievements.map(a => `<li>${a.text}</li>`).join('')}</ul>
+                        </div>
+                    `;
+                }
+                html += '</section>';
+            }
+
+            html += `
+                        </main>
+                    </div>
+                </body>
+                </html>
+            `;
+            return html;
+        }
+
+
         function generateAndDownloadPdf() {
             if (typeof html2pdf === 'undefined') {
                 console.error('html2pdf.js is not loaded.');
+                alert('Error: PDF generation library failed to load.');
                 return;
             }
             
-            const printArea = document.getElementById('print-area');
+            const pdfHtmlContent = generatePdfHtml(cvData);
             const name = cvData.personal.name || 'MyCV';
             const filename = `InteractCV_${name.replace(/\s+/g, '_')}.pdf`;
 
             const opt = {
-              margin:       [0.5, 0.5, 0.5, 0.5],
+              margin:       0.5,
               filename:     filename,
               image:        { type: 'jpeg', quality: 0.98 },
               html2canvas:  { scale: 2, letterRendering: true, useCORS: true },
-              jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' },
-              pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }
+              jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
             };
 
             downloadPdfBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Generating...';
             downloadPdfBtn.disabled = true;
 
-            html2pdf().from(printArea).set(opt).save().catch(err => {
+            html2pdf().from(pdfHtmlContent).set(opt).save().catch(err => {
                 console.error("Error generating PDF:", err);
             }).finally(() => {
-                // Restore button state
                 downloadPdfBtn.innerHTML = '<i class="fas fa-file-pdf mr-2"></i> Download as PDF';
                 if(currentStep === steps.length - 1) {
                     downloadPdfBtn.disabled = false;
