@@ -9,8 +9,6 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <!-- Library for PDF Generation -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" xintegrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <style>
         body {
             font-family: 'Poppins', sans-serif;
@@ -178,8 +176,8 @@
                         </div>
                     </div>
                      <div class="text-center mt-6">
-                        <button id="download-pdf-btn" class="inline-block px-5 py-2.5 bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-semibold rounded-full shadow-md transform hover:scale-105 transition-transform duration-300 text-sm opacity-50 cursor-not-allowed" disabled>
-                            <i class="fas fa-file-pdf mr-2"></i> Download as PDF
+                        <button id="download-doc-btn" class="inline-block px-5 py-2.5 bg-gradient-to-r from-blue-600 to-sky-500 text-white font-semibold rounded-full shadow-md transform hover:scale-105 transition-transform duration-300 text-sm opacity-50 cursor-not-allowed" disabled>
+                            <i class="fas fa-file-word mr-2"></i> Download as Word
                         </button>
                     </div>
                 </div>
@@ -222,1012 +220,990 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-        const cardContainer = document.getElementById('card-container');
-        const prevBtn = document.getElementById('prev-btn');
-        const nextBtn = document.getElementById('next-btn');
-        const progressBar = document.getElementById('progress-bar');
-        const progressPercent = document.getElementById('progress-percent');
-        const githubModal = document.getElementById('github-modal');
-        const closeModalBtn = document.getElementById('close-modal-btn');
-        const previewName = document.getElementById('preview-name');
-        const previewSubtitle = document.getElementById('preview-subtitle');
-        const previewContent = document.getElementById('preview-content');
-        const backToStartBtn = document.getElementById('back-to-start');
-        const downloadPdfBtn = document.getElementById('download-pdf-btn');
+            const cardContainer = document.getElementById('card-container');
+            const prevBtn = document.getElementById('prev-btn');
+            const nextBtn = document.getElementById('next-btn');
+            const progressBar = document.getElementById('progress-bar');
+            const progressPercent = document.getElementById('progress-percent');
+            const githubModal = document.getElementById('github-modal');
+            const closeModalBtn = document.getElementById('close-modal-btn');
+            const previewName = document.getElementById('preview-name');
+            const previewSubtitle = document.getElementById('preview-subtitle');
+            const previewContent = document.getElementById('preview-content');
+            const backToStartBtn = document.getElementById('back-to-start');
+            const downloadDocBtn = document.getElementById('download-doc-btn');
 
-        let currentStep = 0;
-        const cvData = {
-            personal: {},
-            summary: [],
-            experience: [],
-            skills: { leadership: [], technical: [] },
-            projects: [],
-            education: [],
-            achievements: [],
-            contact: {},
-            theme: 'default'
-        };
+            let currentStep = 0;
+            const cvData = {
+                personal: {},
+                summary: [],
+                experience: [],
+                skills: { leadership: [], technical: [] },
+                projects: [],
+                education: [],
+                achievements: [],
+                contact: {},
+                theme: 'default'
+            };
 
-        const themes = {
-            default: { from: '#003E6B', to: '#36A8A4'},
-            sunset: { from: '#6D28D9', to: '#F97316'},
-            forest: { from: '#166534', to: '#854d0e'},
-            monochrome: { from: '#111827', to: '#6B7280'},
-        }
-
-        const steps = [
-            { title: 'Personal Information' },
-            { title: 'Professional Summary' },
-            { title: 'Work Experience' },
-            { title: 'Skills' },
-            { title: 'Projects' },
-            { title: 'Education' },
-            { title: 'Achievements' },
-            { title: 'Contact & Theme' },
-            { title: 'Finish Up' }
-        ];
-
-        function updateProgressBar() {
-            const percentage = (currentStep / (steps.length - 1)) * 100;
-            progressBar.style.width = `${percentage}%`;
-            progressPercent.textContent = `${Math.round(percentage)}%`;
-        }
-
-        function updatePreview() {
-            // This function now generates a complete, detailed live preview.
-            previewName.textContent = cvData.personal.name || 'Your Name';
-            previewSubtitle.textContent = cvData.personal.subtitle || 'Your Subtitle';
-            const themeColors = themes[cvData.theme];
-            previewName.style.backgroundImage = `linear-gradient(to right, ${themeColors.from}, ${themeColors.to})`;
-            
-            let previewHTML = '';
-
-            if (cvData.summary.length > 0 && cvData.summary.some(p => p.trim() !== '')) {
-                previewHTML += `
-                <section>
-                    <h3 class="text-xl font-bold text-center text-gray-700 mb-4 border-b-2 pb-2">Professional Summary</h3>
-                    <ul class="list-disc pl-5 space-y-1 text-gray-700 text-xs">
-                        ${cvData.summary.map(p => `<li>${p}</li>`).join('')}
-                    </ul>
-                </section>
-                `;
+            const themes = {
+                default: { from: '#003E6B', to: '#36A8A4'},
+                sunset: { from: '#6D28D9', to: '#F97316'},
+                forest: { from: '#166534', to: '#854d0e'},
+                monochrome: { from: '#111827', to: '#6B7280'},
             }
 
-            if (cvData.experience.length > 0) {
-                previewHTML += `
-                <section class="mt-8">
-                    <h3 class="text-xl font-bold text-center text-gray-700 mb-4 border-b-2 pb-2">Work Experience</h3>
-                    <div class="space-y-4">
-                    ${cvData.experience.map(exp => {
-                        if (!exp.company) return '';
-                        const endPeriod = exp.isCurrent ? 'Present' : `${exp.endMonth} ${exp.endYear}`;
-                        const period = `${exp.startMonth} ${exp.startYear} – ${endPeriod}`;
-                        return `
-                        <div>
-                            <div class="flex justify-between items-baseline">
-                                <h4 class="font-bold text-gray-900">${exp.company}</h4>
-                                <p class="text-xs text-gray-500">${period}</p>
-                            </div>
-                            <div class="pl-4 mt-1 space-y-2">
-                            ${(exp.roles || []).map(role => {
-                                if (!role.title) return '';
-                                return `
-                                <div>
-                                    <h5 class="font-semibold text-sm text-gray-800">${role.title}</h5>
-                                    <ul class="list-disc pl-5 mt-1 space-y-1 text-gray-700 text-xs">
-                                        ${(role.points || []).map(p => p ? `<li>${p}</li>` : '').join('')}
-                                    </ul>
-                                </div>
-                            `}).join('')}
-                            </div>
-                        </div>
-                        `;
-                    }).join('')}
-                    </div>
-                </section>
-                `;
+            const steps = [
+                { title: 'Personal Information' },
+                { title: 'Professional Summary' },
+                { title: 'Work Experience' },
+                { title: 'Skills' },
+                { title: 'Projects' },
+                { title: 'Education' },
+                { title: 'Achievements' },
+                { title: 'Contact & Theme' },
+                { title: 'Finish Up' }
+            ];
+
+            function updateProgressBar() {
+                const percentage = (currentStep / (steps.length - 1)) * 100;
+                progressBar.style.width = `${percentage}%`;
+                progressPercent.textContent = `${Math.round(percentage)}%`;
             }
 
-            if (cvData.skills.leadership.length > 0 || cvData.skills.technical.length > 0) {
-                previewHTML += `
-                <section class="mt-8">
-                    <h3 class="text-xl font-bold text-center text-gray-700 mb-4 border-b-2 pb-2">Core Competencies</h3>
-                    <div class="grid grid-cols-2 gap-6 text-xs">
-                        ${cvData.skills.leadership.length > 0 ? `
-                        <div>
-                            <h4 class="font-bold mb-2 text-center">Leadership</h4>
-                            <ul class="list-disc pl-5">${cvData.skills.leadership.map(s => `<li>${s.name} <span class="text-gray-500">(${s.level})</span></li>`).join('')}</ul>
-                        </div>` : ''}
-                        ${cvData.skills.technical.length > 0 ? `
-                        <div>
-                            <h4 class="font-bold mb-2 text-center">Technical</h4>
-                            <ul class="list-disc pl-5">${cvData.skills.technical.map(s => `<li>${s.name} <span class="text-gray-500">(${s.level})</span></li>`).join('')}</ul>
-                        </div>` : ''}
-                    </div>
-                </section>
-                `;
-            }
+            function updatePreview() {
+                // This function now generates a complete, detailed live preview.
+                previewName.textContent = cvData.personal.name || 'Your Name';
+                previewSubtitle.textContent = cvData.personal.subtitle || 'Your Subtitle';
+                const themeColors = themes[cvData.theme];
+                previewName.style.backgroundImage = `linear-gradient(to right, ${themeColors.from}, ${themeColors.to})`;
+                
+                let previewHTML = '';
 
-            if (cvData.projects.length > 0) {
-                previewHTML += `
-                <section class="mt-8">
-                    <h3 class="text-xl font-bold text-center text-gray-700 mb-4 border-b-2 pb-2">Projects</h3>
-                    <div class="space-y-3">
-                    ${cvData.projects.map(p => {
-                        if (!p.title) return '';
-                        return `
-                        <div>
-                            <h4 class="font-bold">${p.title}</h4>
-                            <p class="text-xs text-gray-700 pl-2 italic">${p.summary}</p>
-                        </div>
-                    `}).join('')}
-                    </div>
-                </section>
-                `;
-            }
-            
-            if (cvData.education.length > 0 || cvData.achievements.length > 0) {
-                previewHTML += '<section class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">';
-                if (cvData.education.length > 0 && cvData.education.some(e => e.degree)) {
+                if (cvData.summary.length > 0 && cvData.summary.some(p => p.trim() !== '')) {
                     previewHTML += `
-                        <div>
-                            <h3 class="text-lg font-bold text-center text-gray-700 mb-4 border-b pb-2">Education</h3>
-                            <div class="space-y-3 text-xs">
-                            ${cvData.education.map(e => `
-                                <div>
-                                    <p class="font-semibold">${e.degree}</p>
-                                    <p class="text-xs">${e.institution}</p>
-                                    <p class="text-xs text-gray-500">${e.year}</p>
-                                </div>
-                            `).join('')}
-                            </div>
-                        </div>
+                    <section>
+                        <h3 class="text-xl font-bold text-center text-gray-700 mb-4 border-b-2 pb-2">Professional Summary</h3>
+                        <ul class="list-disc pl-5 space-y-1 text-gray-700 text-xs">
+                            ${cvData.summary.map(p => `<li>${p}</li>`).join('')}
+                        </ul>
+                    </section>
                     `;
                 }
-                 if (cvData.achievements.length > 0 && cvData.achievements.some(a => a.text)) {
+
+                if (cvData.experience.length > 0) {
                     previewHTML += `
-                        <div>
-                            <h3 class="text-lg font-bold text-center text-gray-700 mb-4 border-b pb-2">Achievements</h3>
-                            <ul class="list-disc pl-5 space-y-1 text-xs">
-                                ${cvData.achievements.map(a => `<li>${a.text}</li>`).join('')}
-                            </ul>
-                        </div>
-                    `;
-                }
-                previewHTML += '</section>';
-            }
-
-            previewContent.innerHTML = previewHTML;
-        }
-        
-        function navigate(direction) {
-            saveStepData(currentStep);
-            
-            let nextStep = currentStep;
-            if (direction === 'next' && currentStep < steps.length - 1) {
-                nextStep++;
-            } else if (direction === 'prev' && currentStep > 0) {
-                nextStep--;
-            }
-
-            if (nextStep !== currentStep) {
-                const oldCard = cardContainer.querySelector('.card');
-                if(oldCard) {
-                    oldCard.style.transition = 'opacity 150ms ease-in-out';
-                    oldCard.style.opacity = '0';
-                }
-                currentStep = nextStep;
-                setTimeout(() => {
-                    renderStep(currentStep);
-                    const newCard = cardContainer.querySelector('.card');
-                    if(newCard) {
-                        newCard.style.opacity = '0';
-                        requestAnimationFrame(() => {
-                             newCard.style.transition = 'opacity 150ms ease-in-out';
-                             newCard.style.opacity = '1';
-                        });
-                    }
-                    updateProgressBar();
-                    updateNavButtons();
-                    updatePreview();
-                }, 150);
-            }
-        }
-
-        function validateStep(stepIndex) {
-            const card = document.querySelector(`#card-${stepIndex}`);
-            if (!card) return true; 
-        
-            switch (steps[stepIndex].title) {
-                case 'Personal Information': {
-                    const nameInput = card.querySelector('#name');
-                    return nameInput && nameInput.value.trim() !== '';
-                }
-                case 'Professional Summary': {
-                    const points = card.querySelectorAll('[name="summary-point"]');
-                    if (points.length === 0) return false; 
-                    return Array.from(points).every(p => p.value.trim() !== '');
-                }
-                case 'Work Experience': {
-                    const experiences = card.querySelectorAll('.experience-item');
-                    if (experiences.length === 0) return false;
-                    return Array.from(experiences).every(exp => {
-                        const company = exp.querySelector('[name="company"]').value.trim();
-                        const roles = exp.querySelectorAll('.role-item');
-                        const hasValidRoles = roles.length > 0 && Array.from(roles).every(role => {
-                            return role.querySelector('[name="role-title"]').value.trim() !== '';
-                        });
-                        return company !== '' && hasValidRoles;
-                    });
-                }
-                case 'Skills': {
-                    const skills = card.querySelectorAll('[name="skill-name"]');
-                    if (skills.length === 0) return false;
-                    return Array.from(skills).every(s => s.value.trim() !== '');
-                }
-                case 'Projects': {
-                    const projects = card.querySelectorAll('[name="project-title"]');
-                    if (projects.length === 0) return false;
-                    return Array.from(projects).every(p => p.value.trim() !== '');
-                }
-                case 'Education': {
-                     const educations = card.querySelectorAll('.education-item');
-                     if (educations.length === 0) return false;
-                     return Array.from(educations).every(edu => {
-                         const degree = edu.querySelector('[name="degree"]').value.trim();
-                         const institution = edu.querySelector('[name="institution"]').value.trim();
-                         return degree !== '' && institution !== '';
-                     });
-                }
-                case 'Achievements': {
-                    const achievements = card.querySelectorAll('[name="achievement-text"]');
-                    if (achievements.length === 0) return false;
-                    return Array.from(achievements).every(a => a.value.trim() !== '');
-                }
-                 case 'Contact & Theme': {
-                    const email = card.querySelector('#email').value.trim();
-                    const linkedin = card.querySelector('#linkedin').value.trim();
-                    return email !== '' || linkedin !== '';
-                }
-                default:
-                    return true;
-            }
-        }
-
-        function updateNavButtons() {
-            prevBtn.style.visibility = currentStep === 0 ? 'hidden' : 'visible';
-            const isValid = validateStep(currentStep);
-
-            nextBtn.disabled = !isValid;
-            
-            nextBtn.classList.remove('text-blue-500', 'hover:text-blue-700', 'text-green-500', 'hover:text-green-700', 'text-gray-300', 'cursor-not-allowed');
-
-            if (!isValid) {
-                nextBtn.classList.add('text-gray-300', 'cursor-not-allowed');
-            } else {
-                if (currentStep === steps.length - 1) {
-                    nextBtn.innerHTML = '<i class="fas fa-download"></i>';
-                    nextBtn.classList.add('text-green-500', 'hover:text-green-700');
-                } else {
-                    nextBtn.innerHTML = '<i class="fas fa-arrow-right"></i>';
-                    nextBtn.classList.add('text-blue-500', 'hover:text-blue-700');
-                }
-            }
-
-            if(currentStep === steps.length - 1) {
-                downloadPdfBtn.disabled = false;
-                downloadPdfBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-            } else {
-                downloadPdfBtn.disabled = true;
-                downloadPdfBtn.classList.add('opacity-50', 'cursor-not-allowed');
-            }
-        }
-        
-        window.handleValidation = () => {
-            updateNavButtons();
-            saveStepData(currentStep);
-            updatePreview();
-        };
-        
-        function saveStepData(stepIndex) {
-            const card = document.querySelector(`#card-${stepIndex}`);
-            if (!card) return;
-            const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-            switch (steps[stepIndex].title) {
-                case 'Personal Information':
-                    cvData.personal.name = card.querySelector('#name').value;
-                    cvData.personal.subtitle = card.querySelector('#subtitle').value;
-                    break;
-                case 'Professional Summary':
-                    cvData.summary = Array.from(card.querySelectorAll('[name="summary-point"]')).map(input => input.value);
-                    break;
-                case 'Work Experience':
-                    cvData.experience = [];
-                    card.querySelectorAll('.experience-item').forEach((item, index) => {
-                        const startYear = item.querySelector(`[name='start-year-${index}']`).value;
-                        const startMonth = item.querySelector(`[name='start-month-${index}']`).value;
-                        const endYear = item.querySelector(`[name='end-year-${index}']`).value;
-                        const endMonth = item.querySelector(`[name='end-month-${index}']`).value;
-                        const isCurrent = item.querySelector(`[name='current-job-${index}']`).checked;
-                        
-                        let durationStr = '';
-                        if(startYear && startMonth) {
-                            const startDate = new Date(`${startYear}-${months.indexOf(startMonth)+1}-01`);
-                            const endDate = isCurrent ? new Date() : (endYear && endMonth ? new Date(`${endYear}-${months.indexOf(endMonth)+1}-01`) : null);
-                            if (endDate) {
-                                let years = endDate.getFullYear() - startDate.getFullYear();
-                                let monthsDiff = endDate.getMonth() - startDate.getMonth();
-                                if (monthsDiff < 0) {
-                                    years--;
-                                    monthsDiff += 12;
-                                }
-                                if (years > 0) durationStr += `${years} Year${years > 1 ? 's' : ''} `;
-                                if (monthsDiff > 0) durationStr += `${monthsDiff} Month${monthsDiff > 1 ? 's' : ''}`;
-                                if (durationStr.trim() === '') durationStr = '1 Month';
-                            }
-                        }
-                        item.querySelector('.duration-text').textContent = durationStr;
-
-                        cvData.experience.push({
-                            company: item.querySelector('[name="company"]').value,
-                            startYear, startMonth, endYear, endMonth, isCurrent,
-                            duration: durationStr,
-                            roles: Array.from(item.querySelectorAll('.role-item')).map(role => ({
-                                title: role.querySelector('[name="role-title"]').value,
-                                points: Array.from(role.querySelectorAll('[name="role-point"]')).map(p => p.value)
-                            }))
-                        });
-                    });
-                    break;
-                case 'Skills':
-                    cvData.skills.leadership = Array.from(card.querySelectorAll('.leadership-skill')).map(item => ({ name: item.querySelector('[name="skill-name"]').value, level: item.querySelector('[name="skill-level"]').value }));
-                    cvData.skills.technical = Array.from(card.querySelectorAll('.technical-skill')).map(item => ({ name: item.querySelector('[name="skill-name"]').value, level: item.querySelector('[name="skill-level"]').value }));
-                    break;
-                 case 'Projects':
-                    cvData.projects = Array.from(card.querySelectorAll('.project-item')).map(item => ({ title: item.querySelector('[name="project-title"]').value, summary: item.querySelector('[name="project-summary"]').value }));
-                    break;
-                case 'Education':
-                     cvData.education = Array.from(card.querySelectorAll('.education-item')).map(item => ({ degree: item.querySelector('[name="degree"]').value, institution: item.querySelector('[name="institution"]').value, year: item.querySelector('[name="year"]').value }));
-                    break;
-                case 'Achievements':
-                    cvData.achievements = Array.from(card.querySelectorAll('.achievement-item')).map(item => ({ text: item.querySelector('[name="achievement-text"]').value }));
-                    break;
-                case 'Contact & Theme':
-                    cvData.contact.linkedin = card.querySelector('#linkedin').value;
-                    cvData.contact.email = card.querySelector('#email').value;
-                    cvData.contact.phone = card.querySelector('#phone').value;
-                    cvData.contact.booking = card.querySelector('#booking').value;
-                    const selectedTheme = card.querySelector('input[name="theme"]:checked');
-                    if (selectedTheme) cvData.theme = selectedTheme.value;
-                    break;
-            }
-        }
-
-        function renderStep(stepIndex) {
-            const step = steps[stepIndex];
-            cardContainer.innerHTML = `<div id="card-${stepIndex}" class="card p-4"></div>`;
-            const card = document.getElementById(`card-${stepIndex}`);
-            
-            let content = `<h2 class="text-2xl font-bold mb-6 text-gray-800">${steps[stepIndex].title}</h2>`;
-
-            switch(step.title) {
-                case 'Personal Information':
-                    content += `
-                        <div class="bg-gradient-to-tr from-blue-500/20 to-indigo-400/10 rounded-3xl shadow-2xl p-8 md:p-12 transition-all duration-500">
-                            <div class="text-center mb-8">
-                                <i class="fas fa-address-card text-7xl text-blue-400 mb-4 animate-pulse"></i>
-                                <h2 class="text-4xl font-extrabold text-indigo-700 mb-2 tracking-tight">Let's Begin Your Story!</h2>
-                                <p class="text-lg text-gray-600">Start by entering your name and headline—this will shine at the top of your CV.</p>
-                            </div>
-                            <form autocomplete="off" class="space-y-8 max-w-xl mx-auto">
-                                <div class="relative">
-                                    <label for="name" class="font-semibold text-gray-600 mb-2 flex items-center"><i class="fas fa-user w-5 mr-2 text-indigo-400"></i>Full Name</label>
-                                    <textarea id="name" name="name" rows="1" placeholder="Type your name…" class="textarea-field transition-shadow focus:shadow-lg focus:bg-blue-50/50 text-center resize-none overflow-hidden w-full px-6 py-4 rounded-xl font-semibold text-2xl text-gray-900 border-2 border-indigo-200 focus:border-blue-500" oninput="autoResize(this); handleValidation()">${cvData.personal.name || ''}</textarea>
-                                </div>
-                                <div class="relative">
-                                    <label for="subtitle" class="font-semibold text-gray-600 mb-2 flex items-center"><i class="fas fa-briefcase w-5 mr-2 text-indigo-400"></i>Subtitle / Job Title</label>
-                                    <textarea id="subtitle" name="subtitle" rows="1" placeholder="e.g., Technical Lead | AI Specialist" class="textarea-field transition-shadow focus:shadow-lg focus:bg-blue-50/50 text-center resize-none overflow-hidden w-full px-6 py-4 rounded-xl font-semibold text-xl text-gray-800 border-2 border-indigo-200 focus:border-blue-500" oninput="autoResize(this); handleValidation()">${cvData.personal.subtitle || ''}</textarea>
-                                </div>
-                            </form>
-                            <div class="text-center mt-8">
-                                 <button id="upload-btn" class="text-sm text-gray-600 hover:text-blue-600 font-semibold transition" disabled>
-                                    <i class="fas fa-upload mr-2"></i> Modify existing CV
-                                </button>
-                                <span class="text-xs bg-gray-200 text-gray-600 font-semibold px-2 py-1 rounded-full ml-2">Coming Soon</span>
-                                <p class="text-xs text-gray-500 mt-2 italic">(Works only with CVs created by this interface)</p>
-                            </div>
-                        </div>`;
-                    break;
-                case 'Professional Summary':
-                    content += `<div class="bg-gray-100 p-4 rounded-lg"><div id="summary-list" class="space-y-4">${renderSummaryItems()}</div><button onclick="addSummaryPoint()" class="add-btn mt-4">+ Add Point</button></div>`;
-                    break;
-                case 'Work Experience':
-                     content += `<div class="bg-gray-100 p-4 rounded-lg"><div id="experience-list" class="space-y-4">${renderExperienceItems()}</div><button onclick="addExperience()" class="add-btn mt-4">+ Add Experience</button></div>`;
-                    break;
-                case 'Skills':
-                    content += `
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                           <div class="bg-gray-100 p-4 rounded-lg">
-                                <h3 class="font-bold mb-2">Leadership & Soft Skills</h3>
-                                <div id="leadership-skills" class="space-y-2">${renderSkillItems('leadership')}</div>
-                                <button onclick="addSkill('leadership')" class="add-btn mt-2">+ Add Skill</button>
-                            </div>
-                           <div class="bg-gray-100 p-4 rounded-lg">
-                                <h3 class="font-bold mb-2">Technical & Tools</h3>
-                                <div id="technical-skills" class="space-y-2">${renderSkillItems('technical')}</div>
-                                <button onclick="addSkill('technical')" class="add-btn mt-2">+ Add Skill</button>
-                            </div>
-                        </div>`;
-                    break;
-                case 'Projects':
-                    content += `<div class="bg-gray-100 p-4 rounded-lg"><div id="project-list" class="space-y-4">${renderProjectItems()}</div><button onclick="addProject()" class="add-btn mt-4">+ Add Project</button></div>`;
-                    break;
-                 case 'Education':
-                    content += `<div class="bg-gray-100 p-4 rounded-lg"><div id="education-list" class="space-y-4">${renderEducationItems()}</div><button onclick="addEducation()" class="add-btn mt-4">+ Add Education</button></div>`;
-                    break;
-                 case 'Achievements':
-                    content += `<div class="bg-gray-100 p-4 rounded-lg"><div id="achievement-list" class="space-y-4">${renderAchievementItems()}</div><button onclick="addAchievement()" class="add-btn mt-4">+ Add Achievement</button></div>`;
-                    break;
-                case 'Contact & Theme':
-                    content += `
+                    <section class="mt-8">
+                        <h3 class="text-xl font-bold text-center text-gray-700 mb-4 border-b-2 pb-2">Work Experience</h3>
                         <div class="space-y-4">
-                            <h3 class="font-bold">Contact Links</h3>
-                            <div><input id="linkedin" type="text" placeholder="LinkedIn Profile URL" class="input-field" value="${cvData.contact.linkedin || ''}" oninput="handleValidation()"></div>
-                            <div><input id="email" type="email" placeholder="Email Address" class="input-field" value="${cvData.contact.email || ''}" oninput="handleValidation()"></div>
-                            <div><input id="phone" type="tel" placeholder="Phone Number" class="input-field" value="${cvData.contact.phone || ''}" oninput="handleValidation()"></div>
-                            <div><input id="booking" type="text" placeholder="Booking Page URL (Optional)" class="input-field" value="${cvData.contact.booking || ''}" oninput="handleValidation()"></div>
-                            <h3 class="font-bold mt-6">Choose a Theme</h3>
-                            <div class="flex space-x-4">
-                                ${['default', 'sunset', 'forest', 'monochrome'].map(theme => `
-                                <label class="flex items-center space-x-2 cursor-pointer">
-                                    <input type="radio" name="theme" value="${theme}" class="form-radio" ${cvData.theme === theme ? 'checked' : ''} onchange="handleValidation()">
-                                    <span class="capitalize">${theme}</span>
-                                </label>`).join('')}
+                        ${cvData.experience.map(exp => {
+                            if (!exp.company) return '';
+                            const endPeriod = exp.isCurrent ? 'Present' : `${exp.endMonth} ${exp.endYear}`;
+                            const period = `${exp.startMonth} ${exp.startYear} – ${endPeriod}`;
+                            return `
+                            <div>
+                                <div class="flex justify-between items-baseline">
+                                    <h4 class="font-bold text-gray-900">${exp.company}</h4>
+                                    <p class="text-xs text-gray-500">${period}</p>
+                                </div>
+                                <div class="pl-4 mt-1 space-y-2">
+                                ${(exp.roles || []).map(role => {
+                                    if (!role.title) return '';
+                                    return `
+                                    <div>
+                                        <h5 class="font-semibold text-sm text-gray-800">${role.title}</h5>
+                                        <ul class="list-disc pl-5 mt-1 space-y-1 text-gray-700 text-xs">
+                                            ${(role.points || []).map(p => p ? `<li>${p}</li>` : '').join('')}
+                                        </ul>
+                                    </div>
+                                `}).join('')}
+                                </div>
                             </div>
-                        </div>`;
-                    break;
-                 case 'Finish Up':
-                    content += `<div class="text-center"><p class="text-lg">You're all set! Click the button below to download your personalized interactive CV as an HTML file.</p></div>`;
-                    break;
-
-            }
-            card.innerHTML = content;
-            
-            if (stepIndex === 0) {
-                 const uploadBtn = document.getElementById('upload-btn');
-                 if(uploadBtn) uploadBtn.addEventListener('click', () => cvUploadInput.click());
-                card.querySelectorAll('textarea').forEach(textarea => {
-                    setTimeout(() => autoResize(textarea), 0);
-                });
-            }
-             updateNavButtons(); 
-        }
-        
-        // Dynamic item rendering functions
-        window.addSummaryPoint = () => { saveStepData(currentStep); cvData.summary.push(''); renderStep(currentStep); };
-        window.removeSummaryPoint = (index) => { saveStepData(currentStep); cvData.summary.splice(index, 1); renderStep(currentStep); };
-        window.addExperience = () => { saveStepData(currentStep); cvData.experience.push({ roles: [{ points: [] }] }); renderStep(currentStep); };
-        window.removeExperience = (index) => { saveStepData(currentStep); cvData.experience.splice(index, 1); renderStep(currentStep); };
-        window.addRole = (expIndex) => { saveStepData(currentStep); cvData.experience[expIndex].roles.push({ points: [] }); renderStep(currentStep); };
-        window.removeRole = (expIndex, roleIndex) => { saveStepData(currentStep); cvData.experience[expIndex].roles.splice(roleIndex, 1); renderStep(currentStep); };
-        window.addPoint = (expIndex, roleIndex) => { saveStepData(currentStep); cvData.experience[expIndex].roles[roleIndex].points.push(''); renderStep(currentStep); };
-        window.removePoint = (expIndex, roleIndex, pointIndex) => { saveStepData(currentStep); cvData.experience[expIndex].roles[roleIndex].points.splice(pointIndex, 1); renderStep(currentStep); };
-        window.addSkill = (type) => { saveStepData(currentStep); cvData.skills[type].push({}); renderStep(currentStep); };
-        window.removeSkill = (type, index) => { saveStepData(currentStep); cvData.skills[type].splice(index, 1); renderStep(currentStep); };
-        window.addProject = () => { saveStepData(currentStep); cvData.projects.push({}); renderStep(currentStep); };
-        window.removeProject = (index) => { saveStepData(currentStep); cvData.projects.splice(index, 1); renderStep(currentStep); };
-        window.addEducation = () => { saveStepData(currentStep); cvData.education.push({}); renderStep(currentStep); };
-        window.removeEducation = (index) => { saveStepData(currentStep); cvData.education.splice(index, 1); renderStep(currentStep); };
-        window.addAchievement = () => { saveStepData(currentStep); cvData.achievements.push({}); renderStep(currentStep); };
-        window.removeAchievement = (index) => { saveStepData(currentStep); cvData.achievements.splice(index, 1); renderStep(currentStep); };
-
-        function renderSummaryItems() {
-             return cvData.summary.map((point, i) => `
-            <div class="summary-item flex items-center space-x-2">
-                <textarea name="summary-point" placeholder="e.g., Strategic Leader with Technical Expertise..." class="textarea-field flex-grow" rows="1" oninput="autoResize(this); handleValidation()">${point || ''}</textarea>
-                <button onclick="removeSummaryPoint(${i})" class="remove-btn text-xl">&times;</button>
-            </div>`).join('');
-        }
-        
-        function renderExperienceItems() {
-            const currentYear = new Date().getFullYear();
-            const years = Array.from({length: 50}, (_, i) => currentYear - i);
-            const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-
-            return cvData.experience.map((exp, i) => {
-                const isCurrent = exp.isCurrent || false;
-                return `
-                <div class="experience-item p-4 border rounded-lg bg-white shadow-sm">
-                     <button onclick="removeExperience(${i})" class="remove-btn float-right">Remove</button>
-                    <input type="text" name="company" placeholder="Company Name" class="input-field mb-2" value="${exp.company || ''}" oninput="handleValidation()">
-                    
-                    <div class="grid grid-cols-2 gap-4 mb-2 text-sm">
-                        <div>
-                            <label class="font-semibold text-xs">Start Date</label>
-                            <div class="flex gap-2">
-                                <select name="start-month-${i}" class="input-field text-sm !p-2" onchange="handleValidation()">${months.map(m => `<option ${exp.startMonth === m ? 'selected': ''}>${m}</option>`).join('')}</select>
-                                <select name="start-year-${i}" class="input-field text-sm !p-2" onchange="handleValidation()">${years.map(y => `<option ${exp.startYear == y ? 'selected': ''}>${y}</option>`).join('')}</select>
-                            </div>
+                            `;
+                        }).join('')}
                         </div>
-                         <div>
-                            <label class="font-semibold text-xs">End Date</label>
-                            <div class="flex gap-2">
-                                <select name="end-month-${i}" class="input-field text-sm !p-2" ${isCurrent ? 'disabled' : ''} onchange="handleValidation()">${months.map(m => `<option ${exp.endMonth === m ? 'selected': ''}>${m}</option>`).join('')}</select>
-                                <select name="end-year-${i}" class="input-field text-sm !p-2" ${isCurrent ? 'disabled' : ''} onchange="handleValidation()">${years.map(y => `<option ${exp.endYear == y ? 'selected': ''}>${y}</option>`).join('')}</select>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="flex items-center justify-between">
-                         <label class="flex items-center text-sm">
-                            <input type="checkbox" name="current-job-${i}" class="form-checkbox mr-2" ${isCurrent ? 'checked' : ''} oninput="handleValidation()"> I currently work here
-                        </label>
-                        <p class="text-sm font-semibold text-blue-600 duration-text">${exp.duration || ''}</p>
-                    </div>
+                    </section>
+                    `;
+                }
 
-                    <div class="role-list space-y-2 mt-4">
-                        ${(exp.roles || []).map((role, ri) => `
-                            <div class="role-item border-t pt-2">
-                                <button onclick="removeRole(${i}, ${ri})" class="remove-btn float-right">Remove Role</button>
-                                <input type="text" name="role-title" placeholder="Role Title" class="input-field mb-2 font-semibold" value="${role.title || ''}" oninput="handleValidation()">
-                                <div class="point-list space-y-1">
-                                ${(role.points || []).map((p, pi) => `
-                                    <div class="flex items-center">
-                                        <input type="text" name="role-point" placeholder="Accomplishment" class="input-field flex-grow" value="${p || ''}" oninput="handleValidation()">
-                                        <button onclick="removePoint(${i}, ${ri}, ${pi})" class="remove-btn ml-2">&times;</button>
+                if (cvData.skills.leadership.length > 0 || cvData.skills.technical.length > 0) {
+                    previewHTML += `
+                    <section class="mt-8">
+                        <h3 class="text-xl font-bold text-center text-gray-700 mb-4 border-b-2 pb-2">Core Competencies</h3>
+                        <div class="grid grid-cols-2 gap-6 text-xs">
+                            ${cvData.skills.leadership.length > 0 ? `
+                            <div>
+                                <h4 class="font-bold mb-2 text-center">Leadership</h4>
+                                <ul class="list-disc pl-5">${cvData.skills.leadership.map(s => `<li>${s.name} <span class="text-gray-500">(${s.level})</span></li>`).join('')}</ul>
+                            </div>` : ''}
+                            ${cvData.skills.technical.length > 0 ? `
+                            <div>
+                                <h4 class="font-bold mb-2 text-center">Technical</h4>
+                                <ul class="list-disc pl-5">${cvData.skills.technical.map(s => `<li>${s.name} <span class="text-gray-500">(${s.level})</span></li>`).join('')}</ul>
+                            </div>` : ''}
+                        </div>
+                    </section>
+                    `;
+                }
+
+                if (cvData.projects.length > 0) {
+                    previewHTML += `
+                    <section class="mt-8">
+                        <h3 class="text-xl font-bold text-center text-gray-700 mb-4 border-b-2 pb-2">Projects</h3>
+                        <div class="space-y-3">
+                        ${cvData.projects.map(p => {
+                            if (!p.title) return '';
+                            return `
+                            <div>
+                                <h4 class="font-bold">${p.title}</h4>
+                                <p class="text-xs text-gray-700 pl-2 italic">${p.summary}</p>
+                            </div>
+                        `}).join('')}
+                        </div>
+                    </section>
+                    `;
+                }
+                
+                if (cvData.education.length > 0 || cvData.achievements.length > 0) {
+                    previewHTML += '<section class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">';
+                    if (cvData.education.length > 0 && cvData.education.some(e => e.degree)) {
+                        previewHTML += `
+                            <div>
+                                <h3 class="text-lg font-bold text-center text-gray-700 mb-4 border-b pb-2">Education</h3>
+                                <div class="space-y-3 text-xs">
+                                ${cvData.education.map(e => `
+                                    <div>
+                                        <p class="font-semibold">${e.degree}</p>
+                                        <p class="text-xs">${e.institution}</p>
+                                        <p class="text-xs text-gray-500">${e.year}</p>
                                     </div>
                                 `).join('')}
                                 </div>
-                                <button onclick="addPoint(${i}, ${ri})" class="add-btn mt-1 text-xs">+ Add Accomplishment</button>
-                            </div>`).join('')}
-                    </div>
-                     <button onclick="addRole(${i})" class="add-btn mt-2">+ Add Role</button>
-                </div>`
-            }).join('');
-        }
-        
-        function renderSkillItems(type) {
-            return cvData.skills[type].map((skill, i) => `
-            <div class="${type}-skill flex items-center space-x-2">
-                <input type="text" name="skill-name" placeholder="Skill Name" class="input-field" value="${skill.name || ''}" oninput="handleValidation()">
-                <select name="skill-level" class="input-field" onchange="handleValidation()">
-                    <option value="Proficient">Proficient</option>
-                    <option value="Advanced">Advanced</option>
-                    <option value="Expert">Expert</option>
-                </select>
-                <button onclick="removeSkill('${type}', ${i})" class="remove-btn">&times;</button>
-            </div>`).join('');
-        }
+                            </div>
+                        `;
+                    }
+                     if (cvData.achievements.length > 0 && cvData.achievements.some(a => a.text)) {
+                        previewHTML += `
+                            <div>
+                                <h3 class="text-lg font-bold text-center text-gray-700 mb-4 border-b pb-2">Achievements</h3>
+                                <ul class="list-disc pl-5 space-y-1 text-xs">
+                                    ${cvData.achievements.map(a => `<li>${a.text}</li>`).join('')}
+                                </ul>
+                            </div>
+                        `;
+                    }
+                    previewHTML += '</section>';
+                }
 
-        function renderProjectItems() {
-             return cvData.projects.map((proj, i) => `
-            <div class="project-item p-4 border rounded-lg bg-white shadow-sm">
-                <button onclick="removeProject(${i})" class="remove-btn float-right">Remove</button>
-                <input type="text" name="project-title" placeholder="Project Title" class="input-field mb-2 font-semibold" value="${proj.title || ''}" oninput="handleValidation()">
-                <textarea name="project-summary" placeholder="Project Summary" class="textarea-field h-24" oninput="handleValidation()">${proj.summary || ''}</textarea>
-            </div>`).join('');
-        }
-        
-        function renderEducationItems() {
-            const currentYear = new Date().getFullYear();
-            const years = Array.from({length: 50}, (_, i) => currentYear - i);
-
-             return cvData.education.map((edu, i) => `
-            <div class="education-item p-4 border rounded-lg bg-white shadow-sm space-y-2">
-                <button onclick="removeEducation(${i})" class="remove-btn float-right">Remove</button>
-                <input type="text" name="degree" placeholder="Degree" class="input-field font-semibold" value="${edu.degree || ''}" oninput="handleValidation()">
-                <input type="text" name="institution" placeholder="Institution" class="input-field" value="${edu.institution || ''}" oninput="handleValidation()">
-                <select name="year" class="input-field text-lg" onchange="handleValidation()">
-                    <option value="">Year</option>
-                    <option value="Ongoing">Ongoing</option>
-                    ${years.map(y => `<option value="${y}" ${edu.year == y ? 'selected': ''}>${y}</option>`).join('')}
-                </select>
-            </div>`).join('');
-        }
-
-        function renderAchievementItems() {
-             return cvData.achievements.map((ach, i) => `
-            <div class="achievement-item flex items-center space-x-2">
-                <input type="text" name="achievement-text" placeholder="Achievement (e.g., 2x Patents filed)" class="input-field" value="${ach.text || ''}" oninput="handleValidation()">
-                <button onclick="removeAchievement(${i})" class="remove-btn">&times;</button>
-            </div>`).join('');
-        }
-        
-        nextBtn.addEventListener('click', () => {
-             if (currentStep === steps.length - 1) {
-                generateAndDownloadHtml();
-            } else {
-                navigate('next');
+                previewContent.innerHTML = previewHTML;
             }
-        });
-        prevBtn.addEventListener('click', () => navigate('prev'));
-        closeModalBtn.addEventListener('click', () => githubModal.classList.add('hidden'));
+            
+            function navigate(direction) {
+                saveStepData(currentStep);
+                
+                let nextStep = currentStep;
+                if (direction === 'next' && currentStep < steps.length - 1) {
+                    nextStep++;
+                } else if (direction === 'prev' && currentStep > 0) {
+                    nextStep--;
+                }
 
-        function generatePdfHtml(data) {
-            const themeColors = themes[data.theme];
-            let html = `
-                <!DOCTYPE html>
-                <html lang="en">
-                <head>
-                    <meta charset="UTF-8">
-                    <title>CV - ${data.personal.name}</title>
-                    <link rel="preconnect" href="https://fonts.googleapis.com">
-                    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-                    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;700;900&display=swap" rel="stylesheet">
+                if (nextStep !== currentStep) {
+                    const oldCard = cardContainer.querySelector('.card');
+                    if(oldCard) {
+                        oldCard.style.transition = 'opacity 150ms ease-in-out';
+                        oldCard.style.opacity = '0';
+                    }
+                    currentStep = nextStep;
+                    setTimeout(() => {
+                        renderStep(currentStep);
+                        const newCard = cardContainer.querySelector('.card');
+                        if(newCard) {
+                            newCard.style.opacity = '0';
+                            requestAnimationFrame(() => {
+                                 newCard.style.transition = 'opacity 150ms ease-in-out';
+                                 newCard.style.opacity = '1';
+                            });
+                        }
+                        updateProgressBar();
+                        updateNavButtons();
+                        updatePreview();
+                    }, 150);
+                }
+            }
+
+            function validateStep(stepIndex) {
+                const card = document.querySelector(`#card-${stepIndex}`);
+                if (!card) return true; 
+            
+                switch (steps[stepIndex].title) {
+                    case 'Personal Information': {
+                        const nameInput = card.querySelector('#name');
+                        return nameInput && nameInput.value.trim() !== '';
+                    }
+                    case 'Professional Summary': {
+                        const points = card.querySelectorAll('[name="summary-point"]');
+                        if (points.length === 0) return false; 
+                        return Array.from(points).every(p => p.value.trim() !== '');
+                    }
+                    case 'Work Experience': {
+                        const experiences = card.querySelectorAll('.experience-item');
+                        if (experiences.length === 0) return false;
+                        return Array.from(experiences).every(exp => {
+                            const company = exp.querySelector('[name="company"]').value.trim();
+                            const roles = exp.querySelectorAll('.role-item');
+                            const hasValidRoles = roles.length > 0 && Array.from(roles).every(role => {
+                                return role.querySelector('[name="role-title"]').value.trim() !== '';
+                            });
+                            return company !== '' && hasValidRoles;
+                        });
+                    }
+                    case 'Skills': {
+                        const skills = card.querySelectorAll('[name="skill-name"]');
+                        if (skills.length === 0) return false;
+                        return Array.from(skills).every(s => s.value.trim() !== '');
+                    }
+                    case 'Projects': {
+                        const projects = card.querySelectorAll('[name="project-title"]');
+                        if (projects.length === 0) return false;
+                        return Array.from(projects).every(p => p.value.trim() !== '');
+                    }
+                    case 'Education': {
+                         const educations = card.querySelectorAll('.education-item');
+                         if (educations.length === 0) return false;
+                         return Array.from(educations).every(edu => {
+                             const degree = edu.querySelector('[name="degree"]').value.trim();
+                             const institution = edu.querySelector('[name="institution"]').value.trim();
+                             return degree !== '' && institution !== '';
+                         });
+                    }
+                    case 'Achievements': {
+                        const achievements = card.querySelectorAll('[name="achievement-text"]');
+                        if (achievements.length === 0) return false;
+                        return Array.from(achievements).every(a => a.value.trim() !== '');
+                    }
+                     case 'Contact & Theme': {
+                        const email = card.querySelector('#email').value.trim();
+                        const linkedin = card.querySelector('#linkedin').value.trim();
+                        return email !== '' || linkedin !== '';
+                    }
+                    default:
+                        return true;
+                }
+            }
+
+            function updateNavButtons() {
+                prevBtn.style.visibility = currentStep === 0 ? 'hidden' : 'visible';
+                const isValid = validateStep(currentStep);
+
+                nextBtn.disabled = !isValid;
+                
+                nextBtn.classList.remove('text-blue-500', 'hover:text-blue-700', 'text-green-500', 'hover:text-green-700', 'text-gray-300', 'cursor-not-allowed');
+
+                if (!isValid) {
+                    nextBtn.classList.add('text-gray-300', 'cursor-not-allowed');
+                } else {
+                    if (currentStep === steps.length - 1) {
+                        nextBtn.innerHTML = '<i class="fas fa-download"></i>';
+                        nextBtn.classList.add('text-green-500', 'hover:text-green-700');
+                    } else {
+                        nextBtn.innerHTML = '<i class="fas fa-arrow-right"></i>';
+                        nextBtn.classList.add('text-blue-500', 'hover:text-blue-700');
+                    }
+                }
+
+                if(currentStep === steps.length - 1) {
+                    downloadDocBtn.disabled = false;
+                    downloadDocBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                } else {
+                    downloadDocBtn.disabled = true;
+                    downloadDocBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                }
+            }
+            
+            window.handleValidation = () => {
+                updateNavButtons();
+                saveStepData(currentStep);
+                updatePreview();
+            };
+            
+            function saveStepData(stepIndex) {
+                const card = document.querySelector(`#card-${stepIndex}`);
+                if (!card) return;
+                const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+                switch (steps[stepIndex].title) {
+                    case 'Personal Information':
+                        cvData.personal.name = card.querySelector('#name').value;
+                        cvData.personal.subtitle = card.querySelector('#subtitle').value;
+                        break;
+                    case 'Professional Summary':
+                        cvData.summary = Array.from(card.querySelectorAll('[name="summary-point"]')).map(input => input.value);
+                        break;
+                    case 'Work Experience':
+                        cvData.experience = [];
+                        card.querySelectorAll('.experience-item').forEach((item, index) => {
+                            const startYear = item.querySelector(`[name='start-year-${index}']`).value;
+                            const startMonth = item.querySelector(`[name='start-month-${index}']`).value;
+                            const endYear = item.querySelector(`[name='end-year-${index}']`).value;
+                            const endMonth = item.querySelector(`[name='end-month-${index}']`).value;
+                            const isCurrent = item.querySelector(`[name='current-job-${index}']`).checked;
+                            
+                            let durationStr = '';
+                            if(startYear && startMonth) {
+                                const startDate = new Date(`${startYear}-${months.indexOf(startMonth)+1}-01`);
+                                const endDate = isCurrent ? new Date() : (endYear && endMonth ? new Date(`${endYear}-${months.indexOf(endMonth)+1}-01`) : null);
+                                if (endDate) {
+                                    let years = endDate.getFullYear() - startDate.getFullYear();
+                                    let monthsDiff = endDate.getMonth() - startDate.getMonth();
+                                    if (monthsDiff < 0) {
+                                        years--;
+                                        monthsDiff += 12;
+                                    }
+                                    if (years > 0) durationStr += `${years} Year${years > 1 ? 's' : ''} `;
+                                    if (monthsDiff > 0) durationStr += `${monthsDiff} Month${monthsDiff > 1 ? 's' : ''}`;
+                                    if (durationStr.trim() === '') durationStr = '1 Month';
+                                }
+                            }
+                            item.querySelector('.duration-text').textContent = durationStr;
+
+                            cvData.experience.push({
+                                company: item.querySelector('[name="company"]').value,
+                                startYear, startMonth, endYear, endMonth, isCurrent,
+                                duration: durationStr,
+                                roles: Array.from(item.querySelectorAll('.role-item')).map(role => ({
+                                    title: role.querySelector('[name="role-title"]').value,
+                                    points: Array.from(role.querySelectorAll('[name="role-point"]')).map(p => p.value)
+                                }))
+                            });
+                        });
+                        break;
+                    case 'Skills':
+                        cvData.skills.leadership = Array.from(card.querySelectorAll('.leadership-skill')).map(item => ({ name: item.querySelector('[name="skill-name"]').value, level: item.querySelector('[name="skill-level"]').value }));
+                        cvData.skills.technical = Array.from(card.querySelectorAll('.technical-skill')).map(item => ({ name: item.querySelector('[name="skill-name"]').value, level: item.querySelector('[name="skill-level"]').value }));
+                        break;
+                     case 'Projects':
+                        cvData.projects = Array.from(card.querySelectorAll('.project-item')).map(item => ({ title: item.querySelector('[name="project-title"]').value, summary: item.querySelector('[name="project-summary"]').value }));
+                        break;
+                    case 'Education':
+                         cvData.education = Array.from(card.querySelectorAll('.education-item')).map(item => ({ degree: item.querySelector('[name="degree"]').value, institution: item.querySelector('[name="institution"]').value, year: item.querySelector('[name="year"]').value }));
+                        break;
+                    case 'Achievements':
+                        cvData.achievements = Array.from(card.querySelectorAll('.achievement-item')).map(item => ({ text: item.querySelector('[name="achievement-text"]').value }));
+                        break;
+                    case 'Contact & Theme':
+                        cvData.contact.linkedin = card.querySelector('#linkedin').value;
+                        cvData.contact.email = card.querySelector('#email').value;
+                        cvData.contact.phone = card.querySelector('#phone').value;
+                        cvData.contact.booking = card.querySelector('#booking').value;
+                        const selectedTheme = card.querySelector('input[name="theme"]:checked');
+                        if (selectedTheme) cvData.theme = selectedTheme.value;
+                        break;
+                }
+            }
+
+            function renderStep(stepIndex) {
+                const step = steps[stepIndex];
+                cardContainer.innerHTML = `<div id="card-${stepIndex}" class="card p-4"></div>`;
+                const card = document.getElementById(`card-${stepIndex}`);
+                
+                let content = `<h2 class="text-2xl font-bold mb-6 text-gray-800">${steps[stepIndex].title}</h2>`;
+
+                switch(step.title) {
+                    case 'Personal Information':
+                        content += `
+                            <div class="bg-gradient-to-tr from-blue-500/20 to-indigo-400/10 rounded-3xl shadow-2xl p-8 md:p-12 transition-all duration-500">
+                                <div class="text-center mb-8">
+                                    <i class="fas fa-address-card text-7xl text-blue-400 mb-4 animate-pulse"></i>
+                                    <h2 class="text-4xl font-extrabold text-indigo-700 mb-2 tracking-tight">Let's Begin Your Story!</h2>
+                                    <p class="text-lg text-gray-600">Start by entering your name and headline—this will shine at the top of your CV.</p>
+                                </div>
+                                <form autocomplete="off" class="space-y-8 max-w-xl mx-auto">
+                                    <div class="relative">
+                                        <label for="name" class="font-semibold text-gray-600 mb-2 flex items-center"><i class="fas fa-user w-5 mr-2 text-indigo-400"></i>Full Name</label>
+                                        <textarea id="name" name="name" rows="1" placeholder="Type your name…" class="textarea-field transition-shadow focus:shadow-lg focus:bg-blue-50/50 text-center resize-none overflow-hidden w-full px-6 py-4 rounded-xl font-semibold text-2xl text-gray-900 border-2 border-indigo-200 focus:border-blue-500" oninput="autoResize(this); handleValidation()">${cvData.personal.name || ''}</textarea>
+                                    </div>
+                                    <div class="relative">
+                                        <label for="subtitle" class="font-semibold text-gray-600 mb-2 flex items-center"><i class="fas fa-briefcase w-5 mr-2 text-indigo-400"></i>Subtitle / Job Title</label>
+                                        <textarea id="subtitle" name="subtitle" rows="1" placeholder="e.g., Technical Lead | AI Specialist" class="textarea-field transition-shadow focus:shadow-lg focus:bg-blue-50/50 text-center resize-none overflow-hidden w-full px-6 py-4 rounded-xl font-semibold text-xl text-gray-800 border-2 border-indigo-200 focus:border-blue-500" oninput="autoResize(this); handleValidation()">${cvData.personal.subtitle || ''}</textarea>
+                                    </div>
+                                </form>
+                                <div class="text-center mt-8">
+                                     <button id="upload-btn" class="text-sm text-gray-600 hover:text-blue-600 font-semibold transition" disabled>
+                                        <i class="fas fa-upload mr-2"></i> Modify existing CV
+                                    </button>
+                                    <span class="text-xs bg-gray-200 text-gray-600 font-semibold px-2 py-1 rounded-full ml-2">Coming Soon</span>
+                                    <p class="text-xs text-gray-500 mt-2 italic">(Works only with CVs created by this interface)</p>
+                                </div>
+                            </div>`;
+                        break;
+                    case 'Professional Summary':
+                        content += `<div class="bg-gray-100 p-4 rounded-lg"><div id="summary-list" class="space-y-4">${renderSummaryItems()}</div><button onclick="addSummaryPoint()" class="add-btn mt-4">+ Add Point</button></div>`;
+                        break;
+                    case 'Work Experience':
+                         content += `<div class="bg-gray-100 p-4 rounded-lg"><div id="experience-list" class="space-y-4">${renderExperienceItems()}</div><button onclick="addExperience()" class="add-btn mt-4">+ Add Experience</button></div>`;
+                        break;
+                    case 'Skills':
+                        content += `
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                               <div class="bg-gray-100 p-4 rounded-lg">
+                                    <h3 class="font-bold mb-2">Leadership & Soft Skills</h3>
+                                    <div id="leadership-skills" class="space-y-2">${renderSkillItems('leadership')}</div>
+                                    <button onclick="addSkill('leadership')" class="add-btn mt-2">+ Add Skill</button>
+                                </div>
+                               <div class="bg-gray-100 p-4 rounded-lg">
+                                    <h3 class="font-bold mb-2">Technical & Tools</h3>
+                                    <div id="technical-skills" class="space-y-2">${renderSkillItems('technical')}</div>
+                                    <button onclick="addSkill('technical')" class="add-btn mt-2">+ Add Skill</button>
+                                </div>
+                            </div>`;
+                        break;
+                    case 'Projects':
+                        content += `<div class="bg-gray-100 p-4 rounded-lg"><div id="project-list" class="space-y-4">${renderProjectItems()}</div><button onclick="addProject()" class="add-btn mt-4">+ Add Project</button></div>`;
+                        break;
+                     case 'Education':
+                        content += `<div class="bg-gray-100 p-4 rounded-lg"><div id="education-list" class="space-y-4">${renderEducationItems()}</div><button onclick="addEducation()" class="add-btn mt-4">+ Add Education</button></div>`;
+                        break;
+                     case 'Achievements':
+                        content += `<div class="bg-gray-100 p-4 rounded-lg"><div id="achievement-list" class="space-y-4">${renderAchievementItems()}</div><button onclick="addAchievement()" class="add-btn mt-4">+ Add Achievement</button></div>`;
+                        break;
+                    case 'Contact & Theme':
+                        content += `
+                            <div class="space-y-4">
+                                <h3 class="font-bold">Contact Links</h3>
+                                <div><input id="linkedin" type="text" placeholder="LinkedIn Profile URL" class="input-field" value="${cvData.contact.linkedin || ''}" oninput="handleValidation()"></div>
+                                <div><input id="email" type="email" placeholder="Email Address" class="input-field" value="${cvData.contact.email || ''}" oninput="handleValidation()"></div>
+                                <div><input id="phone" type="tel" placeholder="Phone Number" class="input-field" value="${cvData.contact.phone || ''}" oninput="handleValidation()"></div>
+                                <div><input id="booking" type="text" placeholder="Booking Page URL (Optional)" class="input-field" value="${cvData.contact.booking || ''}" oninput="handleValidation()"></div>
+                                <h3 class="font-bold mt-6">Choose a Theme</h3>
+                                <div class="flex space-x-4">
+                                    ${['default', 'sunset', 'forest', 'monochrome'].map(theme => `
+                                    <label class="flex items-center space-x-2 cursor-pointer">
+                                        <input type="radio" name="theme" value="${theme}" class="form-radio" ${cvData.theme === theme ? 'checked' : ''} onchange="handleValidation()">
+                                        <span class="capitalize">${theme}</span>
+                                    </label>`).join('')}
+                                </div>
+                            </div>`;
+                        break;
+                     case 'Finish Up':
+                        content += `<div class="text-center"><p class="text-lg">You're all set! Click the button below to download your personalized interactive CV as an HTML file.</p></div>`;
+                        break;
+
+                }
+                card.innerHTML = content;
+                
+                if (stepIndex === 0) {
+                     const uploadBtn = document.getElementById('upload-btn');
+                     if(uploadBtn) uploadBtn.addEventListener('click', () => cvUploadInput.click());
+                    card.querySelectorAll('textarea').forEach(textarea => {
+                        setTimeout(() => autoResize(textarea), 0);
+                    });
+                }
+                 updateNavButtons(); 
+            }
+            
+            // Dynamic item rendering functions
+            window.addSummaryPoint = () => { saveStepData(currentStep); cvData.summary.push(''); renderStep(currentStep); };
+            window.removeSummaryPoint = (index) => { saveStepData(currentStep); cvData.summary.splice(index, 1); renderStep(currentStep); };
+            window.addExperience = () => { saveStepData(currentStep); cvData.experience.push({ roles: [{ points: [] }] }); renderStep(currentStep); };
+            window.removeExperience = (index) => { saveStepData(currentStep); cvData.experience.splice(index, 1); renderStep(currentStep); };
+            window.addRole = (expIndex) => { saveStepData(currentStep); cvData.experience[expIndex].roles.push({ points: [] }); renderStep(currentStep); };
+            window.removeRole = (expIndex, roleIndex) => { saveStepData(currentStep); cvData.experience[expIndex].roles.splice(roleIndex, 1); renderStep(currentStep); };
+            window.addPoint = (expIndex, roleIndex) => { saveStepData(currentStep); cvData.experience[expIndex].roles[roleIndex].points.push(''); renderStep(currentStep); };
+            window.removePoint = (expIndex, roleIndex, pointIndex) => { saveStepData(currentStep); cvData.experience[expIndex].roles[roleIndex].points.splice(pointIndex, 1); renderStep(currentStep); };
+            window.addSkill = (type) => { saveStepData(currentStep); cvData.skills[type].push({level: 'Proficient'}); renderStep(currentStep); };
+            window.removeSkill = (type, index) => { saveStepData(currentStep); cvData.skills[type].splice(index, 1); renderStep(currentStep); };
+            window.addProject = () => { saveStepData(currentStep); cvData.projects.push({}); renderStep(currentStep); };
+            window.removeProject = (index) => { saveStepData(currentStep); cvData.projects.splice(index, 1); renderStep(currentStep); };
+            window.addEducation = () => { saveStepData(currentStep); cvData.education.push({}); renderStep(currentStep); };
+            window.removeEducation = (index) => { saveStepData(currentStep); cvData.education.splice(index, 1); renderStep(currentStep); };
+            window.addAchievement = () => { saveStepData(currentStep); cvData.achievements.push({}); renderStep(currentStep); };
+            window.removeAchievement = (index) => { saveStepData(currentStep); cvData.achievements.splice(index, 1); renderStep(currentStep); };
+
+            function renderSummaryItems() {
+                 return cvData.summary.map((point, i) => `
+                <div class="summary-item flex items-center space-x-2">
+                    <textarea name="summary-point" placeholder="e.g., Strategic Leader with Technical Expertise..." class="textarea-field flex-grow" rows="1" oninput="autoResize(this); handleValidation()">${point || ''}</textarea>
+                    <button onclick="removeSummaryPoint(${i})" class="remove-btn text-xl">&times;</button>
+                </div>`).join('');
+            }
+            
+            function renderExperienceItems() {
+                const currentYear = new Date().getFullYear();
+                const years = Array.from({length: 50}, (_, i) => currentYear - i);
+                const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+
+                return cvData.experience.map((exp, i) => {
+                    const isCurrent = exp.isCurrent || false;
+                    return `
+                    <div class="experience-item p-4 border rounded-lg bg-white shadow-sm">
+                         <button onclick="removeExperience(${i})" class="remove-btn float-right">Remove</button>
+                        <input type="text" name="company" placeholder="Company Name" class="input-field mb-2" value="${exp.company || ''}" oninput="handleValidation()">
+                        
+                        <div class="grid grid-cols-2 gap-4 mb-2 text-sm">
+                            <div>
+                                <label class="font-semibold text-xs">Start Date</label>
+                                <div class="flex gap-2">
+                                    <select name="start-month-${i}" class="input-field text-sm !p-2" onchange="handleValidation()">${months.map(m => `<option ${exp.startMonth === m ? 'selected': ''}>${m}</option>`).join('')}</select>
+                                    <select name="start-year-${i}" class="input-field text-sm !p-2" onchange="handleValidation()">${years.map(y => `<option ${exp.startYear == y ? 'selected': ''}>${y}</option>`).join('')}</select>
+                                </div>
+                            </div>
+                             <div>
+                                <label class="font-semibold text-xs">End Date</label>
+                                <div class="flex gap-2">
+                                    <select name="end-month-${i}" class="input-field text-sm !p-2" ${isCurrent ? 'disabled' : ''} onchange="handleValidation()">${months.map(m => `<option ${exp.endMonth === m ? 'selected': ''}>${m}</option>`).join('')}</select>
+                                    <select name="end-year-${i}" class="input-field text-sm !p-2" ${isCurrent ? 'disabled' : ''} onchange="handleValidation()">${years.map(y => `<option ${exp.endYear == y ? 'selected': ''}>${y}</option>`).join('')}</select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between">
+                             <label class="flex items-center text-sm">
+                                <input type="checkbox" name="current-job-${i}" class="form-checkbox mr-2" ${isCurrent ? 'checked' : ''} oninput="handleValidation()"> I currently work here
+                            </label>
+                            <p class="text-sm font-semibold text-blue-600 duration-text">${exp.duration || ''}</p>
+                        </div>
+
+                        <div class="role-list space-y-2 mt-4">
+                            ${(exp.roles || []).map((role, ri) => `
+                                <div class="role-item border-t pt-2">
+                                    <button onclick="removeRole(${i}, ${ri})" class="remove-btn float-right">Remove Role</button>
+                                    <input type="text" name="role-title" placeholder="Role Title" class="input-field mb-2 font-semibold" value="${role.title || ''}" oninput="handleValidation()">
+                                    <div class="point-list space-y-1">
+                                    ${(role.points || []).map((p, pi) => `
+                                        <div class="flex items-center">
+                                            <input type="text" name="role-point" placeholder="Accomplishment" class="input-field flex-grow" value="${p || ''}" oninput="handleValidation()">
+                                            <button onclick="removePoint(${i}, ${ri}, ${pi})" class="remove-btn ml-2">&times;</button>
+                                        </div>
+                                    `).join('')}
+                                    </div>
+                                    <button onclick="addPoint(${i}, ${ri})" class="add-btn mt-1 text-xs">+ Add Accomplishment</button>
+                                </div>`).join('')}
+                        </div>
+                         <button onclick="addRole(${i})" class="add-btn mt-2">+ Add Role</button>
+                    </div>`
+                }).join('');
+            }
+            
+            function renderSkillItems(type) {
+                return cvData.skills[type].map((skill, i) => `
+                <div class="${type}-skill flex items-center space-x-2">
+                    <input type="text" name="skill-name" placeholder="Skill Name" class="input-field" value="${skill.name || ''}" oninput="handleValidation()">
+                    <select name="skill-level" class="input-field" onchange="handleValidation()">
+                        <option value="Proficient" ${skill.level === 'Proficient' ? 'selected' : ''}>Proficient</option>
+                        <option value="Advanced" ${skill.level === 'Advanced' ? 'selected' : ''}>Advanced</option>
+                        <option value="Expert" ${skill.level === 'Expert' ? 'selected' : ''}>Expert</option>
+                    </select>
+                    <button onclick="removeSkill('${type}', ${i})" class="remove-btn">&times;</button>
+                </div>`).join('');
+            }
+
+            function renderProjectItems() {
+                 return cvData.projects.map((proj, i) => `
+                <div class="project-item p-4 border rounded-lg bg-white shadow-sm">
+                    <button onclick="removeProject(${i})" class="remove-btn float-right">Remove</button>
+                    <input type="text" name="project-title" placeholder="Project Title" class="input-field mb-2 font-semibold" value="${proj.title || ''}" oninput="handleValidation()">
+                    <textarea name="project-summary" placeholder="Project Summary" class="textarea-field h-24" oninput="handleValidation()">${proj.summary || ''}</textarea>
+                </div>`).join('');
+            }
+            
+            function renderEducationItems() {
+                const currentYear = new Date().getFullYear();
+                const years = Array.from({length: 50}, (_, i) => currentYear - i);
+
+                 return cvData.education.map((edu, i) => `
+                <div class="education-item p-4 border rounded-lg bg-white shadow-sm space-y-2">
+                    <button onclick="removeEducation(${i})" class="remove-btn float-right">Remove</button>
+                    <input type="text" name="degree" placeholder="Degree" class="input-field font-semibold" value="${edu.degree || ''}" oninput="handleValidation()">
+                    <input type="text" name="institution" placeholder="Institution" class="input-field" value="${edu.institution || ''}" oninput="handleValidation()">
+                    <select name="year" class="input-field text-lg" onchange="handleValidation()">
+                        <option value="">Year</option>
+                        <option value="Ongoing">Ongoing</option>
+                        ${years.map(y => `<option value="${y}" ${edu.year == y ? 'selected': ''}>${y}</option>`).join('')}
+                    </select>
+                </div>`).join('');
+            }
+
+            function renderAchievementItems() {
+                 return cvData.achievements.map((ach, i) => `
+                <div class="achievement-item flex items-center space-x-2">
+                    <input type="text" name="achievement-text" placeholder="Achievement (e.g., 2x Patents filed)" class="input-field" value="${ach.text || ''}" oninput="handleValidation()">
+                    <button onclick="removeAchievement(${i})" class="remove-btn">&times;</button>
+                </div>`).join('');
+            }
+            
+            nextBtn.addEventListener('click', () => {
+                 if (currentStep === steps.length - 1) {
+                    generateAndDownloadHtml();
+                } else {
+                    navigate('next');
+                }
+            });
+            prevBtn.addEventListener('click', () => navigate('prev'));
+            closeModalBtn.addEventListener('click', () => githubModal.classList.add('hidden'));
+
+            function generatePrintableHtml(data) {
+                const themeColors = themes[data.theme];
+                let html = `
+                    <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+                    <head><meta charset='utf-8'><title>CV</title>
                     <style>
-                        body { font-family: 'Poppins', sans-serif; color: #333; }
-                        .container { width: 100%; max-width: 8.5in; min-height: 11in; padding: 0.5in; box-sizing: border-box; margin: 0 auto; }
-                        h1 { font-size: 26pt; font-weight: 900; margin: 0; color: ${themeColors.from}; }
-                        h2 { font-size: 14pt; font-weight: 500; margin: 0 0 20pt 0; color: #555; }
+                        body { font-family: 'Poppins', sans-serif; color: #333; font-size: 10pt; }
+                        h1 { font-size: 24pt; font-weight: 900; margin: 0; color: ${themeColors.from}; text-align: center;}
+                        h2 { font-size: 14pt; font-weight: 500; margin: 0 0 20pt 0; color: #555; text-align: center; }
                         h3 { font-size: 14pt; font-weight: 700; color: ${themeColors.to}; border-bottom: 2px solid ${themeColors.from}; padding-bottom: 4px; margin: 20pt 0 10pt 0; }
-                        h4 { font-size: 11pt; font-weight: 700; margin: 8pt 0 2pt 0; }
+                        h4 { font-size: 11pt; font-weight: 700; margin: 12pt 0 2pt 0; }
                         h5 { font-size: 10pt; font-weight: 700; margin: 4pt 0 2pt 0; }
-                        p, li { font-size: 9pt; line-height: 1.4; }
-                        ul { list-style-type: disc; padding-left: 20px; margin: 0; }
-                        .header { text-align: center; margin-bottom: 0.4in; }
-                        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24pt; page-break-inside: avoid; margin-top: 20pt; }
-                        .section { page-break-inside: avoid; }
-                        .exp-item { margin-bottom: 12pt; page-break-inside: avoid; }
+                        p, li { line-height: 1.4; }
+                        ul { padding-left: 20px; margin: 0; }
+                        .header { text-align: center; margin-bottom: 0.3in; }
+                        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 30pt; }
+                        .section { margin-bottom: 12pt; }
+                        .exp-item { margin-bottom: 12pt; }
                         .exp-header { display: flex; justify-content: space-between; align-items: baseline; }
                         .role-item { padding-left: 15px; }
                     </style>
-                </head>
-                <body>
-                    <div class="container">
+                    </head><body>
                         <header class="header">
                             <h1>${data.personal.name}</h1>
                             <h2>${data.personal.subtitle}</h2>
                         </header>
                         <main>
-            `;
+                `;
 
-            if (data.summary.length > 0) {
-                html += `
-                    <section class="section">
-                        <h3>Professional Summary</h3>
-                        <ul>${data.summary.map(p => `<li>${p}</li>`).join('')}</ul>
-                    </section>
-                `;
-            }
-
-            if (data.experience.length > 0) {
-                html += `
-                    <section class="section">
-                        <h3>Work Experience</h3>
-                        ${data.experience.map(exp => {
-                            const endPeriod = exp.isCurrent ? 'Present' : `${exp.endMonth} ${exp.endYear}`;
-                            return `
-                            <div class="exp-item">
-                                <div class="exp-header">
-                                    <h4>${exp.company}</h4>
-                                    <p>${exp.startMonth} ${exp.startYear} – ${endPeriod}</p>
-                                </div>
-                                ${exp.roles.map(role => `
-                                    <div class="role-item">
-                                        <h5>${role.title}</h5>
-                                        <ul>${role.points.map(p => p ? `<li>${p}</li>` : '').join('')}</ul>
-                                    </div>
-                                `).join('')}
-                            </div>
-                            `;
-                        }).join('')}
-                    </section>
-                `;
-            }
-            
-            if (data.projects.length > 0) {
-                 html += `
-                    <section class="section">
-                        <h3>Projects</h3>
-                         ${data.projects.map(p => `
-                            <div class="exp-item">
-                                <h4>${p.title}</h4>
-                                <p>${p.summary}</p>
-                            </div>
-                        `).join('')}
-                    </section>
-                `;
-            }
-            
-            if (data.skills.leadership.length > 0 || data.skills.technical.length > 0) {
-                html += `<section class="section"><h3>Core Competencies</h3><div class="grid-2">`;
-                if (data.skills.leadership.length > 0) {
-                    html +=`
-                        <div>
-                            <h4>Leadership & Soft Skills</h4>
-                            <ul>${data.skills.leadership.map(s => `<li>${s.name} (${s.level})</li>`).join('')}</ul>
-                        </div>
-                    `;
-                }
-                if (data.skills.technical.length > 0) {
-                     html +=`
-                        <div>
-                            <h4>Technical & Tools</h4>
-                            <ul>${data.skills.technical.map(s => `<li>${s.name} (${s.level})</li>`).join('')}</ul>
-                        </div>
-                    `;
-                }
-                html += `</div></section>`;
-            }
-            
-            if (data.education.length > 0 || data.achievements.length > 0) {
-                html += '<section class="section grid-2">';
-                 if (data.education.length > 0) {
+                if (data.summary.length > 0) {
                     html += `
-                        <div>
-                            <h3>Education</h3>
-                            ${data.education.map(e => `
-                                <div>
-                                    <h4>${e.degree}</h4>
-                                    <p>${e.institution} - ${e.year}</p>
+                        <section class="section">
+                            <h3>Professional Summary</h3>
+                            <ul>${data.summary.map(p => `<li>${p}</li>`).join('')}</ul>
+                        </section>
+                    `;
+                }
+
+                if (data.experience.length > 0) {
+                    html += `
+                        <section class="section">
+                            <h3>Work Experience</h3>
+                            ${data.experience.map(exp => {
+                                const endPeriod = exp.isCurrent ? 'Present' : `${exp.endMonth} ${exp.endYear}`;
+                                return `
+                                <div class="exp-item">
+                                    <div class="exp-header">
+                                        <h4>${exp.company}</h4>
+                                        <p>${exp.startMonth} ${exp.startYear} – ${endPeriod}</p>
+                                    </div>
+                                    ${exp.roles.map(role => `
+                                        <div class="role-item">
+                                            <h5>${role.title}</h5>
+                                            <ul>${role.points.map(p => p ? `<li>${p}</li>` : '').join('')}</ul>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                                `;
+                            }).join('')}
+                        </section>
+                    `;
+                }
+                
+                if (data.projects.length > 0) {
+                     html += `
+                        <section class="section">
+                            <h3>Projects</h3>
+                             ${data.projects.map(p => `
+                                <div class="exp-item">
+                                    <h4>${p.title}</h4>
+                                    <p>${p.summary}</p>
                                 </div>
                             `).join('')}
-                        </div>
+                        </section>
                     `;
                 }
-                if (data.achievements.length > 0) {
-                     html += `
-                        <div>
-                            <h3>Achievements</h3>
-                            <ul>${data.achievements.map(a => `<li>${a.text}</li>`).join('')}</ul>
-                        </div>
-                    `;
-                }
-                html += '</section>';
-            }
-
-            html += `
-                        </main>
-                    </div>
-                </body>
-                </html>
-            `;
-            return html;
-        }
-
-
-        function generateAndDownloadPdf() {
-            if (typeof html2pdf === 'undefined') {
-                console.error('html2pdf.js is not loaded.');
-                alert('Error: PDF generation library failed to load.');
-                return;
-            }
-            
-            const pdfHtmlContent = generatePdfHtml(cvData);
-            const name = cvData.personal.name || 'MyCV';
-            const filename = `InteractCV_${name.replace(/\s+/g, '_')}.pdf`;
-
-            const opt = {
-              margin:       0.5,
-              filename:     filename,
-              image:        { type: 'jpeg', quality: 0.98 },
-              html2canvas:  { scale: 2, letterRendering: true, useCORS: true },
-              jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
-            };
-
-            downloadPdfBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Generating...';
-            downloadPdfBtn.disabled = true;
-
-            html2pdf().from(pdfHtmlContent).set(opt).save().catch(err => {
-                console.error("Error generating PDF:", err);
-            }).finally(() => {
-                downloadPdfBtn.innerHTML = '<i class="fas fa-file-pdf mr-2"></i> Download as PDF';
-                if(currentStep === steps.length - 1) {
-                    downloadPdfBtn.disabled = false;
-                }
-            });
-        }
-        
-        downloadPdfBtn.addEventListener('click', generateAndDownloadPdf);
-
-        function generateAndDownloadHtml() {
-            const filename = `InteractCV_${(cvData.personal.name || 'MyCV').replace(/\s+/g, '_')}.html`;
-            const SKILL_LEVELS_DATA = {
-                "Expert": { percent: 100, color: '#65A30D' },
-                "Advanced": { percent: 80, color: '#A3E635' },
-                "Proficient": { percent: 60, color: '#D9F99D' },
-            };
-
-            const htmlContent = `
-<!DOCTYPE html>
-<html lang="en" class="scroll-smooth" data-theme-active="${cvData.theme}">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interactive CV - ${cvData.personal.name}</title>
-    <meta name="generator" content="Interactive CV Builder">
-    <script src="https://cdn.tailwindcss.com/"><\/script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;700;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <style>
-        :root, [data-theme-active="default"] { --color-primary: #003E6B; --color-accent: #36A8A4; --color-accent-light: #E6F7F7; --color-accent-translucent: rgba(54, 168, 164, 0.9); --color-header-gradient-from: #003E6B; --color-header-gradient-to: #36A8A4; }
-        [data-theme-active="sunset"] { --color-primary: #6D28D9; --color-accent: #F97316; --color-accent-light: #FFEDD5; --color-accent-translucent: rgba(249, 115, 22, 0.9); --color-header-gradient-from: #6D28D9; --color-header-gradient-to: #F97316; }
-        [data-theme-active="forest"] { --color-primary: #166534; --color-accent: #CA8A04; --color-accent-light: #FEFCE8; --color-accent-translucent: rgba(202, 138, 4, 0.9); --color-header-gradient-from: #166534; --color-header-gradient-to: #854d0e; }
-        [data-theme-active="monochrome"] { --color-primary: #1F2937; --color-accent: #6B7280; --color-accent-light: #F3F4F6; --color-accent-translucent: rgba(107, 114, 128, 0.9); --color-header-gradient-from: #111827; --color-header-gradient-to: #6B7280; }
-        body { font-family: 'Poppins', sans-serif; }
-        .color-primary { color: var(--color-primary); } .color-accent { color: var(--color-accent); } .bg-accent-light { background-color: var(--color-accent-light); }
-        #navbar { background-color: var(--color-accent-translucent); }
-        .timeline-item::before { content: ''; position: absolute; top: 1.25rem; left: -0.5rem; width: 1rem; height: 1rem; background-color: var(--color-primary); border-radius: 9999px; border: 4px solid #f7f9fb; z-index: 10; }
-        .accordion-content { overflow: hidden; max-height: 0; transition: max-height 0.3s ease-out; }
-    </style>
-</head>
-<body class="bg-gray-100">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <header class="text-center py-16">
-            <h1 class="text-5xl md:text-7xl font-black tracking-tighter bg-gradient-to-r from-[var(--color-header-gradient-from)] to-[var(--color-header-gradient-to)] text-transparent bg-clip-text pb-2">${cvData.personal.name}</h1>
-            <h2 class="mt-2 text-xl md:text-2xl font-medium text-gray-600 tracking-wide">${cvData.personal.subtitle}</h2>
-        </header>
-        <main class="mb-24 space-y-12">
-            <!-- Professional Summary Section -->
-            <section id="summary">
-                <h3 class="text-3xl font-bold text-center text-gray-800 mb-8">Professional Summary</h3>
-                <div class="max-w-4xl mx-auto bg-white p-8 rounded-2xl shadow-xl">
-                    <ul class="space-y-4 text-lg text-gray-700">
-                        ${cvData.summary.map(point => `
-                            <li class="flex items-start">
-                                <span class="color-accent mr-3 mt-1"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg></span>
-                                <p>${point}</p>
-                            </li>
-                        `).join('')}
-                    </ul>
-                </div>
-            </section>
-            <!-- Timeline Section -->
-            <section id="timeline">
-                <h3 class="text-3xl font-bold text-center text-gray-800 mb-8">Career Timeline</h3>
-                <div class="mt-12 max-w-3xl mx-auto border-l-2 border-[var(--color-primary)] pl-8 space-y-10">
-                    ${cvData.experience.map(exp => {
-                        const endPeriod = exp.isCurrent ? 'Present' : `${exp.endMonth} ${exp.endYear}`;
-                        const period = `${exp.startMonth} ${exp.startYear} – ${endPeriod}`;
-                        return `
-                        <div class="timeline-item relative">
-                            <div class="timeline-header cursor-pointer p-4 rounded-lg bg-white shadow-md">
-                                <div class="flex justify-between items-center">
-                                    <div>
-                                        <h4 class="text-xl font-bold text-gray-900">${exp.company}</h4>
-                                        <p class="text-sm text-gray-500">${period} | ${exp.duration}</p>
-                                    </div>
-                                    <svg class="w-6 h-6 color-primary transform transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
-                                </div>
+                
+                if (data.skills.leadership.length > 0 || data.skills.technical.length > 0) {
+                    html += `<section class="section"><h3>Core Competencies</h3><div class="grid-2">`;
+                    if (data.skills.leadership.length > 0) {
+                        html +=`
+                            <div>
+                                <h4>Leadership & Soft Skills</h4>
+                                <ul>${data.skills.leadership.map(s => `<li>${s.name} (${s.level})</li>`).join('')}</ul>
                             </div>
-                            <div class="accordion-content pl-4 mt-2">
-                                <div class="bg-gray-50 p-6 rounded-lg border border-gray-200 space-y-4">
-                                ${exp.roles.map(role => `
+                        `;
+                    }
+                    if (data.skills.technical.length > 0) {
+                         html +=`
+                            <div>
+                                <h4>Technical & Tools</h4>
+                                <ul>${data.skills.technical.map(s => `<li>${s.name} (${s.level})</li>`).join('')}</ul>
+                            </div>
+                        `;
+                    }
+                    html += `</div></section>`;
+                }
+                
+                if (data.education.length > 0 || data.achievements.length > 0) {
+                    html += '<section class="section grid-2">';
+                     if (data.education.length > 0) {
+                        html += `
+                            <div>
+                                <h3>Education</h3>
+                                ${data.education.map(e => `
                                     <div>
-                                        <h5 class="text-lg font-bold color-primary">${role.title}</h5>
-                                        <hr class="my-2">
-                                        <ul class="list-disc pl-5 mt-2 space-y-1 text-gray-700">
-                                            ${role.points.map(p => `<li>${p}</li>`).join('')}
-                                        </ul>
+                                        <h4>${e.degree}</h4>
+                                        <p>${e.institution} - ${e.year}</p>
                                     </div>
                                 `).join('')}
-                                </div>
                             </div>
-                        </div>`
-                    }).join('')}
-                </div>
-            </section>
-            <!-- Skills Section -->
-            <section id="skills">
-                <h3 class="text-3xl font-bold text-center text-gray-800">Core Competencies</h3>
-                 <div class="max-w-6xl mx-auto mt-6 bg-white p-4 rounded-lg shadow-inner">
-                    <h4 class="text-sm font-semibold mb-2" style="color: var(--color-primary);">Proficiency Key:</h4>
-                    <div class="flex rounded overflow-hidden">
-                        <div style="background-color: #65A30D; width: 33.33%;" class="p-1 text-center text-xs font-bold text-black">Expert</div>
-                        <div style="background-color: #A3E635; width: 33.33%;" class="p-1 text-center text-xs font-bold text-black">Advanced</div>
-                        <div style="background-color: #D9F99D; width: 33.33%;" class="p-1 text-center text-xs font-bold text-black">Proficient</div>
-                    </div>
-                </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-6xl mx-auto mt-12">
-                    <div class="bg-white p-6 rounded-2xl shadow-lg">
-                        <h4 class="text-xl font-bold text-center text-gray-800 mb-4">Leadership & Soft Skills</h4>
-                        ${cvData.skills.leadership.map(s => `
-                            <div class="mb-4">
-                                <div class="flex justify-between items-center mb-1">
-                                    <span class="text-sm font-medium text-gray-700">${s.name}</span>
-                                    <span class="text-xs font-semibold">${s.level}</span>
-                                </div>
-                                <div class="w-full bg-gray-200 rounded-full h-2">
-                                    <div class="h-2 rounded-full" style="width: ${SKILL_LEVELS_DATA[s.level]?.percent || 0}%; background-color: ${SKILL_LEVELS_DATA[s.level]?.color || '#ccc'};"></div>
-                                </div>
-                            </div>`).join('')}
-                    </div>
-                    <div class="bg-white p-6 rounded-2xl shadow-lg">
-                        <h4 class="text-xl font-bold text-center text-gray-800 mb-4">Technical & Tools</h4>
-                        ${cvData.skills.technical.map(s => `
-                             <div class="mb-4">
-                                <div class="flex justify-between items-center mb-1">
-                                    <span class="text-sm font-medium text-gray-700">${s.name}</span>
-                                    <span class="text-xs font-semibold">${s.level}</span>
-                                </div>
-                                <div class="w-full bg-gray-200 rounded-full h-2">
-                                    <div class="h-2 rounded-full" style="width: ${SKILL_LEVELS_DATA[s.level]?.percent || 0}%; background-color: ${SKILL_LEVELS_DATA[s.level]?.color || '#ccc'};"></div>
-                                </div>
-                            </div>`).join('')}
-                    </div>
-                </div>
-            </section>
-             <!-- Projects Section -->
-             <section id="projects">
-                <h3 class="text-3xl font-bold text-center text-gray-800 mb-8">Project Portfolio</h3>
-                <div class="space-y-4 max-w-4xl mx-auto">
-                ${cvData.projects.map(p => `
-                    <div class="bg-white rounded-xl shadow-lg border">
-                         <div class="accordion-header p-5">
-                            <h4 class="text-xl font-bold color-primary">${p.title}</h4>
-                            <svg class="w-6 h-6 color-primary transform transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
-                        </div>
-                        <div class="accordion-content">
-                            <p class="p-5 border-t italic">${p.summary}</p>
-                        </div>
-                    </div>
-                `).join('')}
-                </div>
-            </section>
-            <!-- Education & Achievements -->
-            <section id="education-achievements">
-                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-6xl mx-auto">
-                    <div class="bg-white p-6 rounded-2xl shadow-lg">
-                        <h4 class="text-xl font-bold text-center text-gray-800 mb-4">Education</h4>
-                        ${cvData.education.map(e => `<div class="mb-4"><p class="font-bold">${e.degree}</p><p>${e.institution}</p><p class="text-sm text-gray-500">${e.year}</p></div>`).join('')}
-                    </div>
-                    <div class="bg-white p-6 rounded-2xl shadow-lg">
-                        <h4 class="text-xl font-bold text-center text-gray-800 mb-4">Key Achievements</h4>
-                        <ul class="list-disc pl-5 space-y-2">
-                         ${cvData.achievements.map(a => `<li>${a.text}</li>`).join('')}
+                        `;
+                    }
+                    if (data.achievements.length > 0) {
+                         html += `
+                            <div>
+                                <h3>Achievements</h3>
+                                <ul>${data.achievements.map(a => `<li>${a.text}</li>`).join('')}</ul>
+                            </div>
+                        `;
+                    }
+                    html += '</section>';
+                }
+
+                html += `
+                        </main>
+                    </body></html>
+                `;
+                return html;
+            }
+
+
+            function generateAndDownloadDocx() {
+                downloadDocBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Generating...';
+                downloadDocBtn.disabled = true;
+
+                const htmlString = generatePrintableHtml(cvData);
+                const source = 'data:application/vnd.ms-word;charset=utf-8,' + encodeURIComponent(htmlString);
+                
+                const fileDownload = document.createElement("a");
+                document.body.appendChild(fileDownload);
+                fileDownload.href = source;
+                const name = cvData.personal.name || 'MyCV';
+                fileDownload.download = `InteractCV_${name.replace(/\s+/g, '_')}.doc`;
+                fileDownload.click();
+                document.body.removeChild(fileDownload);
+
+                setTimeout(() => {
+                    downloadDocBtn.innerHTML = '<i class="fas fa-file-word mr-2"></i> Download as Word';
+                    if(currentStep === steps.length - 1) {
+                        downloadDocBtn.disabled = false;
+                    }
+                }, 1000);
+            }
+            
+            downloadDocBtn.addEventListener('click', generateAndDownloadDocx);
+
+            function generateAndDownloadHtml() {
+                const filename = `InteractCV_${(cvData.personal.name || 'MyCV').replace(/\s+/g, '_')}.html`;
+                const SKILL_LEVELS_DATA = {
+                    "Expert": { percent: 100, color: '#65A30D' },
+                    "Advanced": { percent: 80, color: '#A3E635' },
+                    "Proficient": { percent: 60, color: '#D9F99D' },
+                };
+
+                const htmlContent = `
+    <!DOCTYPE html>
+    <html lang="en" class="scroll-smooth" data-theme-active="${cvData.theme}">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Interactive CV - ${cvData.personal.name}</title>
+        <meta name="generator" content="Interactive CV Builder">
+        <script src="https://cdn.tailwindcss.com/"><\/script>
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;700;900&display=swap" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+        <style>
+            :root, [data-theme-active="default"] { --color-primary: #003E6B; --color-accent: #36A8A4; --color-accent-light: #E6F7F7; --color-accent-translucent: rgba(54, 168, 164, 0.9); --color-header-gradient-from: #003E6B; --color-header-gradient-to: #36A8A4; }
+            [data-theme-active="sunset"] { --color-primary: #6D28D9; --color-accent: #F97316; --color-accent-light: #FFEDD5; --color-accent-translucent: rgba(249, 115, 22, 0.9); --color-header-gradient-from: #6D28D9; --color-header-gradient-to: #F97316; }
+            [data-theme-active="forest"] { --color-primary: #166534; --color-accent: #CA8A04; --color-accent-light: #FEFCE8; --color-accent-translucent: rgba(202, 138, 4, 0.9); --color-header-gradient-from: #166534; --color-header-gradient-to: #854d0e; }
+            [data-theme-active="monochrome"] { --color-primary: #1F2937; --color-accent: #6B7280; --color-accent-light: #F3F4F6; --color-accent-translucent: rgba(107, 114, 128, 0.9); --color-header-gradient-from: #111827; --color-header-gradient-to: #6B7280; }
+            body { font-family: 'Poppins', sans-serif; }
+            .color-primary { color: var(--color-primary); } .color-accent { color: var(--color-accent); } .bg-accent-light { background-color: var(--color-accent-light); }
+            #navbar { background-color: var(--color-accent-translucent); }
+            .timeline-item::before { content: ''; position: absolute; top: 1.25rem; left: -0.5rem; width: 1rem; height: 1rem; background-color: var(--color-primary); border-radius: 9999px; border: 4px solid #f7f9fb; z-index: 10; }
+            .accordion-content { overflow: hidden; max-height: 0; transition: max-height 0.3s ease-out; }
+        </style>
+    </head>
+    <body class="bg-gray-100">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <header class="text-center py-16">
+                <h1 class="text-5xl md:text-7xl font-black tracking-tighter bg-gradient-to-r from-[var(--color-header-gradient-from)] to-[var(--color-header-gradient-to)] text-transparent bg-clip-text pb-2">${cvData.personal.name}</h1>
+                <h2 class="mt-2 text-xl md:text-2xl font-medium text-gray-600 tracking-wide">${cvData.personal.subtitle}</h2>
+            </header>
+            <main class="mb-24 space-y-12">
+                <!-- Professional Summary Section -->
+                <section id="summary">
+                    <h3 class="text-3xl font-bold text-center text-gray-800 mb-8">Professional Summary</h3>
+                    <div class="max-w-4xl mx-auto bg-white p-8 rounded-2xl shadow-xl">
+                        <ul class="space-y-4 text-lg text-gray-700">
+                            ${cvData.summary.map(point => `
+                                <li class="flex items-start">
+                                    <span class="color-accent mr-3 mt-1"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg></span>
+                                    <p>${point}</p>
+                                </li>
+                            `).join('')}
                         </ul>
                     </div>
-                 </div>
-            </section>
-        </main>
-        <footer class="text-center py-8 border-t">
-            <div class="flex justify-center space-x-6">
-                ${cvData.contact.linkedin ? `<a href="${cvData.contact.linkedin}" target="_blank" class="text-gray-600 hover:color-primary"><i class="fab fa-linkedin fa-2x"></i></a>` : ''}
-                ${cvData.contact.email ? `<a href="mailto:${cvData.contact.email}" class="text-gray-600 hover:color-primary"><i class="fas fa-envelope fa-2x"></i></a>` : ''}
-                ${cvData.contact.phone ? `<a href="tel:${cvData.contact.phone}" class="text-gray-600 hover:color-primary"><i class="fas fa-phone-square fa-2x"></i></a>` : ''}
-                ${cvData.contact.booking ? `<a href="${cvData.contact.booking}" target="_blank" class="text-gray-600 hover:color-primary"><i class="fas fa-calendar-check fa-2x"></i></a>` : ''}
-            </div>
-        </footer>
-    </div>
-    <script>
-        document.querySelectorAll('.timeline-header, .accordion-header').forEach(header => {
-            header.addEventListener('click', () => {
-                const content = header.nextElementSibling;
-                const icon = header.querySelector('svg');
-                const isExpanded = content.style.maxHeight;
-                if(isExpanded) {
-                    content.style.maxHeight = null;
-                    icon.style.transform = 'rotate(0deg)';
-                } else {
-                    content.style.maxHeight = content.scrollHeight + 'px';
-                    icon.style.transform = 'rotate(-180deg)';
-                }
+                </section>
+                <!-- Timeline Section -->
+                <section id="timeline">
+                    <h3 class="text-3xl font-bold text-center text-gray-800 mb-8">Career Timeline</h3>
+                    <div class="mt-12 max-w-3xl mx-auto border-l-2 border-[var(--color-primary)] pl-8 space-y-10">
+                        ${cvData.experience.map(exp => {
+                            const endPeriod = exp.isCurrent ? 'Present' : `${exp.endMonth} ${exp.endYear}`;
+                            const period = `${exp.startMonth} ${exp.startYear} – ${endPeriod}`;
+                            return `
+                            <div class="timeline-item relative">
+                                <div class="timeline-header cursor-pointer p-4 rounded-lg bg-white shadow-md">
+                                    <div class="flex justify-between items-center">
+                                        <div>
+                                            <h4 class="text-xl font-bold text-gray-900">${exp.company}</h4>
+                                            <p class="text-sm text-gray-500">${period} | ${exp.duration}</p>
+                                        </div>
+                                        <svg class="w-6 h-6 color-primary transform transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                                    </div>
+                                </div>
+                                <div class="accordion-content pl-4 mt-2">
+                                    <div class="bg-gray-50 p-6 rounded-lg border border-gray-200 space-y-4">
+                                    ${exp.roles.map(role => `
+                                        <div>
+                                            <h5 class="text-lg font-bold color-primary">${role.title}</h5>
+                                            <hr class="my-2">
+                                            <ul class="list-disc pl-5 mt-2 space-y-1 text-gray-700">
+                                                ${role.points.map(p => `<li>${p}</li>`).join('')}
+                                            </ul>
+                                        </div>
+                                    `).join('')}
+                                    </div>
+                                </div>
+                            </div>`
+                        }).join('')}
+                    </div>
+                </section>
+                <!-- Skills Section -->
+                <section id="skills">
+                    <h3 class="text-3xl font-bold text-center text-gray-800">Core Competencies</h3>
+                     <div class="max-w-6xl mx-auto mt-6 bg-white p-4 rounded-lg shadow-inner">
+                        <h4 class="text-sm font-semibold mb-2" style="color: var(--color-primary);">Proficiency Key:</h4>
+                        <div class="flex rounded overflow-hidden">
+                            <div style="background-color: #65A30D; width: 33.33%;" class="p-1 text-center text-xs font-bold text-black">Expert</div>
+                            <div style="background-color: #A3E635; width: 33.33%;" class="p-1 text-center text-xs font-bold text-black">Advanced</div>
+                            <div style="background-color: #D9F99D; width: 33.33%;" class="p-1 text-center text-xs font-bold text-black">Proficient</div>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-6xl mx-auto mt-12">
+                        <div class="bg-white p-6 rounded-2xl shadow-lg">
+                            <h4 class="text-xl font-bold text-center text-gray-800 mb-4">Leadership & Soft Skills</h4>
+                            ${cvData.skills.leadership.map(s => `
+                                <div class="mb-4">
+                                    <div class="flex justify-between items-center mb-1">
+                                        <span class="text-sm font-medium text-gray-700">${s.name}</span>
+                                        <span class="text-xs font-semibold">${s.level}</span>
+                                    </div>
+                                    <div class="w-full bg-gray-200 rounded-full h-2">
+                                        <div class="h-2 rounded-full" style="width: ${SKILL_LEVELS_DATA[s.level]?.percent || 0}%; background-color: ${SKILL_LEVELS_DATA[s.level]?.color || '#ccc'};"></div>
+                                    </div>
+                                </div>`).join('')}
+                        </div>
+                        <div class="bg-white p-6 rounded-2xl shadow-lg">
+                            <h4 class="text-xl font-bold text-center text-gray-800 mb-4">Technical & Tools</h4>
+                            ${cvData.skills.technical.map(s => `
+                                 <div class="mb-4">
+                                    <div class="flex justify-between items-center mb-1">
+                                        <span class="text-sm font-medium text-gray-700">${s.name}</span>
+                                        <span class="text-xs font-semibold">${s.level}</span>
+                                    </div>
+                                    <div class="w-full bg-gray-200 rounded-full h-2">
+                                        <div class="h-2 rounded-full" style="width: ${SKILL_LEVELS_DATA[s.level]?.percent || 0}%; background-color: ${SKILL_LEVELS_DATA[s.level]?.color || '#ccc'};"></div>
+                                    </div>
+                                </div>`).join('')}
+                        </div>
+                    </div>
+                </section>
+                 <!-- Projects Section -->
+                 <section id="projects">
+                    <h3 class="text-3xl font-bold text-center text-gray-800 mb-8">Project Portfolio</h3>
+                    <div class="space-y-4 max-w-4xl mx-auto">
+                    ${cvData.projects.map(p => `
+                        <div class="bg-white rounded-xl shadow-lg border">
+                             <div class="accordion-header p-5">
+                                <h4 class="text-xl font-bold color-primary">${p.title}</h4>
+                                <svg class="w-6 h-6 color-primary transform transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                            </div>
+                            <div class="accordion-content">
+                                <p class="p-5 border-t italic">${p.summary}</p>
+                            </div>
+                        </div>
+                    `).join('')}
+                    </div>
+                </section>
+                <!-- Education & Achievements -->
+                <section id="education-achievements">
+                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-6xl mx-auto">
+                        <div class="bg-white p-6 rounded-2xl shadow-lg">
+                            <h4 class="text-xl font-bold text-center text-gray-800 mb-4">Education</h4>
+                            ${cvData.education.map(e => `<div class="mb-4"><p class="font-bold">${e.degree}</p><p>${e.institution}</p><p class="text-sm text-gray-500">${e.year}</p></div>`).join('')}
+                        </div>
+                        <div class="bg-white p-6 rounded-2xl shadow-lg">
+                            <h4 class="text-xl font-bold text-center text-gray-800 mb-4">Key Achievements</h4>
+                            <ul class="list-disc pl-5 space-y-2">
+                             ${cvData.achievements.map(a => `<li>${a.text}</li>`).join('')}
+                            </ul>
+                        </div>
+                     </div>
+                </section>
+            </main>
+            <footer class="text-center py-8 border-t">
+                <div class="flex justify-center space-x-6">
+                    ${cvData.contact.linkedin ? `<a href="${cvData.contact.linkedin}" target="_blank" class="text-gray-600 hover:color-primary"><i class="fab fa-linkedin fa-2x"></i></a>` : ''}
+                    ${cvData.contact.email ? `<a href="mailto:${cvData.contact.email}" class="text-gray-600 hover:color-primary"><i class="fas fa-envelope fa-2x"></i></a>` : ''}
+                    ${cvData.contact.phone ? `<a href="tel:${cvData.contact.phone}" class="text-gray-600 hover:color-primary"><i class="fas fa-phone-square fa-2x"></i></a>` : ''}
+                    ${cvData.contact.booking ? `<a href="${cvData.contact.booking}" target="_blank" class="text-gray-600 hover:color-primary"><i class="fas fa-calendar-check fa-2x"></i></a>` : ''}
+                </div>
+            </footer>
+        </div>
+        <script>
+            document.querySelectorAll('.timeline-header, .accordion-header').forEach(header => {
+                header.addEventListener('click', () => {
+                    const content = header.nextElementSibling;
+                    const icon = header.querySelector('svg');
+                    const isExpanded = content.style.maxHeight;
+                    if(isExpanded) {
+                        content.style.maxHeight = null;
+                        icon.style.transform = 'rotate(0deg)';
+                    } else {
+                        content.style.maxHeight = content.scrollHeight + 'px';
+                        icon.style.transform = 'rotate(-180deg)';
+                    }
+                });
             });
-        });
-    <\/script>
-</body>
-</html>
-            `;
-            const blob = new Blob([htmlContent], { type: 'text/html' });
-            const a = document.createElement('a');
-            a.href = URL.createObjectURL(blob);
-            a.download = filename;
-            a.click();
+        <\/script>
+    </body>
+    </html>
+                `;
+                const blob = new Blob([htmlContent], { type: 'text/html' });
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = filename;
+                a.click();
+                
+                githubModal.classList.remove('hidden');
+                githubModal.classList.add('flex');
+            }
             
-            githubModal.classList.remove('hidden');
-            githubModal.classList.add('flex');
-        }
-        
-        // Initial render
-        renderStep(0);
-        updateNavButtons();
-        updateProgressBar();
-        updatePreview();
-    });
-
+            // Initial render
+            renderStep(0);
+            updateNavButtons();
+            updateProgressBar();
+            updatePreview();
+        });
     </script>
-
 </body>
 </html>
 
