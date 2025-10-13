@@ -3,12 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interactive CV Builder</title>
+    <title>Free Interactive CV & Resume Builder | ATS Optimized Generator</title>
+    <meta name="description" content="Build a professional, ATS-optimized interactive CV for free. Our step-by-step generator helps you create a stunning, modern resume that stands out to recruiters. Download as interactive HTML or a Word document.">
+    <meta name="keywords" content="interactive CV, resume builder, free resume builder, CV generator, ATS resume, job application, career, cover letter, job seeking, modern resume, resume template, cv maker">
+    <meta name="author" content="Vishal Kondabathini">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://viskon.github.io/interactcvgenerator.html" />
+    <!-- Open Graph Meta Tags (for social sharing) -->
+    <meta property="og:title" content="Free Interactive CV & Resume Builder | ATS Optimized Generator" />
+    <meta property="og:description" content="Create a stunning, modern resume that stands out. Our free tool helps you build an ATS-friendly interactive CV and cover letter." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://viskon.github.io/interactcvgenerator.html" />
+    <meta property="og:image" content="https://placehold.co/1200x630/e0eafc/003E6B?text=InteractCV%0AGenerator" />
+    <meta property="og:site_name" content="InteractCV Generator" />
+    <!-- Twitter Card Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Free Interactive CV & Resume Builder | ATS Optimized Generator">
+    <meta name="twitter:description" content="Build a professional, ATS-optimized interactive CV for free. Our step-by-step generator helps you create a stunning, modern resume that stands out.">
+    <meta name="twitter:image" content="https://placehold.co/1200x630/e0eafc/003E6B?text=InteractCV%0AGenerator">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://d3js.org/d3.v7.min.js"></script>
     <style>
         body {
             font-family: 'Poppins', sans-serif;
@@ -98,6 +116,28 @@
                 max-height: none !important;
             }
         }
+        /* Visualization Styles */
+        .timeline-node {
+            cursor: pointer;
+            transition: transform 0.2s ease-out, filter 0.2s ease-out;
+        }
+         .timeline-node:hover {
+            filter: brightness(1.2);
+            transform: scale(1.1);
+        }
+        .timeline-label {
+            font-size: 11px;
+            font-family: 'Poppins', sans-serif;
+            fill: #1f2937;
+            pointer-events: none;
+        }
+        .timeline-path {
+            fill: none;
+            stroke-width: 2px;
+        }
+        .modal {
+            transition: opacity 0.25s ease;
+        }
     </style>
 </head>
 <body class="p-4 md:p-8">
@@ -143,14 +183,12 @@
                 <div id="builder-content">
                     <!-- Progress Bar -->
                     <div class="mb-8">
-                        <div class="flex justify-between items-center mb-2">
-                            <div>
-                                <span class="text-base font-medium text-gray-700" id="progress-label">CV Progress</span>
-                                <span id="progress-percent" class="text-sm font-medium text-gray-700 ml-2">0%</span>
-                            </div>
+                        <div class="flex justify-between items-baseline mb-2">
+                             <span class="text-sm font-semibold text-gray-500 uppercase tracking-wider" id="progress-label">CV Progress</span>
+                             <span id="progress-percent" class="text-xl font-bold text-blue-600">0%</span>
                         </div>
-                        <div class="w-full bg-gray-200 rounded-full h-2.5">
-                            <div id="progress-bar" class="bg-blue-600 h-2.5 rounded-full progress-bar-fill" style="width: 0%"></div>
+                        <div class="w-full bg-gray-200 rounded-full h-3">
+                            <div id="progress-bar" class="bg-blue-600 h-3 rounded-full progress-bar-fill" style="width: 0%"></div>
                         </div>
                     </div>
 
@@ -167,8 +205,8 @@
             </div>
 
             <!-- Live Preview Section -->
-            <div id="print-area-container" class="w-full bg-white rounded-2xl shadow-2xl p-8 mt-8 lg:mt-0">
-                <div id="preview-section">
+            <div id="print-area-container" class="w-full bg-white rounded-2xl shadow-2xl p-8 mt-8 lg:mt-0 space-y-8">
+                <div>
                     <h3 class="text-center font-bold text-gray-500 mb-4 uppercase tracking-wider" id="preview-title">Live Preview</h3>
                     <div id="print-area" class="bg-gray-100 p-8 rounded-lg">
                         <header class="text-center">
@@ -188,6 +226,20 @@
                         </button>
                     </div>
                 </div>
+
+                <!-- UPDATED: Career Visualization Section -->
+                <div id="visualization-section" class="border-t-2 border-gray-100 pt-8">
+                    <h3 class="text-center font-bold text-gray-500 mb-4 uppercase tracking-wider">Career Journey</h3>
+                    <div class="text-center mb-4">
+                        <button id="visualize-btn" class="inline-block px-5 py-2.5 bg-gradient-to-r from-emerald-500 to-green-600 text-white font-semibold rounded-full shadow-md transform hover:scale-105 transition-transform duration-300 text-sm opacity-50 cursor-not-allowed" disabled>
+                            <i class="fas fa-stream mr-2"></i> Visualize Journey
+                        </button>
+                    </div>
+                    <div id="timeline-visualization-container" class="bg-gray-50 p-4 rounded-lg min-h-[400px] flex items-center justify-center relative">
+                         <p class="text-gray-400">Your career journey will appear here.</p>
+                    </div>
+                </div>
+
             </div>
         </div>
     </div>
@@ -220,6 +272,15 @@
         </div>
     </div>
 
+    <!-- Career Detail Modal -->
+    <div id="career-detail-modal" class="modal fixed inset-0 bg-black bg-opacity-60 z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none">
+        <div id="modal-content" class="bg-white rounded-2xl shadow-2xl p-8 max-w-2xl w-full relative transform scale-95 transition-transform duration-300">
+             <button id="close-detail-modal-btn" class="absolute top-4 right-4 text-gray-400 hover:text-gray-800 text-3xl font-bold">&times;</button>
+             <div id="modal-body"></div>
+        </div>
+    </div>
+
+
     <script>
         window.autoResize = function(element) {
             element.style.height = 'auto';
@@ -240,6 +301,12 @@
             const backToStartBtn = document.getElementById('back-to-start');
             const downloadDocBtn = document.getElementById('download-doc-btn');
             const downloadHtmlBtn = document.getElementById('download-html-btn');
+            const visualizeBtn = document.getElementById('visualize-btn');
+            const visualizationContainer = document.getElementById('timeline-visualization-container');
+            const detailModal = document.getElementById('career-detail-modal');
+            const detailModalContent = document.getElementById('modal-content');
+            const detailModalBody = document.getElementById('modal-body');
+            const closeDetailModalBtn = document.getElementById('close-detail-modal-btn');
 
             let currentStep = 0;
             const cvData = {
@@ -253,6 +320,8 @@
                 contact: {},
                 theme: 'default'
             };
+            
+            const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
             const themes = {
                 default: { from: '#003E6B', to: '#36A8A4'},
@@ -265,9 +334,9 @@
                 { title: 'Personal Information' },
                 { title: 'Professional Summary' },
                 { title: 'Work Experience' },
+                { title: 'Education' },
                 { title: 'Skills' },
                 { title: 'Projects' },
-                { title: 'Education' },
                 { title: 'Achievements' },
                 { title: 'Contact & Theme' },
                 { title: 'Finish Up' }
@@ -333,6 +402,23 @@
                     </section>
                     `;
                 }
+                
+                if (cvData.education.length > 0) {
+                     previewHTML += `
+                    <section class="mt-8">
+                        <h3 class="text-xl font-bold text-center text-gray-700 mb-4 border-b pb-2">Education</h3>
+                        <div class="space-y-3 text-xs">
+                        ${cvData.education.map(e => `
+                            <div>
+                                <p class="font-semibold">${e.degree}</p>
+                                <p class="text-xs">${e.institution}</p>
+                                <p class="text-xs text-gray-500">${e.year}</p>
+                            </div>
+                        `).join('')}
+                        </div>
+                    </section>
+                    `;
+                }
 
                 if (cvData.skills.leadership.length > 0 || cvData.skills.technical.length > 0) {
                     previewHTML += `
@@ -372,37 +458,17 @@
                     `;
                 }
                 
-                if (cvData.education.length > 0 || cvData.achievements.length > 0) {
-                    previewHTML += '<section class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">';
-                    if (cvData.education.length > 0 && cvData.education.some(e => e.degree)) {
-                        previewHTML += `
-                            <div>
-                                <h3 class="text-lg font-bold text-center text-gray-700 mb-4 border-b pb-2">Education</h3>
-                                <div class="space-y-3 text-xs">
-                                ${cvData.education.map(e => `
-                                    <div>
-                                        <p class="font-semibold">${e.degree}</p>
-                                        <p class="text-xs">${e.institution}</p>
-                                        <p class="text-xs text-gray-500">${e.year}</p>
-                                    </div>
-                                `).join('')}
-                                </div>
-                            </div>
-                        `;
-                    }
-                     if (cvData.achievements.length > 0 && cvData.achievements.some(a => a.text)) {
-                        previewHTML += `
-                            <div>
-                                <h3 class="text-lg font-bold text-center text-gray-700 mb-4 border-b pb-2">Achievements</h3>
-                                <ul class="list-disc pl-5 space-y-1 text-xs">
-                                    ${cvData.achievements.map(a => `<li>${a.text}</li>`).join('')}
-                                </ul>
-                            </div>
-                        `;
-                    }
-                    previewHTML += '</section>';
+                if (cvData.achievements.length > 0 && cvData.achievements.some(a => a.text)) {
+                    previewHTML += `
+                    <section class="mt-8">
+                        <h3 class="text-xl font-bold text-center text-gray-700 mb-4 border-b pb-2">Achievements</h3>
+                        <ul class="list-disc pl-5 space-y-1 text-xs">
+                            ${cvData.achievements.map(a => `<li>${a.text}</li>`).join('')}
+                        </ul>
+                    </section>
+                    `;
                 }
-
+                
                 previewContent.innerHTML = previewHTML;
             }
             
@@ -466,6 +532,15 @@
                             return company !== '' && hasValidRoles;
                         });
                     }
+                     case 'Education': {
+                         const educations = card.querySelectorAll('.education-item');
+                         if (educations.length === 0) return false;
+                         return Array.from(educations).every(edu => {
+                             const degree = edu.querySelector('[name="degree"]').value.trim();
+                             const institution = edu.querySelector('[name="institution"]').value.trim();
+                             return degree !== '' && institution !== '';
+                         });
+                    }
                     case 'Skills': {
                         const skills = card.querySelectorAll('[name="skill-name"]');
                         if (skills.length === 0) return false;
@@ -475,15 +550,6 @@
                         const projects = card.querySelectorAll('[name="project-title"]');
                         if (projects.length === 0) return false;
                         return Array.from(projects).every(p => p.value.trim() !== '');
-                    }
-                    case 'Education': {
-                         const educations = card.querySelectorAll('.education-item');
-                         if (educations.length === 0) return false;
-                         return Array.from(educations).every(edu => {
-                             const degree = edu.querySelector('[name="degree"]').value.trim();
-                             const institution = edu.querySelector('[name="institution"]').value.trim();
-                             return degree !== '' && institution !== '';
-                         });
                     }
                     case 'Achievements': {
                         const achievements = card.querySelectorAll('[name="achievement-text"]');
@@ -520,18 +586,19 @@
                         nextBtn.classList.add('text-blue-500', 'hover:text-blue-700');
                     }
                 }
+                
+                const enableDownloads = currentStep === steps.length - 1;
+                downloadDocBtn.disabled = !enableDownloads;
+                downloadDocBtn.classList.toggle('opacity-50', !enableDownloads);
+                downloadDocBtn.classList.toggle('cursor-not-allowed', !enableDownloads);
+                
+                downloadHtmlBtn.disabled = !enableDownloads;
+                downloadHtmlBtn.classList.toggle('opacity-50', !enableDownloads);
+                downloadHtmlBtn.classList.toggle('cursor-not-allowed', !enableDownloads);
 
-                if(currentStep === steps.length - 1) {
-                    downloadDocBtn.disabled = false;
-                    downloadDocBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-                    downloadHtmlBtn.disabled = false;
-                    downloadHtmlBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-                } else {
-                    downloadDocBtn.disabled = true;
-                    downloadDocBtn.classList.add('opacity-50', 'cursor-not-allowed');
-                    downloadHtmlBtn.disabled = true;
-                    downloadHtmlBtn.classList.add('opacity-50', 'cursor-not-allowed');
-                }
+                visualizeBtn.disabled = (!cvData.experience || cvData.experience.length === 0) && (!cvData.education || cvData.education.length === 0);
+                visualizeBtn.classList.toggle('opacity-50', visualizeBtn.disabled);
+                visualizeBtn.classList.toggle('cursor-not-allowed', visualizeBtn.disabled);
             }
             
             window.handleValidation = () => {
@@ -543,7 +610,7 @@
             function saveStepData(stepIndex) {
                 const card = document.querySelector(`#card-${stepIndex}`);
                 if (!card) return;
-                const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+                
                 switch (steps[stepIndex].title) {
                     case 'Personal Information':
                         cvData.personal.name = card.querySelector('#name').value;
@@ -590,15 +657,15 @@
                             });
                         });
                         break;
+                    case 'Education':
+                         cvData.education = Array.from(card.querySelectorAll('.education-item')).map(item => ({ degree: item.querySelector('[name="degree"]').value, institution: item.querySelector('[name="institution"]').value, year: item.querySelector('[name="year"]').value }));
+                        break;
                     case 'Skills':
                         cvData.skills.leadership = Array.from(card.querySelectorAll('.leadership-skill')).map(item => ({ name: item.querySelector('[name="skill-name"]').value, level: item.querySelector('[name="skill-level"]').value }));
                         cvData.skills.technical = Array.from(card.querySelectorAll('.technical-skill')).map(item => ({ name: item.querySelector('[name="skill-name"]').value, level: item.querySelector('[name="skill-level"]').value }));
                         break;
                      case 'Projects':
                         cvData.projects = Array.from(card.querySelectorAll('.project-item')).map(item => ({ title: item.querySelector('[name="project-title"]').value, summary: item.querySelector('[name="project-summary"]').value }));
-                        break;
-                    case 'Education':
-                         cvData.education = Array.from(card.querySelectorAll('.education-item')).map(item => ({ degree: item.querySelector('[name="degree"]').value, institution: item.querySelector('[name="institution"]').value, year: item.querySelector('[name="year"]').value }));
                         break;
                     case 'Achievements':
                         cvData.achievements = Array.from(card.querySelectorAll('.achievement-item')).map(item => ({ text: item.querySelector('[name="achievement-text"]').value }));
@@ -650,10 +717,25 @@
                             </div>`;
                         break;
                     case 'Professional Summary':
-                        content += `<div class="bg-gray-100 p-4 rounded-lg"><div id="summary-list" class="space-y-4">${renderSummaryItems()}</div><button onclick="addSummaryPoint()" class="add-btn mt-4">+ Add Point</button></div>`;
+                        content += `
+                            <div class="bg-gray-100 p-6 rounded-xl space-y-4">
+                                <div class="flex items-center text-gray-600 mb-2">
+                                    <i class="fas fa-quote-left mr-3 text-xl text-blue-400"></i>
+                                    <p class="text-sm">Add key highlights of your career. Each point should be a concise, powerful statement about your value.</p>
+                                </div>
+                                <div id="summary-list" class="space-y-3">
+                                    ${renderSummaryItems()}
+                                </div>
+                                <button onclick="addSummaryPoint()" class="add-btn mt-2 font-bold text-md flex items-center py-2 px-4 rounded-lg hover:bg-blue-50 transition-colors">
+                                    <i class="fas fa-plus-circle mr-2"></i> Add Summary Point
+                                </button>
+                            </div>`;
                         break;
                     case 'Work Experience':
                          content += `<div class="bg-gray-100 p-4 rounded-lg"><div id="experience-list" class="space-y-4">${renderExperienceItems()}</div><button onclick="addExperience()" class="add-btn mt-4">+ Add Experience</button></div>`;
+                        break;
+                    case 'Education':
+                        content += `<div class="bg-gray-100 p-4 rounded-lg"><div id="education-list" class="space-y-4">${renderEducationItems()}</div><button onclick="addEducation()" class="add-btn mt-4">+ Add Education</button></div>`;
                         break;
                     case 'Skills':
                         content += `
@@ -672,9 +754,6 @@
                         break;
                     case 'Projects':
                         content += `<div class="bg-gray-100 p-4 rounded-lg"><div id="project-list" class="space-y-4">${renderProjectItems()}</div><button onclick="addProject()" class="add-btn mt-4">+ Add Project</button></div>`;
-                        break;
-                     case 'Education':
-                        content += `<div class="bg-gray-100 p-4 rounded-lg"><div id="education-list" class="space-y-4">${renderEducationItems()}</div><button onclick="addEducation()" class="add-btn mt-4">+ Add Education</button></div>`;
                         break;
                      case 'Achievements':
                         content += `<div class="bg-gray-100 p-4 rounded-lg"><div id="achievement-list" class="space-y-4">${renderAchievementItems()}</div><button onclick="addAchievement()" class="add-btn mt-4">+ Add Achievement</button></div>`;
@@ -732,66 +811,97 @@
             window.addAchievement = () => { saveStepData(currentStep); cvData.achievements.push({}); renderStep(currentStep); };
             window.removeAchievement = (index) => { saveStepData(currentStep); cvData.achievements.splice(index, 1); renderStep(currentStep); };
 
+            window.toggleCurrentJob = function(checkbox, index) {
+                const isChecked = checkbox.checked;
+                const endDateContainer = document.getElementById(`end-date-container-${index}`);
+                
+                if (endDateContainer) {
+                    endDateContainer.classList.toggle('opacity-50', isChecked);
+                    endDateContainer.classList.toggle('pointer-events-none', isChecked);
+                }
+                
+                checkbox.closest('.experience-item').querySelectorAll(`[name='end-month-${index}'], [name='end-year-${index}']`).forEach(el => {
+                    el.disabled = isChecked;
+                });
+                
+                handleValidation();
+            }
+
             function renderSummaryItems() {
                  return cvData.summary.map((point, i) => `
-                <div class="summary-item flex items-center space-x-2">
-                    <textarea name="summary-point" placeholder="e.g., Strategic Leader with Technical Expertise..." class="textarea-field flex-grow" rows="1" oninput="autoResize(this); handleValidation()">${point || ''}</textarea>
-                    <button onclick="removeSummaryPoint(${i})" class="remove-btn text-xl">&times;</button>
+                <div class="summary-item flex items-center group space-x-3">
+                    <i class="fas fa-feather-alt text-blue-400"></i>
+                    <textarea name="summary-point" placeholder="e.g., Strategic Leader with Technical Expertise..." class="textarea-field flex-grow !text-base !p-3" rows="1" oninput="autoResize(this); handleValidation()">${point || ''}</textarea>
+                    <button onclick="removeSummaryPoint(${i})" class="remove-btn text-xl opacity-0 group-hover:opacity-100 transition-opacity">&times;</button>
                 </div>`).join('');
             }
             
             function renderExperienceItems() {
                 const currentYear = new Date().getFullYear();
                 const years = Array.from({length: 50}, (_, i) => currentYear - i);
-                const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
                 return cvData.experience.map((exp, i) => {
                     const isCurrent = exp.isCurrent || false;
                     return `
-                    <div class="experience-item p-4 border rounded-lg bg-white shadow-sm">
-                         <button onclick="removeExperience(${i})" class="remove-btn float-right">Remove</button>
-                        <input type="text" name="company" placeholder="Company Name" class="input-field mb-2" value="${exp.company || ''}" oninput="handleValidation()">
+                    <div class="experience-item bg-white p-6 rounded-xl shadow-lg border border-gray-200 space-y-6">
                         
-                        <div class="grid grid-cols-2 gap-4 mb-2 text-sm">
+                        <!-- Company Header -->
+                        <div class="flex justify-between items-start">
                             <div>
-                                <label class="font-semibold text-xs">Start Date</label>
-                                <div class="flex gap-2">
-                                    <select name="start-month-${i}" class="input-field text-sm !p-2" onchange="handleValidation()">${months.map(m => `<option ${exp.startMonth === m ? 'selected': ''}>${m}</option>`).join('')}</select>
-                                    <select name="start-year-${i}" class="input-field text-sm !p-2" onchange="handleValidation()">${years.map(y => `<option ${exp.startYear == y ? 'selected': ''}>${y}</option>`).join('')}</select>
-                                </div>
+                                <label for="company-${i}" class="text-xs font-semibold text-gray-500">Company</label>
+                                <input type="text" id="company-${i}" name="company" placeholder="Company Name" class="text-xl font-bold w-full border-b-2 border-gray-200 focus:border-blue-500 outline-none pb-1" value="${exp.company || ''}" oninput="handleValidation()">
                             </div>
-                             <div>
-                                <label class="font-semibold text-xs">End Date</label>
-                                <div class="flex gap-2">
-                                    <select name="end-month-${i}" class="input-field text-sm !p-2" ${isCurrent ? 'disabled' : ''} onchange="handleValidation()">${months.map(m => `<option ${exp.endMonth === m ? 'selected': ''}>${m}</option>`).join('')}</select>
-                                    <select name="end-year-${i}" class="input-field text-sm !p-2" ${isCurrent ? 'disabled' : ''} onchange="handleValidation()">${years.map(y => `<option ${exp.endYear == y ? 'selected': ''}>${y}</option>`).join('')}</select>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="flex items-center justify-between">
-                             <label class="flex items-center text-sm">
-                                <input type="checkbox" name="current-job-${i}" class="form-checkbox mr-2" ${isCurrent ? 'checked' : ''} oninput="handleValidation()"> I currently work here
-                            </label>
-                            <p class="text-sm font-semibold text-blue-600 duration-text">${exp.duration || ''}</p>
+                            <button onclick="removeExperience(${i})" class="remove-btn font-bold text-lg hover:bg-red-100 rounded-full w-8 h-8 flex items-center justify-center transition-colors">✕</button>
                         </div>
 
-                        <div class="role-list space-y-2 mt-4">
+                        <!-- Dates & Duration -->
+                        <div class="space-y-4">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                                <div>
+                                    <label class="font-semibold text-xs text-gray-500">Start Date</label>
+                                    <div class="flex gap-2 mt-1">
+                                        <select name="start-month-${i}" class="input-field !text-sm !p-2 flex-grow" onchange="handleValidation()">${months.map(m => `<option ${exp.startMonth === m ? 'selected': ''}>${m}</option>`).join('')}</select>
+                                        <select name="start-year-${i}" class="input-field !text-sm !p-2 w-24" onchange="handleValidation()">${years.map(y => `<option ${exp.startYear == y ? 'selected': ''}>${y}</option>`).join('')}</select>
+                                    </div>
+                                </div>
+                                 <div id="end-date-container-${i}" class="${isCurrent ? 'opacity-50 pointer-events-none' : ''} transition-opacity">
+                                    <label class="font-semibold text-xs text-gray-500">End Date</label>
+                                    <div class="flex gap-2 mt-1">
+                                        <select name="end-month-${i}" class="input-field !text-sm !p-2 flex-grow" ${isCurrent ? 'disabled' : ''} onchange="handleValidation()">${months.map(m => `<option ${exp.endMonth === m ? 'selected': ''}>${m}</option>`).join('')}</select>
+                                        <select name="end-year-${i}" class="input-field !text-sm !p-2 w-24" ${isCurrent ? 'disabled' : ''} onchange="handleValidation()">${years.map(y => `<option ${exp.endYear == y ? 'selected': ''}>${y}</option>`).join('')}</select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex items-center justify-between pt-2">
+                                 <label class="flex items-center text-sm cursor-pointer">
+                                    <input type="checkbox" name="current-job-${i}" class="form-checkbox h-5 w-5 text-blue-600 rounded mr-2 border-gray-300 focus:ring-blue-500" ${isCurrent ? 'checked' : ''} oninput="toggleCurrentJob(this, ${i})"> I currently work here
+                                </label>
+                                <p class="text-sm font-bold text-blue-600 duration-text bg-blue-100 px-3 py-1 rounded-full">${exp.duration || ''}</p>
+                            </div>
+                        </div>
+
+                        <!-- Roles Container -->
+                        <div class="role-list space-y-4 border-t border-gray-200 pt-4">
+                            <h3 class="text-sm font-bold text-gray-600 uppercase tracking-wider">Roles at ${exp.company || 'this Company'}</h3>
                             ${(exp.roles || []).map((role, ri) => `
-                                <div class="role-item border-t pt-2">
-                                    <button onclick="removeRole(${i}, ${ri})" class="remove-btn float-right">Remove Role</button>
-                                    <input type="text" name="role-title" placeholder="Role Title" class="input-field mb-2 font-semibold" value="${role.title || ''}" oninput="handleValidation()">
-                                    <div class="point-list space-y-1">
+                                <div class="role-item bg-gray-50 p-4 rounded-lg border border-gray-200">
+                                    <div class="flex justify-between items-center mb-3">
+                                        <input type="text" name="role-title" placeholder="Role Title" class="text-md font-semibold w-full border-b border-gray-200 focus:border-blue-500 bg-transparent outline-none pb-1" value="${role.title || ''}" oninput="handleValidation()">
+                                        <button onclick="removeRole(${i}, ${ri})" class="remove-btn text-xs hover:bg-red-100 rounded-md px-2 py-1 transition-colors">Remove Role</button>
+                                    </div>
+                                    <div class="point-list space-y-2">
                                     ${(role.points || []).map((p, pi) => `
-                                        <div class="flex items-center">
-                                            <input type="text" name="role-point" placeholder="Accomplishment" class="input-field flex-grow" value="${p || ''}" oninput="handleValidation()">
-                                            <button onclick="removePoint(${i}, ${ri}, ${pi})" class="remove-btn ml-2">&times;</button>
+                                        <div class="flex items-center group">
+                                            <i class="fas fa-circle text-gray-400 mr-3" style="font-size: 5px;"></i>
+                                            <input type="text" name="role-point" placeholder="Accomplishment or responsibility" class="input-field !text-sm !p-2 flex-grow" value="${p || ''}" oninput="handleValidation()">
+                                            <button onclick="removePoint(${i}, ${ri}, ${pi})" class="remove-btn ml-2 opacity-0 group-hover:opacity-100 transition-opacity text-lg">&times;</button>
                                         </div>
                                     `).join('')}
                                     </div>
-                                    <button onclick="addPoint(${i}, ${ri})" class="add-btn mt-1 text-xs">+ Add Accomplishment</button>
+                                    <button onclick="addPoint(${i}, ${ri})" class="add-btn mt-3 text-xs flex items-center"><i class="fas fa-plus-circle mr-2"></i> Add Accomplishment</button>
                                 </div>`).join('')}
                         </div>
-                         <button onclick="addRole(${i})" class="add-btn mt-2">+ Add Role</button>
+                         <button onclick="addRole(${i})" class="add-btn mt-2 font-bold text-md flex items-center py-2 px-4 rounded-lg hover:bg-blue-50 transition-colors"><i class="fas fa-plus mr-2"></i> Add Role</button>
                     </div>`
                 }).join('');
             }
@@ -849,7 +959,51 @@
                 }
             });
             prevBtn.addEventListener('click', () => navigate('prev'));
+            
+            // Modal Handling
             closeModalBtn.addEventListener('click', () => githubModal.classList.add('hidden'));
+            closeDetailModalBtn.addEventListener('click', hideDetails);
+            detailModal.addEventListener('click', (e) => {
+                if (e.target === detailModal) {
+                    hideDetails();
+                }
+            });
+
+            function showDetails(data) {
+                let bodyHtml = '';
+                if(data.type === 'work') {
+                    let rolesHtml = data.originalData.roles.map(role => `
+                        <div class="mt-3">
+                            <h4 class="font-semibold text-gray-800">${role.title}</h4>
+                            <ul class="list-disc pl-5 mt-1 space-y-1 text-gray-600 text-sm">
+                                ${role.points.map(p => `<li>${p}</li>`).join('')}
+                            </ul>
+                        </div>
+                    `).join('');
+
+                    bodyHtml = `
+                        <h2 class="text-2xl font-bold text-gray-900">${data.originalData.company}</h2>
+                        <p class="text-sm text-gray-500 font-semibold">${data.originalData.startYear} - ${data.originalData.isCurrent ? 'Present' : data.originalData.endYear} (${data.originalData.duration})</p>
+                        <div class="mt-4 border-t pt-4">${rolesHtml}</div>
+                    `;
+                } else { // Education
+                     bodyHtml = `
+                        <h2 class="text-2xl font-bold text-gray-900">${data.originalData.degree}</h2>
+                        <p class="text-md text-gray-700">${data.originalData.institution}</p>
+                        <p class="text-sm text-gray-500 font-semibold mt-1">${data.originalData.year}</p>
+                    `;
+                }
+
+                detailModalBody.innerHTML = bodyHtml;
+                detailModal.classList.remove('opacity-0', 'pointer-events-none');
+                detailModalContent.classList.remove('scale-95');
+            }
+
+            function hideDetails() {
+                detailModal.classList.add('opacity-0', 'pointer-events-none');
+                detailModalContent.classList.add('scale-95');
+            }
+
 
             function generatePrintableHtml(data) {
                 const themeColors = themes[data.theme];
@@ -949,30 +1103,27 @@
                     html += `</div></section>`;
                 }
                 
-                if (data.education.length > 0 || data.achievements.length > 0) {
-                    html += '<section class="section grid-2">';
-                     if (data.education.length > 0) {
-                        html += `
-                            <div>
-                                <h3>Education</h3>
-                                ${data.education.map(e => `
-                                    <div>
-                                        <h4>${e.degree}</h4>
-                                        <p>${e.institution} - ${e.year}</p>
-                                    </div>
-                                `).join('')}
-                            </div>
-                        `;
-                    }
-                    if (data.achievements.length > 0) {
-                         html += `
-                            <div>
-                                <h3>Achievements</h3>
-                                <ul>${data.achievements.map(a => `<li>${a.text}</li>`).join('')}</ul>
-                            </div>
-                        `;
-                    }
-                    html += '</section>';
+                if (data.education.length > 0) {
+                    html += `
+                        <section class="section">
+                            <h3>Education</h3>
+                            ${data.education.map(e => `
+                                <div>
+                                    <h4>${e.degree}</h4>
+                                    <p>${e.institution} - ${e.year}</p>
+                                </div>
+                            `).join('')}
+                        </section>
+                    `;
+                }
+
+                if (data.achievements.length > 0) {
+                     html += `
+                        <section class="section">
+                            <h3>Achievements</h3>
+                            <ul>${data.achievements.map(a => `<li>${a.text}</li>`).join('')}</ul>
+                        </section>
+                    `;
                 }
 
                 html += `
@@ -1161,7 +1312,7 @@
                             <h4 class="text-xl font-bold text-center text-gray-800 mb-4">Education</h4>
                             ${cvData.education.map(e => `<div class="mb-4"><p class="font-bold">${e.degree}</p><p>${e.institution}</p><p class="text-sm text-gray-500">${e.year}</p></div>`).join('')}
                         </div>
-                        <div class="bg-white p-6 rounded-2xl shadow-lg">
+                         <div class="bg-white p-6 rounded-2xl shadow-lg">
                             <h4 class="text-xl font-bold text-center text-gray-800 mb-4">Key Achievements</h4>
                             <ul class="list-disc pl-5 space-y-2">
                              ${cvData.achievements.map(a => `<li>${a.text}</li>`).join('')}
@@ -1207,7 +1358,107 @@
                 githubModal.classList.remove('hidden');
                 githubModal.classList.add('flex');
             }
+            
+            function generateTimelineVisualization() {
+                visualizationContainer.innerHTML = ''; 
+
+                const hasExperience = cvData.experience && cvData.experience.length > 0;
+                const hasEducation = cvData.education && cvData.education.length > 0;
+
+                if (!hasExperience && !hasEducation) {
+                    visualizationContainer.innerHTML = '<p class="text-gray-400">Add work or education to see your journey.</p>';
+                    return;
+                }
+                
+                let timelineEvents = [];
+                if (hasExperience) {
+                    timelineEvents.push(...cvData.experience.map(d => ({...d, type: 'work', date: new Date(d.startYear, months.indexOf(d.startMonth) || 0, 1) })));
+                }
+                if (hasEducation) {
+                     timelineEvents.push(...cvData.education.map(d => ({...d, type: 'education', date: new Date(d.year, 0, 1) })));
+                }
+
+                timelineEvents.sort((a,b) => a.date - b.date);
+
+                const width = visualizationContainer.clientWidth;
+                const height = 400;
+                const margin = {top: 20, right: 120, bottom: 20, left: 120};
+
+                const svg = d3.select("#timeline-visualization-container").append("svg")
+                    .attr("width", width)
+                    .attr("height", height);
+
+                const g = svg.append("g").attr("transform", `translate(${width/2}, ${margin.top})`);
+                
+                const timeScale = d3.scaleTime()
+                    .domain(d3.extent(timelineEvents, d => d.date))
+                    .range([0, height - margin.top - margin.bottom]);
+                
+                const timelineData = timelineEvents.map((d, i) => ({
+                    ...d,
+                    y: timeScale(d.date),
+                    x: d.type === 'education' ? -50 : 50
+                }));
+                
+                // Draw main trunk
+                g.append("line")
+                    .attr("x1", 0)
+                    .attr("x2", 0)
+                    .attr("y1", 0)
+                    .attr("y2", height - margin.top - margin.bottom)
+                    .attr("stroke", "#9ca3af")
+                    .attr("stroke-width", 3);
+                
+                // Draw connecting lines between jobs
+                const workNodes = timelineData.filter(d => d.type === 'work');
+                for(let i=0; i < workNodes.length - 1; i++) {
+                     g.append("line")
+                        .attr("x1", 0)
+                        .attr("y1", workNodes[i].y)
+                        .attr("x2", 0)
+                        .attr("y2", workNodes[i+1].y)
+                        .attr("stroke", "#4ade80")
+                        .attr("stroke-width", 2);
+                }
+
+                const node = g.selectAll(".node")
+                    .data(timelineData)
+                    .join("g")
+                    .attr("transform", d => `translate(${d.x}, ${d.y})`);
+
+                // Draw branches from trunk to node
+                 node.append("path")
+                    .attr("class", "timeline-path")
+                    .attr("stroke", d => d.type === 'education' ? '#a78bfa' : '#60a5fa')
+                    .attr("d", d => `M ${-d.x} 0 Q 0 0 0 0`);
+
+                // Draw nodes
+                const symbol = d3.symbol();
+                node.append("path")
+                    .attr("class", "timeline-node")
+                    .attr("d", d => {
+                        const type = d.type === 'education' ? d3.symbolDiamond : d3.symbolCircle;
+                        return symbol.type(type).size(100)();
+                    })
+                    .attr("fill", d => d.type === 'education' ? '#a78bfa' : '#60a5fa')
+                    .on("click", (event, d) => showDetails(d));
+
+                // Draw labels
+                node.append("text")
+                    .attr("class", "timeline-label")
+                    .attr("x", d => d.type === 'education' ? -15 : 15)
+                    .attr("dy", "0.31em")
+                    .attr("text-anchor", d => d.type === 'education' ? 'end' : 'start')
+                    .html(d => {
+                        const title = d.type === 'education' ? d.degree : d.company;
+                        const year = d.date.getFullYear();
+                        return `<tspan font-weight="bold">${title}</tspan><tspan dy="1.2em" x="${d.type === 'education' ? -15 : 15}">${year}</tspan>`;
+                    });
+            }
+
+
             downloadHtmlBtn.addEventListener('click', generateAndDownloadHtml);
+            visualizeBtn.addEventListener('click', generateTimelineVisualization);
             
             // Initial render
             renderStep(0);
@@ -1218,4 +1469,6 @@
     </script>
 </body>
 </html>
+
+
 
