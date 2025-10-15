@@ -182,34 +182,7 @@
         .loader { margin: 1rem auto; width: 24px; height: 24px; border: 3px solid #f3f3f3; border-top: 3px solid var(--color-accent); border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .company-logo { width: 48px; height: 48px; object-fit: contain; }
-        .theme-button {
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            cursor: pointer;
-            border: 2px solid transparent;
-            transition: transform 0.2s, border-color 0.2s;
-        }
-        .theme-button:hover {
-            transform: scale(1.15);
-        }
-        .theme-button.active {
-            border-color: var(--color-accent);
-            box-shadow: 0 0 0 2px white;
-        }
-        #mobile-menu {
-            transform: translateY(-20px) scale(0.95);
-            opacity: 0;
-            max-height: 0;
-            transition: transform 0.3s ease-out, opacity 0.3s ease-out, max-height 0.3s ease-out;
-            pointer-events: none;
-        }
-        #mobile-menu.menu-open {
-            transform: translateY(0) scale(1);
-            opacity: 1;
-            max-height: 500px;
-            pointer-events: auto;
-        }
+       
         @media print {
             body {
                 background-color: #fff;
@@ -289,64 +262,63 @@
     </nav>
     <!-- App Container: Added pt-16 to offset the fixed global navigation bar -->
     <div id="app-container" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20">
-        <header class="text-center py-12 md:py-16">
-            <h1 class="header-font text-5xl md:text-7xl font-black tracking-tighter bg-gradient-to-r from-[var(--color-header-gradient-from)] to-[var(--color-header-gradient-to)] text-transparent bg-clip-text pb-2">VISHAL KONDABATHINI</h1>
-            <h2 class="header-font mt-2 text-xl md:text-2xl font-medium text-gray-600 tracking-wide">Digital Transformation Leader | Data & AI Strategist</h2>
-        </header>
-
-        <div id="theme-switcher" class="flex justify-center items-center space-x-3 mb-10 p-2 bg-white/60 rounded-full shadow-inner backdrop-blur-sm max-w-min mx-auto">
-            <button data-theme="default" class="theme-button" title="Default Theme" style="background-color: #003E6B;"></button>
-            <button data-theme="sunset" class="theme-button" title="Sunset Theme" style="background: linear-gradient(to right, #6D28D9, #F97316);"></button>
-            <button data-theme="forest" class="theme-button" title="Forest Theme" style="background-color: #166534;"></button>
-            <button data-theme="monochrome" class="theme-button" title="Monochrome Theme" style="background-color: #1F2937;"></button>
-        </div>
-
-        <!-- Sticky Navbar: Changed top-4 to top-16 to stick below the global nav bar -->
-        <nav id="navbar" class="sticky top-16 z-50 backdrop-blur-sm shadow-lg rounded-full mb-12">
-            <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="flex items-center justify-between h-16">
-                    <div class="flex-shrink-0">
-                         <a href="#" class="text-white text-xl font-bold header-font tracking-wider">VK</a>
-                    </div>
-                    <div class="hidden md:flex items-center space-x-1">
-                        <a href="#summary" class="text-white hover:text-[var(--color-primary)] transition-all px-3 py-2 rounded-md text-sm font-bold">Summary</a>
-                        <a href="#video" class="text-white hover:text-[var(--color-primary)] transition-all px-3 py-2 rounded-md text-sm font-bold">Video Intro</a>
-                        <a href="#timeline" class="text-white hover:text-[var(--color-primary)] transition-all px-3 py-2 rounded-md text-sm font-bold">Timeline</a>
-                        <a href="#skills" class="text-white hover:text-[var(--color-primary)] transition-all px-3 py-2 rounded-md text-sm font-bold">Skills</a>
-                        <a href="#recommendations" class="text-white hover:text-[var(--color-primary)] transition-all px-3 py-2 rounded-md text-sm font-bold">Recs</a>
-                        <a href="#education" class="text-white hover:text-[var(--color-primary)] transition-all px-3 py-2 rounded-md text-sm font-bold">Education</a>
-                        <a href="#portfolio" class="text-white hover:text-[var(--color-primary)] transition-all px-3 py-2 rounded-md text-sm font-bold">Portfolio</a>
-                        <a href="#contact" class="text-white hover:text-[var(--color-primary)] transition-all px-3 py-2 rounded-md text-sm font-bold">Contact</a>
-                    </div>
-                    <div class="-mr-2 flex md:hidden">
-                        <button type="button" id="mobile-menu-button" class="bg-white/20 inline-flex items-center justify-center p-2 rounded-md text-white hover:bg-white/30 focus:outline-none" aria-controls="mobile-menu" aria-expanded="false">
-                            <span class="sr-only">Open main menu</span>
-                            <svg id="hamburger-icon" class="block h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
-                            <svg id="close-icon" class="hidden h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                        </button>
+        <header class="bg-white rounded-xl shadow-lg p-8 md:p-12 mb-12 overflow-hidden relative">
+             <a href="https://viskon.github.io/interactimeline.html" class="absolute top-6 right-8 z-20 flex items-center space-x-2 px-3 py-2 bg-gray-100 hover:bg-indigo-100 hover:text-indigo-700 text-gray-600 rounded-full transition-all duration-300 shadow-sm hover:shadow-md" title="To InteracTimeline">
+                <span class="text-xs font-semibold">To InteracTimeline</span>
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                </svg>
+            </a>
+            <div class="absolute top-0 right-0 -mt-24 -mr-24 w-72 h-72 bg-indigo-100 rounded-full opacity-50"></div>
+            <div class="absolute bottom-0 left-0 -mb-24 -ml-24 w-72 h-72 bg-purple-100 rounded-full opacity-50"></div>
+            <div class="relative z-10 flex flex-col md:flex-row items-center text-center md:text-left">
+                <div class="flex-shrink-0 mb-6 md:mb-0 md:mr-10">
+                    <div class="w-32 h-32 bg-indigo-600 rounded-full flex items-center justify-center text-white text-5xl font-bold shadow-lg ring-4 ring-white">
+                        VK
                     </div>
                 </div>
+                <div>
+                    <h1 class="text-4xl md:text-5xl font-bold text-gray-900">Vishal Kondabathini</h1>
+                    <p class="text-lg text-gray-600 mt-4 max-w-2xl">
+                        Igniting the spark in individuals and teams to create transformative value, harness the power of data, and collaborate to drive ground-breaking innovation.
+                    </p>
+                </div>
             </div>
-        </nav>
-        
-        <!-- Mobile Menu Panel: Changed top-24 to top-36 to appear below the sticky nav -->
-        <div id="mobile-menu" class="md:hidden fixed top-36 left-4 right-4 z-40 bg-[var(--color-accent-translucent)] backdrop-blur-md rounded-2xl shadow-xl overflow-hidden">
-             <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3 text-center">
-                <a href="#summary" class="text-white hover:bg-white/20 block px-3 py-2 rounded-md text-base font-medium">Summary</a>
-                <a href="#video" class="text-white hover:bg-white/20 block px-3 py-2 rounded-md text-base font-medium">Video Intro</a>
-                <a href="#timeline" class="text-white hover:bg-white/20 block px-3 py-2 rounded-md text-base font-medium">Timeline</a>
-                <a href="#skills" class="text-white hover:bg-white/20 block px-3 py-2 rounded-md text-base font-medium">Skills</a>
-                <a href="#recommendations" class="text-white hover:bg-white/20 block px-3 py-2 rounded-md text-base font-medium">Recs</a>
-                <a href="#education" class="text-white hover:bg-white/20 block px-3 py-2 rounded-md text-base font-medium">Education</a>
-                <a href="#portfolio" class="text-white hover:bg-white/20 block px-3 py-2 rounded-md text-base font-medium">Portfolio</a>
-                <a href="#contact" class="text-white hover:bg-white/20 block px-3 py-2 rounded-md text-base font-medium">Contact</a>
+             <!-- Enhanced Toggle Switch -->
+            <div class="relative z-10 mt-8 pt-6 border-t border-gray-200 flex flex-col items-center">
+                <div id="view-switcher" class="relative bg-gray-200 rounded-full p-1 flex items-center flex-wrap justify-center shadow-inner">
+                    <div id="switcher-bg" class="absolute h-[85%] top-[7.5%] bg-indigo-600 rounded-full transition-all duration-300 ease-in-out shadow-md"></div>
+                    <button data-target="#summary" class="switcher-btn relative z-10 px-4 py-2 text-sm font-semibold rounded-full transition-colors duration-300 flex items-center space-x-2">
+                        <span>Summary</span>
+                    </button>
+                     <button data-target="#video" class="switcher-btn relative z-10 px-4 py-2 text-sm font-semibold rounded-full transition-colors duration-300 flex items-center space-x-2">
+                        <span>Video</span>
+                    </button>
+                    <button data-target="#timeline" class="switcher-btn relative z-10 px-4 py-2 text-sm font-semibold rounded-full transition-colors duration-300 flex items-center space-x-2">
+                        <span>Timeline</span>
+                    </button>
+                    <button data-target="#skills" class="switcher-btn relative z-10 px-4 py-2 text-sm font-semibold rounded-full transition-colors duration-300 flex items-center space-x-2">
+                        <span>Skills</span>
+                    </button>
+                    <button data-target="#recommendations" class="switcher-btn relative z-10 px-4 py-2 text-sm font-semibold rounded-full transition-colors duration-300 flex items-center space-x-2">
+                        <span>Recs</span>
+                    </button>
+                    <button data-target="#education" class="switcher-btn relative z-10 px-4 py-2 text-sm font-semibold rounded-full transition-colors duration-300 flex items-center space-x-2">
+                        <span>Education</span>
+                    </button>
+                    <button data-target="#portfolio" class="switcher-btn relative z-10 px-4 py-2 text-sm font-semibold rounded-full transition-colors duration-300 flex items-center space-x-2">
+                        <span>Portfolio</span>
+                    </button>
+                    <button data-target="#contact" class="switcher-btn relative z-10 px-4 py-2 text-sm font-semibold rounded-full transition-colors duration-300 flex items-center space-x-2">
+                        <span>Contact</span>
+                    </button>
+                </div>
             </div>
-        </div>
-
+        </header>
 
         <main class="mb-24">
-            <!-- Sections: Changed scroll-mt-24 to scroll-mt-36 for proper anchor link positioning -->
-            <section id="summary" class="scroll-mt-36 scroll-animate">
+            <!-- Sections: Changed scroll-mt-24 for proper anchor link positioning -->
+            <section id="summary" class="scroll-mt-24 scroll-animate">
                 <div class="text-center">
                     <h3 class="text-3xl font-bold text-gray-800">Professional Summary</h3>
                 </div>
@@ -387,7 +359,7 @@
 
             <div class="w-1/4 mx-auto my-12 h-px bg-gray-200"></div>
 
-            <section id="video" class="scroll-mt-36 scroll-animate">
+            <section id="video" class="scroll-mt-24 scroll-animate">
                 <div class="text-center">
                     <h3 class="header-font text-3xl md:text-4xl font-black text-gray-800 tracking-tight">
                          <i class="fas fa-video color-accent mr-2"></i>How did I get things done?
@@ -410,14 +382,14 @@
 
             <div class="w-1/4 mx-auto my-12 h-px bg-gray-200"></div>
 
-            <section id="timeline" class="scroll-mt-36 scroll-animate">
+            <section id="timeline" class="scroll-mt-24 scroll-animate">
                 <h3 class="text-3xl font-bold text-center text-gray-800">Career Timeline</h3>
                 <p class="text-center mt-2 text-lg text-gray-600">Click on each company to see role details and key accomplishments.</p>
                 <div class="mt-12 max-w-3xl mx-auto border-l-2 border-[var(--color-primary)] pl-8">
                     <!-- Timeline content generated by JS --></div>
             </section>
 
-            <section id="skills" class="scroll-mt-36 scroll-animate">
+            <section id="skills" class="scroll-mt-24 scroll-animate">
                 <h3 class="text-3xl font-bold text-center text-gray-800">Core Competencies</h3>
                 <p class="text-center mt-2 text-lg text-gray-600">A holistic view of my capabilities across strategic, data, and technical domains.</p>
                 
@@ -460,7 +432,7 @@
             
             <div class="w-1/4 mx-auto my-12 h-px bg-gray-200"></div>
 
-            <section id="recommendations" class="scroll-mt-36 scroll-animate">
+            <section id="recommendations" class="scroll-mt-24 scroll-animate">
                 <h3 class="text-3xl font-bold text-center text-gray-800">Peer & Leader Recommendations</h3>
                 <p class="text-center mt-2 max-w-4xl mx-auto text-lg text-gray-600">Selected quotes that summarize feedback received from managers, guides, and peers across my career.</p>
                 <div id="recommendations-grid" class="mt-12 grid grid-cols-1 md:grid-cols-2 gap-8 max-w-6xl mx-auto">
@@ -469,7 +441,7 @@
 
             <div class="w-1/4 mx-auto my-12 h-px bg-gray-200"></div>
 
-            <section id="education" class="scroll-mt-36 scroll-animate">
+            <section id="education" class="scroll-mt-24 scroll-animate">
                 <h3 class="text-3xl font-bold text-center text-gray-800">Formal Education</h3>
                 <div class="mt-8 max-w-3xl mx-auto">
                     <div class="bg-white p-6 rounded-2xl shadow-lg border border-gray-100">
@@ -519,7 +491,7 @@
 
             <div class="w-1/4 mx-auto my-12 h-px bg-gray-200"></div>
 
-            <section id="portfolio" class="scroll-mt-36 scroll-animate">
+            <section id="portfolio" class="scroll-mt-24 scroll-animate">
                 <h3 class="text-3xl font-bold text-center text-gray-800">Digitalization Project Portfolio</h3>
                 <p class="text-center mt-2 max-w-4xl mx-auto text-lg text-gray-600">A snapshot of enterprise-grade solutions where I acted as Solution Architect and Product Owner, delivering value in regulated environments.</p>
                 
@@ -529,7 +501,7 @@
             
             <div class="w-1/4 mx-auto my-12 h-px bg-gray-200"></div>
 
-            <section id="contact" class="scroll-mt-36 scroll-animate">
+            <section id="contact" class="scroll-mt-24 scroll-animate">
                  <h3 class="text-3xl font-bold text-center text-gray-800">Get In Touch</h3>
                  <p class="text-center mt-2 max-w-4xl mx-auto text-lg text-gray-600">I'm always open to discussing new projects, creative ideas, or opportunities to be part of an ambitious vision.</p>
                 <div class="mt-8 max-w-lg mx-auto bg-white p-8 rounded-2xl shadow-xl border border-gray-100 flex justify-center items-center space-x-8">
@@ -985,80 +957,86 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    const navLinks = document.querySelectorAll('nav a');
-    navLinks.forEach(link => {
-        link.addEventListener('click', (e) => {
-            const targetId = e.currentTarget.getAttribute('href');
-
-            // Only handle internal anchor links for smooth scrolling
-            if (targetId && targetId.startsWith('#')) {
-                e.preventDefault(); // Prevent default only for smooth scroll links
-
-                if (targetId === '#') {
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                    return;
-                }
-
-                const targetElement = document.querySelector(targetId);
-                if(targetElement) {
-                    targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }
-            }
-            // For external links (like the one in the global nav), do nothing and let the browser navigate.
-        });
-    });
-
     const backToTopButton = document.getElementById('back-to-top');
     window.addEventListener('scroll', () => { window.scrollY > 300 ? backToTopButton.classList.add('show') : backToTopButton.classList.remove('show'); });
     backToTopButton.addEventListener('click', () => { window.scrollTo({ top: 0, behavior: 'smooth' }); });
 
-    const sections = document.querySelectorAll('section');
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            const navLink = document.querySelector(`nav a[href="#${entry.target.id}"]`);
-            if (entry.isIntersecting) {
-                entry.target.classList.add('is-visible');
-                if (entry.target.id === 'skills') {
-                    document.querySelectorAll('.progress-bar-fill').forEach(bar => {
-                        const levelName = bar.parentElement.previousElementSibling.querySelector('span:last-child').textContent;
-                        const levelData = SKILL_LEVELS[levelName];
-                        setTimeout(() => { bar.style.width = `${levelData.percent}%`; }, 200);
-                    });
-                }
-                if (navLink) {
-                    navLinks.forEach(link => link.classList.remove('active'));
-                    navLink.classList.add('active');
-                }
-            }
-        });
-    }, { rootMargin: "-30% 0px -30% 0px" });
-    sections.forEach(section => { section.classList.add('scroll-animate'); observer.observe(section); });
+    const sections = document.querySelectorAll('section[id]');
     
-    // --- Mobile Menu Toggle ---
-    const mobileMenuButton = document.getElementById('mobile-menu-button');
-    const mobileMenu = document.getElementById('mobile-menu');
-    const hamburgerIcon = document.getElementById('hamburger-icon');
-    const closeIcon = document.getElementById('close-icon');
+    // --- View Switcher Logic ---
+    const viewSwitcher = document.getElementById('view-switcher');
+    if (viewSwitcher) {
+        const switcherBg = document.getElementById('switcher-bg');
+        const switcherButtons = viewSwitcher.querySelectorAll('.switcher-btn');
+        let activeSwitcherButton = switcherButtons[0];
 
-    const toggleMenu = () => {
-        const isExpanded = mobileMenu.classList.contains('menu-open');
-        mobileMenuButton.setAttribute('aria-expanded', !isExpanded);
-        mobileMenu.classList.toggle('menu-open');
-        hamburgerIcon.classList.toggle('hidden');
-        closeIcon.classList.toggle('hidden');
-    };
-    
-    mobileMenuButton.addEventListener('click', toggleMenu);
+        const updateSwitcherUI = (button, immediate = false) => {
+            if (!button) return;
 
-    const mobileMenuLinks = mobileMenu.querySelectorAll('a');
-    mobileMenuLinks.forEach(link => {
-        link.addEventListener('click', () => {
-            if (mobileMenu.classList.contains('menu-open')) {
-                toggleMenu();
+            if (immediate) {
+                switcherBg.style.transition = 'none';
+            } else {
+                switcherBg.style.transition = 'all 0.3s ease-in-out';
             }
-        });
-    });
 
+            switcherBg.style.width = `${button.offsetWidth}px`;
+            switcherBg.style.left = `${button.offsetLeft}px`;
+
+            switcherButtons.forEach(btn => {
+                btn.classList.remove('text-white');
+                btn.classList.add('text-gray-700');
+            });
+            button.classList.add('text-white');
+            button.classList.remove('text-gray-700');
+            activeSwitcherButton = button;
+            
+            if (immediate) {
+               switcherBg.offsetHeight; 
+               switcherBg.style.transition = '';
+            }
+        };
+
+        switcherButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const targetId = button.dataset.target;
+                const targetElement = document.querySelector(targetId);
+                if (targetElement) {
+                    targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+        
+        window.addEventListener('resize', () => updateSwitcherUI(activeSwitcherButton, true));
+        updateSwitcherUI(activeSwitcherButton, true);
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                // Animation logic
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('is-visible');
+                    // Progress bar logic
+                    if (entry.target.id === 'skills') {
+                        document.querySelectorAll('.progress-bar-fill').forEach(bar => {
+                            const levelName = bar.parentElement.previousElementSibling.querySelector('span:last-child').textContent;
+                            const levelData = SKILL_LEVELS[levelName];
+                            setTimeout(() => { bar.style.width = `${levelData.percent}%`; }, 200);
+                        });
+                    }
+                }
+                
+                // Switcher UI update logic
+                const correspondingButton = viewSwitcher.querySelector(`.switcher-btn[data-target="#${entry.target.id}"]`);
+                if (correspondingButton && entry.intersectionRatio > 0.5) {
+                     updateSwitcherUI(correspondingButton);
+                }
+            });
+        }, { threshold: 0.5 });
+
+        sections.forEach(section => {
+            section.classList.add('scroll-animate');
+            observer.observe(section);
+        });
+    }
 
     // --- Theme Switcher ---
     const themeButtons = document.querySelectorAll('.theme-button');
@@ -1077,12 +1055,8 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem('cv-theme', theme);
     }
 
-    themeButtons.forEach(button => {
-        button.addEventListener('click', () => {
-            applyTheme(button.dataset.theme);
-        });
-    });
-
+    // Since the theme switcher is removed from the body, this code won't find buttons, but it's harmless to keep.
+    // If you re-add a theme switcher, this will work.
     const savedTheme = localStorage.getItem('cv-theme') || 'default';
     applyTheme(savedTheme);
 
@@ -1090,4 +1064,6 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
+
+
 
