@@ -988,16 +988,23 @@ document.addEventListener('DOMContentLoaded', () => {
     const navLinks = document.querySelectorAll('nav a');
     navLinks.forEach(link => {
         link.addEventListener('click', (e) => {
-            e.preventDefault();
             const targetId = e.currentTarget.getAttribute('href');
-            if (targetId === '#') {
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-                return;
+
+            // Only handle internal anchor links for smooth scrolling
+            if (targetId && targetId.startsWith('#')) {
+                e.preventDefault(); // Prevent default only for smooth scroll links
+
+                if (targetId === '#') {
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                    return;
+                }
+
+                const targetElement = document.querySelector(targetId);
+                if(targetElement) {
+                    targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
             }
-            const targetElement = document.querySelector(targetId);
-            if(targetElement) { 
-                targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' }); 
-            }
+            // For external links (like the one in the global nav), do nothing and let the browser navigate.
         });
     });
 
@@ -1083,3 +1090,4 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
+
