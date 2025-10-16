@@ -145,8 +145,10 @@
 	<!-- Add Firebase SDKs -->
 	<script src="https://www.gstatic.com/firebasejs/10.5.0/firebase-app-compat.js"></script>
 	<script src="https://www.gstatic.com/firebasejs/10.5.0/firebase-firestore-compat.js"></script>
-
-	<script>
+   
+    <script>
+    // Make db variable global
+    let db;
 	// Initialize Firebase with complete config
     const firebaseConfig = {
         apiKey: "AIzaSyDPyFt8yhwG8MDO_qqmaYMgE77xYv6u_bc",
@@ -157,13 +159,13 @@
         appId: "1:294550060415:web:37bf78cbccafbcaacaae4a"
     };
 
-    try {
+        try {
         // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
         console.log('Firebase initialized successfully');
 
-        // Initialize Firestore
-        const db = firebase.firestore();
+        // Initialize Firestore and assign to global variable
+        db = firebase.firestore();
         console.log('Firestore initialized successfully');
 
         // Test Firestore connection
@@ -178,7 +180,7 @@
     } catch (error) {
         console.error('Error initializing Firebase:', error);
     }
-	</script>
+    </script>
 </head>
 <body class="p-4 md:p-8">
 
@@ -1562,48 +1564,64 @@
             updatePreview();
 			
 			// Visit Counter Logic
-            const visitCountElement = document.getElementById('visit-count');
+            document.addEventListener('DOMContentLoaded', function() {
+                // Check if Firebase and Firestore are initialized
+                if (typeof firebase === 'undefined' || !db) {
+                    console.error('Firebase or Firestore not initialized');
+                    const visitCountElement = document.getElementById('visit-count');
+                    if (visitCountElement) {
+                        visitCountElement.textContent = '?';
+                    }
+                    return;
+                }
 
-            // Get the current page name from the file name
-            const pageName = window.location.pathname.split('/').pop().replace('.html', '') || 'index';
-            console.log('Page name for counter:', pageName);
+                const visitCountElement = document.getElementById('visit-count');
+                if (!visitCountElement) {
+                    console.error('Visit count element not found');
+                    return;
+                }
 
-            // Reference to the visit counter document
-            const counterRef = db.collection('artifacts/interactcv/public/data/visitCounters').doc(pageName);
-            console.log('Counter reference path:', counterRef.path);
+                // Get the current page name from the file name
+                const pageName = window.location.pathname.split('/').pop().replace('.html', '') || 'index';
+                console.log('Page name for counter:', pageName);
 
-            // Update the counter using a transaction to ensure accuracy
-            counterRef.get()
-                .then((doc) => {
-                    console.log('Current document exists:', doc.exists);
-                    console.log('Current document data:', doc.data());
-                    
-                    return db.runTransaction((transaction) => {
-                        if (!doc.exists) {
-                            console.log('Creating new counter document');
-                            transaction.set(counterRef, { count: 1 });
-                            return 1;
-                        }
+                // Reference to the visit counter document
+                const counterRef = db.collection('artifacts/interactcv/public/data/visitCounters').doc(pageName);
+                console.log('Counter reference path:', counterRef.path);
 
-                        const newCount = doc.data().count + 1;
-                        console.log('Updating counter to:', newCount);
-                        transaction.update(counterRef, { count: newCount });
-                        return newCount;
+                // Update the counter using a transaction to ensure accuracy
+                counterRef.get()
+                    .then((doc) => {
+                        console.log('Current document exists:', doc.exists);
+                        console.log('Current document data:', doc.data());
+                        
+                        return db.runTransaction((transaction) => {
+                            if (!doc.exists) {
+                                console.log('Creating new counter document');
+                                transaction.set(counterRef, { count: 1 });
+                                return 1;
+                            }
+
+                            const newCount = doc.data().count + 1;
+                            console.log('Updating counter to:', newCount);
+                            transaction.update(counterRef, { count: newCount });
+                            return newCount;
+                        });
+                    })
+                    .then((newCount) => {
+                        console.log('Successfully updated counter to:', newCount);
+                        visitCountElement.textContent = newCount;
+                    })
+                    .catch((error) => {
+                        console.error("Error updating visit count:", error);
+                        console.error("Error details:", {
+                            code: error.code,
+                            message: error.message,
+                            stack: error.stack
+                        });
+                        visitCountElement.textContent = '?';
                     });
-                })
-                .then((newCount) => {
-                    console.log('Successfully updated counter to:', newCount);
-                    visitCountElement.textContent = newCount;
-                })
-                .catch((error) => {
-                    console.error("Error updating visit count:", error);
-                    console.error("Error details:", {
-                        code: error.code,
-                        message: error.message,
-                        stack: error.stack
-                    });
-                    visitCountElement.textContent = '?';
-                });
+            });
         });
     </script>
 </body>
