@@ -6,7 +6,7 @@ const db = admin.firestore();
 const COLLECTION_PATH = 'artifacts/interactcv/public/data/visitCounters';
 
 exports.incrementVisit = functions.https.onRequest((req, res) => {
-  // Always set CORS headers for every request
+  // Always set CORS headers
   res.set('Access-Control-Allow-Origin', 'https://viskon.github.io');
   res.set('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.set('Access-Control-Allow-Headers', 'Content-Type');
