@@ -1565,13 +1565,10 @@
 			
 			// Visit Counter Logic
             document.addEventListener('DOMContentLoaded', function() {
-                // Check if Firebase and Firestore are initialized
+                console.log('DOM Content Loaded - Starting visit counter logic');
+
                 if (typeof firebase === 'undefined' || !db) {
                     console.error('Firebase or Firestore not initialized');
-                    const visitCountElement = document.getElementById('visit-count');
-                    if (visitCountElement) {
-                        visitCountElement.textContent = '?';
-                    }
                     return;
                 }
 
@@ -1581,28 +1578,35 @@
                     return;
                 }
 
-                // Get the current page name from the file name
+                // Get the current page name
                 const pageName = window.location.pathname.split('/').pop().replace('.html', '') || 'index';
                 console.log('Page name for counter:', pageName);
 
-                // Reference to the visit counter document
-                const counterRef = db.collection('artifacts/interactcv/public/data/visitCounters').doc(pageName);
-                console.log('Counter reference path:', counterRef.path);
+                // Build the complete path according to Firestore rules
+                const collectionPath = 'artifacts/interactcv/public/data/visitCounters';
+                const counterRef = db.collection(collectionPath).doc(pageName);
+                
+                console.log('Attempting to access counter at path:', counterRef.path);
 
-                // Update the counter using a transaction to ensure accuracy
+                // First try to get the current document
                 counterRef.get()
                     .then((doc) => {
-                        console.log('Current document exists:', doc.exists);
-                        console.log('Current document data:', doc.data());
-                        
-                        return db.runTransaction((transaction) => {
-                            if (!doc.exists) {
-                                console.log('Creating new counter document');
+                        console.log('Retrieved document. Exists:', doc.exists);
+                        if (doc.exists) {
+                            console.log('Current count:', doc.data().count);
+                        }
+
+                        // Use a transaction for atomic update
+                        return db.runTransaction(async (transaction) => {
+                            const freshDoc = await transaction.get(counterRef);
+                            
+                            if (!freshDoc.exists) {
+                                console.log('Creating new counter document with count 1');
                                 transaction.set(counterRef, { count: 1 });
                                 return 1;
                             }
 
-                            const newCount = doc.data().count + 1;
+                            const newCount = (freshDoc.data().count || 0) + 1;
                             console.log('Updating counter to:', newCount);
                             transaction.update(counterRef, { count: newCount });
                             return newCount;
@@ -1613,7 +1617,7 @@
                         visitCountElement.textContent = newCount;
                     })
                     .catch((error) => {
-                        console.error("Error updating visit count:", error);
+                        console.error("Error with visit counter:", error);
                         console.error("Error details:", {
                             code: error.code,
                             message: error.message,
