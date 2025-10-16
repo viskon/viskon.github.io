@@ -1,4 +1,5 @@
 
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -140,6 +141,24 @@
             transition: opacity 0.25s ease;
         }
     </style>
+	
+	<!-- Add Firebase SDKs -->
+	<script src="https://www.gstatic.com/firebasejs/10.5.0/firebase-app-compat.js"></script>
+	<script src="https://www.gstatic.com/firebasejs/10.5.0/firebase-firestore-compat.js"></script>
+
+	<script>
+	// Initialize Firebase
+	const firebaseConfig = {
+	  projectId: "interactcv-7b41f",
+	  // Add other config options if needed
+	};
+
+	// Initialize Firebase
+	firebase.initializeApp(firebaseConfig);
+
+	// Initialize Firestore
+	const db = firebase.firestore();
+	</script>
 </head>
 <body class="p-4 md:p-8">
 
@@ -1524,10 +1543,31 @@
 			
 			// Visit Counter Logic
 			const visitCountElement = document.getElementById('visit-count');
-			let visitCount = localStorage.getItem('interactCVVisits');
-			visitCount = visitCount ? parseInt(visitCount) + 1 : 1;
-			localStorage.setItem('interactCVVisits', visitCount);
-			visitCountElement.textContent = visitCount;
+
+			// Get the current page name from the file name
+			const pageName = window.location.pathname.split('/').pop().replace('.html', '');
+
+			// Reference to the visit counter document
+			const counterRef = db.collection('artifacts/interactcv/public/data/visitCounters').doc(pageName);
+
+			// Update the counter using a transaction to ensure accuracy
+			counterRef.get().then((doc) => {
+				return db.runTransaction((transaction) => {
+					if (!doc.exists) {
+						transaction.set(counterRef, { count: 1 });
+						return 1;
+					}
+
+					const newCount = doc.data().count + 1;
+					transaction.update(counterRef, { count: newCount });
+					return newCount;
+				});
+			}).then((newCount) => {
+				visitCountElement.textContent = newCount;
+			}).catch((error) => {
+				console.error("Error updating visit count:", error);
+				visitCountElement.textContent = '?';
+			});
         });
     </script>
 </body>
