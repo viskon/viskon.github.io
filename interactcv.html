@@ -238,6 +238,113 @@
             }
         }
     </style>
+
+        <!-- Add Firebase SDKs -->
+	<script src="https://www.gstatic.com/firebasejs/10.5.0/firebase-app-compat.js"></script>
+	<script src="https://www.gstatic.com/firebasejs/10.5.0/firebase-firestore-compat.js"></script>
+   
+    <script>
+    // Make db variable global
+    let db;
+	// Initialize Firebase with complete config
+    const firebaseConfig = {
+        apiKey: "AIzaSyDPyFt8yhwG8MDO_qqmaYMgE77xYv6u_bc",
+        authDomain: "interactcv-7b41f.firebaseapp.com",
+        projectId: "interactcv-7b41f",
+        storageBucket: "interactcv-7b41f.appspot.com",
+        messagingSenderId: "294550060415",
+        appId: "1:294550060415:web:37bf78cbccafbcaacaae4a"
+    };
+
+        try {
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        console.log('Firebase initialized successfully');
+
+        // Initialize Firestore and assign to global variable
+        db = firebase.firestore();
+        console.log('Firestore initialized successfully');
+
+        // Test Firestore connection
+        db.collection('artifacts/interactcv/public/data/visitCounters').limit(1).get()
+            .then(() => {
+                console.log('Successfully connected to Firestore');
+            })
+            .catch((error) => {
+                console.error('Error connecting to Firestore:', error);
+            });
+
+    } catch (error) {
+        console.error('Error initializing Firebase:', error);
+    }
+    // VisitCounter
+        document.addEventListener('DOMContentLoaded', function() {
+        console.log('DOM Content Loaded - Starting visit counter logic');
+
+        if (typeof firebase === 'undefined' || !db) {
+            console.error('Firebase or Firestore not initialized');
+            return;
+        }
+
+        const visitCountElement = document.getElementById('visit-count');
+        if (!visitCountElement) {
+            console.error('Visit count element not found');
+            return;
+        }
+
+        // Get the current page name
+        const pageName = window.location.pathname.split('/').pop().replace('.html', '') || 'index';
+        console.log('Page name for counter:', pageName);
+
+        // Build the complete path according to Firestore rules
+        const collectionPath = 'artifacts/interactcv/public/data/visitCounters';
+        const counterRef = db.collection(collectionPath).doc(pageName);
+        
+        console.log('Attempting to access counter at path:', counterRef.path);
+
+        // First try to get the current document
+        counterRef.get()
+            .then((doc) => {
+                console.log('Retrieved document. Exists:', doc.exists);
+                if (doc.exists) {
+                    console.log('Current count:', doc.data().count);
+                }
+
+                // Use a transaction for atomic update
+                return db.runTransaction(async (transaction) => {
+                    const freshDoc = await transaction.get(counterRef);
+                    
+                    if (!freshDoc.exists) {
+                        console.log('Creating new counter document with count 1');
+                        transaction.set(counterRef, { count: 1 });
+                        return 1;
+                    }
+
+                    const newCount = (freshDoc.data().count || 0) + 1;
+                    console.log('Updating counter to:', newCount);
+                    transaction.update(counterRef, { count: newCount });
+                    return newCount;
+                });
+            })
+            .then((newCount) => {
+                console.log('Successfully updated counter to:', newCount);
+                visitCountElement.textContent = newCount;
+            })
+            .catch((error) => {
+                console.error("Error with visit counter:", error);
+                console.error("Error details:", {
+                    code: error.code,
+                    message: error.message,
+                    stack: error.stack
+                });
+                visitCountElement.textContent = '?';
+            });
+    });
+
+</script>
+
+
+
 </head>
 <body class="antialiased">
 
@@ -282,6 +389,19 @@
                     <p class="text-lg text-gray-600 mt-4 max-w-2xl">
                         Igniting the spark in individuals and teams to create transformative value, harness the power of data, and collaborate to drive ground-breaking innovation.
                     </p>
+                    <div class="mt-6 flex flex-col md:flex-row items-center justify-center md:justify-start space-y-3 md:space-y-0 md:space-x-6 text-gray-500">
+                         <p id="visit-counter" class="text-sm flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1.5" viewBox="0 0 20 20" fill="currentColor">
+                              <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+                              <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.022 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd" />
+                            </svg>
+                            Anonymous Visits: <span id="visit-count" class="font-semibold ml-1">0</span>
+                          </p>
+                         <a href="https://www.linkedin.com/in/vishalkondabathini/" target="_blank" class="flex items-center space-x-2 text-sm hover:text-indigo-600 transition-colors font-medium">
+                            <svg class="w-4 h-4" role="img" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.225 0z"/></svg>
+                            <span>LinkedIn Profile</span>
+                          </a>
+                    </div>
                 </div>
             </div>
              <!-- Enhanced Toggle Switch -->
