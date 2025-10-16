@@ -44,6 +44,11 @@ exports.incrementVisit = functions.https.onRequest((req, res) => {
     })
     .catch((err) => {
       console.error('incrementVisit error:', err);
+      // ** ADD THESE LINES **
+      res.set('Access-Control-Allow-Origin', 'https://viskon.github.io');
+      res.set('Access-Control-Allow-Methods', 'POST, OPTIONS');
+      res.set('Access-Control-Allow-Headers', 'Content-Type');
+      // ** END OF ADDED LINES **
       return res.status(500).send({ error: 'Internal error' });
     });
 });
