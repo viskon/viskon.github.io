@@ -1,8 +1,5 @@
-// Client: call server-side function to increment visit counters.
-// Replace direct Firestore client logic in your HTML pages with this script.
-// Set FUNCTION_URL to the deployed Cloud Function HTTPS endpoint.
 (function () {
-  const FUNCTION_URL = "REPLACE_WITH_YOUR_FUNCTION_URL"; // <-- update after deploying functions
+  const FUNCTION_URL = "https://us-central1-interactcv-7b41f.cloudfunctions.net/incrementVisit"; 
 
   function getPageName() {
     return window.location.pathname.split('/').pop().replace('.html', '') || 'index';
@@ -15,10 +12,7 @@
     try {
       const res = await fetch(FUNCTION_URL, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-          // If you add authentication (App Check or custom header), add it here
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ page: getPageName() })
       });
 
@@ -29,20 +23,12 @@
       }
 
       const data = await res.json();
-      if (data && typeof data.count === 'number') {
-        visitCountElement.textContent = data.count;
-      } else {
-        visitCountElement.textContent = '?';
-      }
+      visitCountElement.textContent = typeof data.count === 'number' ? data.count : '?';
     } catch (err) {
       console.error('Error calling incrementVisit function:', err);
-      const visitCountElement = document.getElementById('visit-count');
-      if (visitCountElement) visitCountElement.textContent = '?';
+      visitCountElement.textContent = '?';
     }
   }
 
-  // Run after DOM loads
-  document.addEventListener('DOMContentLoaded', () => {
-    incrementVisit();
-  });
+  document.addEventListener('DOMContentLoaded', incrementVisit);
 })();
