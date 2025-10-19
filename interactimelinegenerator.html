@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InteractCV Generator - Build Your Timeline</title>
+    <meta name="author" content="Vishal Kondabathini">
+    <meta name="description" content="A powerful and intuitive tool to create your own interactive career timeline. Add work experience, education, and certifications to generate a shareable HTML file.">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f9fafb;
+        }
+        .btn {
+            @apply px-4 py-2 font-semibold rounded-md transition-all duration-200 shadow-sm;
+        }
+        .sortable-ghost {
+            background: #eef2ff;
+            opacity: 0.7;
+            border: 2px dashed #6366f1;
+        }
+        .sortable-chosen {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            transform: scale(1.02);
+        }
+        .entry-list-item-editing {
+            @apply ring-2 ring-indigo-500 border-transparent;
+        }
+        .form-input-wrapper {
+            @apply flex items-center border border-gray-300 rounded-md bg-gray-50 focus-within:ring-2 focus-within:ring-indigo-500 focus-within:border-transparent transition-shadow w-full;
+        }
+        .form-input-inner {
+             @apply w-full p-2 bg-transparent border-none focus:outline-none text-gray-700;
+        }
+        select.form-input-inner {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 0.5rem center;
+            background-repeat: no-repeat;
+            background-size: 1.5em 1.5em;
+            padding-right: 2.5rem;
+        }
+        #entry-editor-tabs button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background-color: #f3f4f6;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+
+</head>
+<body class="bg-gray-50">
+
+    <!-- Header -->
+    <header class="bg-white shadow-sm sticky top-0 z-40">
+        <div class="container mx-auto px-6 py-3 flex justify-between items-center">
+            <!-- Left: Home Link -->
+            <a href="https://viskon.github.io/interactcvgenerator.html" class="flex items-center space-x-2 text-gray-500 hover:text-indigo-600 transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                </svg>
+                <span class="font-semibold text-lg">Interactive CV</span>
+            </a>
+            <!-- Right: Page Title -->
+            <h1 class="text-xl font-bold text-gray-800">
+                Timeline Generator
+            </h1>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-6 py-8">
+        
+        <!-- Top Section: Timeline Data -->
+        <div class="bg-white p-6 rounded-lg shadow-lg mb-8">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-gray-800">Your Timeline Entries</h2>
+            </div>
+            <div id="timeline-entries-list" class="space-y-3 max-h-[50vh] overflow-y-auto pr-2">
+                 <p class="text-center text-gray-500 py-8">Your timeline is empty. Add a new entry below to get started!</p>
+            </div>
+            <div class="mt-6 pt-6 border-t border-gray-200 flex justify-end">
+                <button id="generate-btn" class="inline-block px-4 py-2 bg-gradient-to-r from-green-500 to-teal-600 text-white font-semibold rounded-full shadow-md transform hover:scale-105 transition-transform duration-300 text-sm flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                    <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
+                        <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/>
+                    </svg>
+                    <span>Download</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Bottom Section: Entry Editor -->
+        <div class="bg-white p-6 rounded-lg shadow-lg">
+            <h2 class="text-2xl font-bold text-gray-800">Add / Edit Entry</h2>
+            
+            <!-- Tab Navigation -->
+            <div id="entry-editor-tabs" class="mt-4 border-b border-gray-200">
+                <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+                    <button id="work-tab" class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">Work Experience</button>
+                    <button id="education-tab" class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">Formal Education</button>
+                    <button id="training-tab" class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">Trainings & Certificates</button>
+                </nav>
+            </div>
+            
+            <!-- Tab Content -->
+            <div class="pt-6">
+                <form id="work-form"></form>
+                <form id="education-form" class="hidden"></form>
+                <form id="training-form" class="hidden"></form>
+            </div>
+        </div>
+
+    </main>
+    
+    <script>
+        // --- DATA MANAGEMENT ---
+        let timelineData = [];
+        let editingEntryId = null;
+
+        // --- DOM ELEMENTS ---
+        const timelineEntriesList = document.getElementById('timeline-entries-list');
+        const generateBtn = document.getElementById('generate-btn');
+
+        const tabs = {
+            work: {
+                id: 'work',
+                button: document.getElementById('work-tab'),
+                form: document.getElementById('work-form'),
+            },
+            education: {
+                id: 'education',
+                button: document.getElementById('education-tab'),
+                form: document.getElementById('education-form'),
+            },
+            training: {
+                id: 'training',
+                button: document.getElementById('training-tab'),
+                form: document.getElementById('training-form'),
+            }
+        };
+
+        // --- ICONS ---
+        const icons = {
+            work: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>`,
+            education: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>`,
+            certification: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"></path></svg>`,
+        };
+
+        // --- TAB LOGIC ---
+        function disableOtherTabs(activeTabId) {
+            Object.values(tabs).forEach(tab => {
+                if (tab.id !== activeTabId) tab.button.disabled = true;
+            });
+        }
+
+        function enableAllTabs() {
+            Object.values(tabs).forEach(tab => tab.button.disabled = false );
+        }
+
+        function switchTab(id) {
+            enableAllTabs();
+            const colorMap = {
+                work: { border: 'border-indigo-500', text: 'text-indigo-600' },
+                education: { border: 'border-teal-500', text: 'text-teal-600' },
+                training: { border: 'border-purple-500', text: 'text-purple-600' }
+            };
+
+            Object.values(tabs).forEach(tab => {
+                const isActive = tab.id === id;
+                tab.form.classList.toggle('hidden', !isActive);
+                tab.button.className = `whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ${isActive ? `${colorMap[id].border} ${colorMap[id].text}` : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`;
+            });
+            
+            if (editingEntryId === null) {
+                resetForm(tabs[id].form);
+            }
+        }
+
+        Object.values(tabs).forEach(tab => {
+            tab.button.addEventListener('click', () => {
+                editingEntryId = null; 
+                highlightListItem(null);
+                switchTab(tab.id);
+            });
+        });
+
+        // --- FORM LOGIC ---
+        function populateForm(form, entry) {
+            form.querySelector('.entry-id').value = entry.id;
+            form.querySelector('.entry-title').value = entry.title;
+            form.querySelector('.entry-company').value = entry.company || entry.institution;
+            form.querySelector('.entry-details').value = entry.details || '';
+
+            const dateStr = entry.date || '';
+            const presentCheckbox = form.querySelector('.present-checkbox');
+            if (presentCheckbox) {
+                presentCheckbox.checked = dateStr.includes('Present');
+                form.querySelector('.end-date-selectors').style.display = presentCheckbox.checked ? 'none' : 'flex';
+            }
+
+            const parts = dateStr.split(' - ');
+            const startPart = parts[0] || '';
+            const endPart = presentCheckbox && presentCheckbox.checked ? '' : (parts[1] || '');
+            
+            const startMatch = startPart.match(/(\w{3})? ?(\d{4})/);
+            if (form.querySelector('.start-month') && startMatch) {
+                form.querySelector('.start-month').value = startMatch[1] || '';
+                form.querySelector('.start-year').value = startMatch[2] || '';
+            }
+            
+            const endMatch = endPart.match(/(\w{3})? ?(\d{4})/);
+            const completionMatch = startPart.match(/(\w{3})? ?(\d{4})/); 
+            
+            if (form.querySelector('.end-month') && endMatch) {
+                form.querySelector('.end-month').value = endMatch[1] || '';
+                form.querySelector('.end-year').value = endMatch[2] || '';
+            } else if (form.querySelector('.completion-month') && completionMatch) {
+                 form.querySelector('.completion-month').value = completionMatch[1] || '';
+                 form.querySelector('.completion-year').value = completionMatch[2] || '';
+            }
+            
+            if (entry.type === 'certification' || entry.type === 'training') {
+                form.querySelector('.entry-link').value = entry.link || '';
+                const skillsContainer = form.querySelector('.skills-tags-container');
+                skillsContainer.innerHTML = '';
+                if(entry.skills) entry.skills.forEach(skill => createSkillTag(skill, skillsContainer));
+            }
+
+            if (entry.type === 'work') {
+                const projectsContainer = form.querySelector('.projects-container');
+                projectsContainer.innerHTML = '';
+                if(entry.projects) entry.projects.forEach(proj => addProjectField(proj, projectsContainer));
+            }
+            
+            const saveBtn = form.querySelector('.save-btn');
+            saveBtn.querySelector('span').textContent = 'Update';
+            saveBtn.querySelector('svg').innerHTML = `<path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425a.267.267 0 0 1 .02-.022z"/>`;
+            saveBtn.disabled = false;
+        }
+
+        function resetForm(form) {
+            form.reset();
+            const saveBtn = form.querySelector('.save-btn');
+            saveBtn.querySelector('span').textContent = 'Add';
+            saveBtn.querySelector('svg').innerHTML = `<path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>`;
+            saveBtn.disabled = true;
+            if (form.querySelector('.skills-tags-container')) form.querySelector('.skills-tags-container').innerHTML = '';
+            if (form.querySelector('.projects-container')) form.querySelector('.projects-container').innerHTML = '';
+            
+            // Explicitly show the end date selectors on reset
+            if (form.querySelector('.end-date-selectors')) {
+                form.querySelector('.end-date-selectors').style.display = 'flex';
+            }
+
+            editingEntryId = null;
+            highlightListItem(null);
+            enableAllTabs();
+        }
+
+        function setupFormForEdit(entry) {
+            const type = entry.type === 'certification' ? 'training' : entry.type;
+            switchTab(type);
+            const activeForm = tabs[type].form;
+            populateForm(activeForm, entry);
+            editingEntryId = entry.id;
+            highlightListItem(entry.id);
+            disableOtherTabs(type);
+            activeForm.scrollIntoView({ behavior: 'smooth', block: 'end' });
+        }
+        
+        // --- SKILLS & PROJECTS UI ---
+        function createSkillTag(skill, container) {
+            const tag = document.createElement('div');
+            tag.className = 'bg-indigo-100 text-indigo-700 text-sm font-semibold px-3 py-1 rounded-full flex items-center';
+            tag.innerHTML = `<span>${skill}</span><button type="button" class="ml-2 text-indigo-500 hover:text-indigo-700">&times;</button>`;
+            tag.querySelector('button').addEventListener('click', () => tag.remove());
+            container.appendChild(tag);
+        }
+
+        function addProjectField(project = { name: '', role: '' }, container) {
+            const projectDiv = document.createElement('div');
+            projectDiv.className = 'p-3 bg-gray-100 rounded-md border grid grid-cols-1 md:grid-cols-2 gap-3 relative';
+            projectDiv.innerHTML = `
+                <div class="form-input-wrapper"><input type="text" class="form-input-inner project-name" placeholder="Project Name" value="${project.name}" required></div>
+                <div class="form-input-wrapper"><input type="text" class="form-input-inner project-role" placeholder="Your Role (Optional)" value="${project.role}"></div>
+                <button type="button" class="absolute -top-1 -right-1 h-5 w-5 bg-gray-300 rounded-full flex items-center justify-center text-gray-600 hover:bg-red-500 hover:text-white remove-project-btn">&times;</button>
+            `;
+            container.appendChild(projectDiv);
+            projectDiv.querySelector('.remove-project-btn').addEventListener('click', () => projectDiv.remove());
+        }
+
+        // --- RENDER TIMELINE LIST ---
+        function highlightListItem(id) {
+            document.querySelectorAll('.entry-list-item-editing').forEach(el => el.classList.remove('entry-list-item-editing'));
+            if (id) {
+                const itemEl = document.querySelector(`.sortable-item[data-id='${id}']`);
+                if(itemEl) itemEl.classList.add('entry-list-item-editing');
+            }
+        }
+        
+        function renderTimelineEntries() {
+            if (timelineData.length === 0) {
+                timelineEntriesList.innerHTML = `<p class="text-center text-gray-500 py-8">Your timeline is empty. Add a new entry below to get started!</p>`;
+                generateBtn.disabled = true;
+                return;
+            }
+
+            generateBtn.disabled = false;
+            
+            timelineEntriesList.innerHTML = '';
+            timelineData.forEach(entry => {
+                const div = document.createElement('div');
+                const type = entry.type === 'training' ? 'certification' : entry.type;
+                const colorClass = {
+                    work: 'bg-indigo-50',
+                    education: 'bg-teal-50',
+                    certification: 'bg-purple-50'
+                }[type];
+
+                div.className = `p-3 border rounded-md flex justify-between items-center cursor-move sortable-item ${colorClass}`;
+                div.dataset.id = entry.id;
+                div.innerHTML = `
+                    <div class="flex items-center space-x-3 overflow-hidden">
+                         <span class="text-gray-400">${icons[type]}</span>
+                        <div class="flex-1 truncate">
+                            <p class="font-semibold text-gray-800 truncate">${entry.title}</p>
+                            <p class="text-sm text-gray-500 truncate">${entry.company || entry.institution}</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-2 flex-shrink-0">
+                         <p class="text-sm text-gray-400 font-mono hidden sm:block">${entry.date}</p>
+                        <button class="text-gray-400 hover:text-indigo-600 edit-btn"><svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M5.433 13.917l1.262-3.155A4 4 0 017.58 9.42l6.92-6.918a2.121 2.121 0 013 3l-6.92 6.918c-.383.383-.84.685-1.343.886l-3.154 1.262a.5.5 0 01-.65-.65z" /><path d="M3.5 5.75c0-.69.56-1.25 1.25-1.25H10A.75.75 0 0010 3H4.75A2.75 2.75 0 002 5.75v9.5A2.75 2.75 0 004.75 18h9.5A2.75 2.75 0 0017 15.25V10a.75.75 0 00-1.5 0v5.25c0 .69-.56 1.25-1.25 1.25h-9.5c-.69 0-1.25-.56-1.25-1.25v-9.5z" /></svg></button>
+                        <button class="text-gray-400 hover:text-red-600 delete-btn"><svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8.75 1A2.75 2.75 0 006 3.75v.443c-.795.077-1.58.22-2.365.468a.75.75 0 10.23 1.482l.149-.022.841 10.518A2.75 2.75 0 007.596 19h4.807a2.75 2.75 0 002.742-2.53l.841-10.52.149.023a.75.75 0 00.23-1.482A41.03 41.03 0 0014 4.193v-.443A2.75 2.75 0 0011.25 1h-2.5zM10 4c.84 0 1.673.025 2.5.075V3.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25-.56-1.25 1.25v.325C8.327 4.025 9.16 4 10 4zM8.58 7.72a.75.75 0 00-1.5.06l.3 7.5a.75.75 0 101.5-.06l-.3-7.5zm4.34.06a.75.75 0 10-1.5-.06l-.3 7.5a.75.75 0 101.5.06l.3-7.5z" clip-rule="evenodd" /></svg></button>
+                    </div>
+                `;
+                timelineEntriesList.appendChild(div);
+            });
+            if(editingEntryId) highlightListItem(editingEntryId);
+        }
+        
+        new Sortable(timelineEntriesList, {
+            animation: 150,
+            ghostClass: 'sortable-ghost',
+            chosenClass: 'sortable-chosen',
+            onEnd: function (evt) {
+                const id = evt.item.dataset.id;
+                const oldIndex = timelineData.findIndex(item => item.id == id);
+                const [movedItem] = timelineData.splice(oldIndex, 1);
+                timelineData.splice(evt.newIndex, 0, movedItem);
+            },
+        });
+
+        // --- DYNAMIC FORM GENERATION & EVENT LISTENERS ---
+        function createFormFields(type) {
+            const hasStartEnd = type === 'work' || type === 'education';
+            const hasPresent = type === 'work' || type === 'education';
+            const hasProjects = type === 'work';
+            const hasSkills = type === 'training';
+            const hasLink = type === 'education' || type === 'training';
+
+            const presentLabel = type === 'work' ? 'I currently work here' : 'Ongoing';
+            
+            const placeholders = {
+                work: { title: "e.g., Senior Product Manager", company: "e.g., Google" },
+                education: { title: "e.g., B.Sc. in Computer Science", company: "e.g., Stanford University" },
+                training: { title: "e.g., AWS Certified Cloud Practitioner", company: "e.g., Amazon Web Services" }
+            };
+
+            return `
+                <input type="hidden" class="entry-id">
+                 <div class="space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+                        <div>
+                            <label class="block text-gray-700 font-semibold mb-2">${type === 'training' ? 'Name' : (type === 'education' ? 'Degree / Title' : 'Title / Role')}</label>
+                            <div class="form-input-wrapper">
+                               <input type="text" class="form-input-inner entry-title required-field" placeholder="${placeholders[type].title}" required>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 font-semibold mb-2">${type === 'work' ? 'Company' : 'Institution'}</label>
+                             <div class="form-input-wrapper">
+                               <input type="text" class="form-input-inner entry-company required-field" placeholder="${placeholders[type].company}" required>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <hr class="my-6">
+
+                <div class="space-y-4">
+                    ${hasStartEnd ? `
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+                        <div>
+                            <label class="block text-gray-700 font-semibold mb-2">Start Date</label>
+                            <div class="flex gap-2">
+                                <div class="form-input-wrapper"><select class="form-input-inner start-month"></select></div>
+                                <div class="form-input-wrapper"><select class="form-input-inner start-year"></select></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between items-center mb-2">
+                                <label class="block text-gray-700 font-semibold">End Date</label>
+                                ${hasPresent ? `
+                                <div class="flex items-center">
+                                    <input type="checkbox" class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500 present-checkbox">
+                                    <label class="ml-2 block text-sm text-gray-900">${presentLabel}</label>
+                                </div>` : ''}
+                            </div>
+                            <div class="flex gap-2 end-date-selectors">
+                                <div class="form-input-wrapper"><select class="form-input-inner end-month"></select></div>
+                                <div class="form-input-wrapper"><select class="form-input-inner end-year"></select></div>
+                            </div>
+                        </div>
+                    </div>
+                    ` : `
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+                        <div>
+                            <label class="block text-gray-700 font-semibold mb-2">Completion Date</label>
+                            <div class="flex gap-2">
+                                <div class="form-input-wrapper"><select class="form-input-inner completion-month"></select></div>
+                                <div class="form-input-wrapper"><select class="form-input-inner completion-year"></select></div>
+                            </div>
+                        </div>
+                         ${hasLink ? `
+                        <div>
+                             <label class="block text-gray-700 font-semibold mb-2">Link</label>
+                             <div class="form-input-wrapper">
+                                <input type="url" class="form-input-inner entry-link" placeholder="https://your-certificate-link.com">
+                             </div>
+                        </div>` : ''}
+                    </div>
+                    `}
+                </div>
+
+                <hr class="my-6">
+
+                <div class="space-y-6">
+                    <div>
+                        <label class="block text-gray-700 font-semibold mb-2">Details / Description</label>
+                        <div class="form-input-wrapper">
+                           <textarea class="form-input-inner entry-details" rows="3" placeholder="Describe your responsibilities and achievements..."></textarea>
+                        </div>
+                    </div>
+                    ${hasSkills ? `
+                    <div>
+                        <label class="block text-gray-700 font-semibold mb-2">Skills</label>
+                        <div class="form-input-wrapper">
+                            <div class="skills-tags-container flex flex-wrap gap-2 p-1"></div>
+                            <input type="text" class="form-input-inner skills-input flex-grow" placeholder="Type a skill and press Enter...">
+                        </div>
+                    </div>` : ''}
+                     ${hasProjects ? `
+                    <div>
+                        <h4 class="text-lg font-semibold text-gray-700 mb-2">Projects</h4>
+                        <div class="projects-container space-y-3"></div>
+                        <button type="button" class="add-project-btn mt-2 text-sm font-semibold text-indigo-600 hover:text-indigo-800 flex items-center space-x-1">
+                            <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z" /></svg>
+                            <span>Add Project</span>
+                        </button>
+                    </div>` : ''}
+                </div>
+                <div class="flex justify-end space-x-4 mt-8 pt-6 border-t border-gray-200">
+                    <button type="button" class="inline-block px-4 py-2 bg-gray-200 text-gray-800 font-semibold rounded-full shadow-md transform hover:scale-105 transition-transform duration-300 text-sm cancel-btn flex items-center justify-center space-x-2">
+                        <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16">
+                           <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>
+                        </svg>
+                        <span>Cancel</span>
+                    </button>
+                    <button type="submit" class="inline-block px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold rounded-full shadow-md transform hover:scale-105 transition-transform duration-300 text-sm save-btn flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                        <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16">
+                           <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
+                        </svg>
+                        <span>Add</span>
+                    </button>
+                </div>
+            `;
+        }
+        
+        function parseDateForSort(dateStr) {
+            if (!dateStr) return new Date(9999, 0, 1); // Future date to sort entries without date last
+            const startDateStr = dateStr.split(' - ')[0];
+             if (/^\d{4}$/.test(startDateStr)) {
+                return new Date(parseInt(startDateStr), 0, 1);
+            }
+            const date = new Date(startDateStr);
+            if (!isNaN(date.getTime())) {
+                return date;
+            }
+            return new Date(9999, 0, 1); // Fallback for invalid formats
+        }
+
+        function handleFormSubmit(e, type) {
+            e.preventDefault();
+            const form = e.target;
+            const id = editingEntryId || Date.now();
+            
+            let dateString = '';
+            if (type === 'work' || type === 'education') {
+                const startMonth = form.querySelector('.start-month').value;
+                const startYear = form.querySelector('.start-year').value;
+                const endMonth = form.querySelector('.end-month').value;
+                const endYear = form.querySelector('.end-year').value;
+                const isPresent = form.querySelector('.present-checkbox').checked;
+                if (startMonth && startYear) dateString = `${startMonth} ${startYear}`;
+                else if (startYear) dateString = startYear;
+                if (dateString) {
+                    if (isPresent) { dateString += ' - Present'; } 
+                    else if (endYear) {
+                        dateString += ` - ${endMonth ? endMonth + ' ' : ''}${endYear}`;
+                    }
+                }
+            } else { // training
+                const month = form.querySelector('.completion-month').value;
+                const year = form.querySelector('.completion-year').value;
+                if (month && year) dateString = `${month} ${year}`;
+                else if (year) dateString = year;
+            }
+
+            const entry = {
+                id: id, type: type, date: dateString,
+                title: form.querySelector('.entry-title').value,
+                details: form.querySelector('.entry-details').value
+            };
+            
+            if (type === 'work') {
+                entry.company = form.querySelector('.entry-company').value;
+                const projectNodes = form.querySelectorAll('.projects-container > div');
+                entry.projects = Array.from(projectNodes).map(projectDiv => ({
+                    name: projectDiv.querySelector('.project-name').value,
+                    role: projectDiv.querySelector('.project-role').value,
+                })).filter(p => p.name);
+            } else {
+                entry.institution = form.querySelector('.entry-company').value;
+                entry.link = form.querySelector('.entry-link')?.value || '';
+            }
+            
+            if (type === 'training') {
+                entry.type = 'certification'; // Map back to original data model
+                entry.skills = Array.from(form.querySelectorAll('.skills-tags-container span')).map(span => span.textContent);
+            }
+            
+            if (editingEntryId) {
+                const index = timelineData.findIndex(item => item.id === editingEntryId);
+                timelineData[index] = entry;
+            } else {
+                timelineData.push(entry);
+            }
+
+            // Sort data: ascending (oldest first)
+            timelineData.sort((a, b) => parseDateForSort(a.date) - parseDateForSort(b.date));
+
+            renderTimelineEntries();
+            resetForm(form);
+        }
+
+        // --- GLOBAL EVENT LISTENERS & INITIALIZATION ---
+        timelineEntriesList.addEventListener('click', e => {
+             const editBtn = e.target.closest('.edit-btn');
+             const deleteBtn = e.target.closest('.delete-btn');
+             
+             if (editBtn) {
+                 const id = editBtn.closest('.sortable-item').dataset.id;
+                 const entry = timelineData.find(item => item.id == id);
+                 setupFormForEdit(entry);
+             }
+             
+             if (deleteBtn) {
+                 if (confirm('Are you sure you want to delete this entry?')) {
+                     const id = deleteBtn.closest('.sortable-item').dataset.id;
+                     if (id == editingEntryId) {
+                         // Find which form is active and reset it
+                         const activeTabId = Object.values(tabs).find(t => !t.form.classList.contains('hidden')).id;
+                         resetForm(tabs[activeTabId].form);
+                     }
+                     timelineData = timelineData.filter(item => item.id != id);
+                     renderTimelineEntries();
+                 }
+             }
+        });
+        
+        generateBtn.addEventListener('click', () => {
+            if (timelineData.length === 0) return;
+            const htmlContent = generateTimelineHTML(timelineData);
+            const blob = new Blob([htmlContent], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'my-interactive-timeline.html';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        });
+        
+        function generateTimelineHTML(data) {
+            const dataString = JSON.stringify(data.map(({id, ...rest}) => rest), null, 4);
+            
+            return `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Interactive Career Timeline</title>
+    <script src="https://cdn.tailwindcss.com"><\/script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; } 
+        .year-marker { cursor: pointer; transition: all 0.2s ease-in-out; } 
+        .year-marker:hover { background-color: #eef2ff; } 
+        .year-marker.expanded { background-color: #4f46e5; color: white; } 
+        .year-content { max-height: 0; overflow: hidden; transition: max-height 0.7s ease-in-out, padding 0.7s ease-in-out; padding-top: 0; padding-bottom: 0; } 
+        .year-content.expanded { max-height: 3000px; padding-top: 1rem; padding-bottom: 1rem; } 
+        .timeline-card { transition: all 0.3s ease-in-out; } .timeline-card:hover { transform: translateY(-5px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); } 
+        .icon-sm, .icon { width: 20px; height: 20px; } 
+        .skill-tag { display: inline-block; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.875rem; font-weight: 500; margin-right: 0.5rem; margin-bottom: 0.5rem; } 
+        .control-btn { transition: all 0.2s ease-in-out; } 
+        .control-btn:hover:not(:disabled) { transform: scale(1.05); } 
+        .control-btn:disabled { opacity: 0.5; cursor: not-allowed; } 
+        .timeline-item { transition: all 0.3s ease-in-out; } 
+        .timeline-item:hover { transform: scale(1.02); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); } 
+        .timeline-dot { left: -12.5px; top: 2.2rem; transform: translateY(-50%); width: 22px; height: 22px; } 
+        .timeline-item-content { cursor: pointer; } 
+        .details { display: none; max-height: 0; overflow: hidden; transition: max-height 0.5s ease-in-out; } 
+        .details.show { display: block; max-height: 1000px; } 
+        #year-carousel { display: flex; align-items: center; justify-content: center; } 
+        .carousel-year { flex: 0 0 auto; padding: 0.5rem 1.5rem; font-size: 1.5rem; font-weight: 600; color: #9ca3af; cursor: pointer; transition: all 0.3s ease-in-out; transform: scale(0.8); opacity: 0.5; } 
+        .carousel-year.active { color: #4f46e5; transform: scale(1.2); opacity: 1; } 
+        .carousel-arrow { background-color: white; border-radius: 9999px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06); padding: 0.5rem; } 
+        .carousel-arrow:hover { background-color: #eef2ff; } 
+        #dial-content-display { transition: opacity 0.5s ease-in-out; }
+    <\/style>
+</head>
+<body class="bg-gray-100 text-gray-800">
+    <div class="container mx-auto px-4 py-12 pt-24">
+         <header class="bg-white rounded-xl shadow-lg p-8 md:p-12 mb-12 text-center">
+            <h1 class="text-4xl md:text-5xl font-bold text-gray-900">My Interactive Timeline</h1>
+            <p class="text-lg text-gray-600 mt-4 max-w-2xl mx-auto">An interactive overview of my professional and educational journey.</p>
+             <div class="relative z-10 mt-8 pt-6 border-t border-gray-200 flex flex-col items-center">
+                 <div id="view-switcher" class="relative bg-gray-200 rounded-full p-1 flex items-center shadow-inner">
+                    <div id="switcher-bg" class="absolute h-[85%] top-[7.5%] bg-indigo-600 rounded-full transition-all duration-300 ease-in-out shadow-md"></div>
+                    <button id="timeline-view-btn" class="relative z-10 px-4 py-2 text-sm font-semibold rounded-full transition-colors duration-300 flex items-center space-x-2"><span>Timeline</span></button>
+                    <button id="experience-view-btn" class="relative z-10 px-4 py-2 text-sm font-semibold rounded-full transition-colors duration-300 flex items-center space-x-2"><span>Experience</span></button>
+                    <button id="dial-view-btn" class="relative z-10 px-4 py-2 text-sm font-semibold rounded-full transition-colors duration-300 flex items-center space-x-2"><span>Dial</span></button>
+                </div>
+            </div>
+        </header>
+        <div class="flex justify-end items-center mb-8"><div id="global-controls"><button id="toggle-all-btn" class="control-btn bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg shadow-md flex items-center space-x-2"><svg id="toggle-icon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9 9H5v2h4v4h2v-4h4V9h-4V5H9v4z" clip-rule="evenodd" /></svg><span id="toggle-text">Expand All</span></button></div></div>
+        <div id="timeline-view" class="hidden space-y-2"></div>
+        <div id="experience-view" class="hidden"></div>
+        <div id="dial-view" class="hidden text-center"><div id="year-carousel-container" class="inline-flex items-center bg-white rounded-xl shadow-inner p-2"><button id="carousel-prev" class="carousel-arrow"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg></button><div id="year-carousel" class="mx-4"></div><button id="carousel-next" class="carousel-arrow"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg></button></div><div id="dial-content-display" class="mt-8"></div></div>
+    </div>
+    <script>
+        const timelineData = ${dataString};
+        const icons = {
+            work: \`<svg class="icon-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>\`,
+            education: \`<svg class="icon-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>\`,
+            certification: \`<svg class="icon-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"></path></svg>\`
+        };
+        const skillTagColors=["bg-blue-100 text-blue-800","bg-green-100 text-green-800","bg-yellow-100 text-yellow-800","bg-pink-100 text-pink-800","bg-purple-100 text-purple-800","bg-red-100 text-red-800"];
+        
+        function getYearsFromDate(dateStr){ const years = new Set(); const currentYear = new Date().getFullYear(); if(!dateStr) return []; if (dateStr.includes('Present')) { const startYear = parseInt(dateStr.match(/\\d{4}/)[0]); for (let y = startYear; y <= currentYear; y++) years.add(y); } else if (dateStr.includes('-')) { const parts = dateStr.split('-').map(p => p.trim()); const startMatch = parts[0].match(/\\d{4}/); const endMatch = parts[1].match(/\\d{4}/); const startYear = startMatch ? parseInt(startMatch[0]) : (parseInt(parts[0]) || 0); const endYear = endMatch ? parseInt(endMatch[0]) : (parseInt(parts[1]) || startYear); for (let y = startYear; y <= endYear; y++) years.add(y); } else { const yearMatch = dateStr.match(/\\d{4}/); if (yearMatch) years.add(parseInt(yearMatch[0])); } return Array.from(years); }
+        
+        const activityByYear={}; const allYears=new Set; timelineData.forEach(item=>{ const years = getYearsFromDate(item.date); years.forEach(year=>{ allYears.add(year); if (!activityByYear[year]) activityByYear[year] = { work: 0, learning: 0 }; if (item.type === 'work') activityByYear[year].work++; else activityByYear[year].learning++; }); }); const sortedYears=Array.from(allYears).sort((a,b)=>a-b);
+        
+        function createCard(item){ const card=document.createElement("div"); let iconSvg, borderColor, titleColor; card.className="timeline-card text-left bg-white p-4 rounded-lg border-l-4 shadow-sm"; let colorIndex=0; if(item.type==='work'){[iconSvg,borderColor,titleColor]=[icons.work,"border-indigo-500","text-indigo-600"]}else if(item.type==='education'){[iconSvg,borderColor,titleColor]=[icons.education,"border-teal-500","text-teal-600"]}else{[iconSvg,borderColor,titleColor]=[icons.certification,"border-purple-500","text-purple-600"]} card.classList.add(borderColor); let detailsContent = item.details ? \`<p class="text-sm text-gray-600 mt-2">\${item.details}</p>\` : ''; if(item.skills){detailsContent=\`<div class="mt-3">\${item.skills.map(skill => \`<span class="skill-tag \${skillTagColors[colorIndex++ % skillTagColors.length]}">\${skill}</span>\`).join('')}</div>\`} card.innerHTML=\`<div class="flex items-start space-x-3"><div class="flex-shrink-0 text-gray-500 pt-1">\${iconSvg}</div><div><p class="text-xs text-gray-500">\${item.date}</p><h4 class="font-bold text-gray-800">\${item.title}</h4><p class="text-sm font-semibold \${titleColor}">\${item.company||item.institution}</p>\${detailsContent}</div></div>\`; return card; }
+
+        function renderTimelineView() { const container = document.getElementById("timeline-view"); container.innerHTML = ""; sortedYears.slice().reverse().forEach(year => { const yearWrapper = document.createElement("div"); yearWrapper.className = "bg-white rounded-lg shadow-sm"; const yearHeader = document.createElement("div"); yearHeader.className = "year-marker p-4 flex justify-between items-center"; const yearActivities = activityByYear[year] || { work: 0, learning: 0 }; const workDots = Array(yearActivities.work).fill('<div class="w-2.5 h-2.5 bg-indigo-500 rounded-full opacity-70"></div>').join(""); const learningDots = Array(yearActivities.learning).fill('<div class="w-2.5 h-2.5 bg-purple-500 rounded-full opacity-70"></div>').join(""); yearHeader.innerHTML = \`<div class="flex items-center space-x-4"><h3 class="text-2xl font-bold">\${year}</h3><div class="flex items-center space-x-1.5">\${workDots}\${learningDots}</div></div><svg class="w-6 h-6 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>\`; const yearContent = document.createElement("div"); yearContent.className = "year-content"; yearContent.innerHTML = '<div class="p-4 border-t border-gray-200"><div class="grid grid-cols-1 md:grid-cols-2 gap-8"><div><h4 class="text-xl font-bold text-indigo-600 mb-4">Work Experience</h4><div class="work-col space-y-4"></div></div><div><h4 class="text-xl font-bold text-purple-600 mb-4">Learning Journey</h4><div class="learning-col space-y-4"></div></div></div></div>'; yearWrapper.appendChild(yearHeader); yearWrapper.appendChild(yearContent); container.appendChild(yearWrapper); yearHeader.addEventListener("click", () => { yearContent.classList.toggle("expanded"); yearHeader.classList.toggle("expanded"); yearHeader.querySelector("svg").classList.toggle("rotate-180"); }); const workCol = yearContent.querySelector(".work-col"); const learningCol = yearContent.querySelector(".learning-col"); let workFound = false, learningFound = false; timelineData.forEach(item => { if (getYearsFromDate(item.date).includes(year)) { const card = createCard(item); card.classList.replace("bg-white", "bg-gray-50"); if (item.type === 'work') { workCol.appendChild(card); workFound = true; } else { learningCol.appendChild(card); learningFound = true; } } }); if (!workFound) workCol.innerHTML = \`<p class="text-gray-500 italic">No work experience recorded for this year.</p>\`; if (!learningFound) learningCol.innerHTML = \`<p class="text-gray-500 italic">No learning activities recorded for this year.</p>\`; }); }
+        
+        function renderExperienceView() { document.getElementById("experience-view").innerHTML = '<div class="grid grid-cols-1 md:grid-cols-2 gap-x-16"><div id="work-timeline"></div><div id="learning-journey-timeline"></div></div>'; const parseDate = dateStr => { if (dateStr.includes("Present")) return new Date(); const yearMatch = (dateStr.match(/\\d{4}/g) || []).pop(); return yearMatch ? new Date(yearMatch, 11, 31) : new Date(0); }; const workData = timelineData.filter(item => item.type === 'work').sort((a, b) => parseDate(b.date) - parseDate(a.date)); const learningData = timelineData.filter(item => item.type === 'education' || item.type === 'certification').sort((a, b) => parseDate(b.date) - parseDate(a.date)); function renderColumn(containerId, data, type) { const colContainer = document.getElementById(containerId); let colorIndex = 0; const renderedYears = new Set(); const title = type === 'work' ? 'Work Experience' : 'Learning Journey'; const titleColor = type === 'work' ? 'text-indigo-600' : 'text-purple-600'; colContainer.innerHTML = \`<h2 class="text-3xl font-bold text-center mb-10 \${titleColor}">\${title}</h2>\`; data.forEach(item => { const primaryYear = getYearsFromDate(item.date)[0]; if (primaryYear && !renderedYears.has(primaryYear)) { renderedYears.add(primaryYear); const yearHeader = document.createElement("div"); yearHeader.className = "flex items-center space-x-4 my-8"; let activityDots = ""; const yearActivities = activityByYear[primaryYear]; if (yearActivities) { const count = type === 'work' ? yearActivities.work : yearActivities.learning; const color = type === 'work' ? 'bg-indigo-500' : 'bg-purple-500'; activityDots = Array(count).fill(\`<div class="w-2.5 h-2.5 \${color} rounded-full opacity-70"></div>\`).join(""); } yearHeader.innerHTML = \`<h3 class="text-2xl font-bold text-gray-500">\${primaryYear}</h3><div class="flex-grow h-px bg-gray-200"></div><div class="flex items-center space-x-1.5">\${activityDots}</div>\`; colContainer.appendChild(yearHeader); } const itemElement = document.createElement("div"); let borderColor, dotColor, textColor, iconSvg; if (item.type === 'education') { [borderColor, dotColor, textColor, iconSvg] = ["border-teal-500", "bg-teal-500", "text-teal-600", icons.education]; } else if (item.type === 'certification') { [borderColor, dotColor, textColor, iconSvg] = ["border-purple-500", "bg-purple-500", "text-purple-600", icons.certification]; } else { [borderColor, dotColor, textColor, iconSvg] = ["border-indigo-600", "bg-indigo-600", "text-indigo-600", icons.work]; } const itemMargin = item.type === 'work' && item.projects && item.projects.length > 0 ? "mb-0" : "mb-8"; itemElement.className = \`timeline-item relative bg-white p-6 rounded-lg shadow-md \${itemMargin} ml-8 border-l-[3px] \${borderColor}\`; let detailsContent = item.details ? \`<p>\${item.details}</p>\` : ''; if (item.type === 'certification' && item.skills) { detailsContent = \`<div>\${item.skills.map(skill => \`<span class="skill-tag \${skillTagColors[colorIndex++ % skillTagColors.length]}">\${skill}</span>\`).join('')}</div>\`; } itemElement.innerHTML = \`<div class="absolute timeline-dot \${dotColor} rounded-full flex items-center justify-center text-white">\${iconSvg.replace("icon-sm", "icon")}</div><div class="timeline-item-content"><p class="text-sm text-gray-500 mb-1">\${item.date}</p><h3 class="text-xl font-bold text-gray-800">\${item.title}</h3><p class="text-md font-medium \${textColor}">\${item.company || item.institution}</p><div class="details mt-4 text-gray-600">\${detailsContent}</div></div>\`; colContainer.appendChild(itemElement); if (item.type === 'work' && item.projects && item.projects.length > 0) { const projectWrapper = document.createElement("div"); projectWrapper.className = "relative ml-8 -mt-2 mb-8 z-10"; const projectCard = document.createElement("div"); projectCard.className = "bg-gray-50 border border-gray-200 rounded-lg p-3 shadow-sm transition hover:shadow-md"; const projectButton = document.createElement("button"); projectButton.className = "w-full text-left text-sm font-semibold text-indigo-700 hover:text-indigo-800 flex justify-between items-center"; const projectDots = Array(item.projects.length).fill('<div class="w-2 h-2 bg-indigo-400 rounded-full"></div>').join(""); projectButton.innerHTML = \`<span class="flex items-center"><svg class="w-5 h-5 mr-2 text-indigo-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" /><path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3z" clip-rule="evenodd" /></svg>Key Projects<div class="flex items-center space-x-1 ml-2 opacity-70">\${projectDots}</div></span><svg class="w-5 h-5 transition-transform projects-toggle-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>\`; const projectsList = document.createElement("div"); projectsList.className = "hidden projects-list mt-3 pt-3 border-t grid grid-cols-1 sm:grid-cols-2 gap-3"; const projectColors = ["bg-indigo-50", "bg-purple-50", "bg-pink-50", "bg-blue-50"]; item.projects.forEach((project, pIndex) => { const projectCardEl = document.createElement("div"); const cardColor = projectColors[pIndex % projectColors.length]; projectCardEl.className = \`\${cardColor} p-3 rounded-lg flex items-start space-x-3 transition-transform hover:scale-105 shadow-sm\`; let roleHTML = project.role ? \`<p class="text-xs text-gray-500">Role: \${project.role}</p>\` : ''; projectCardEl.innerHTML = \`<div><svg class="icon-sm text-indigo-500 mt-1 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" /><path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3z" clip-rule="evenodd" /></svg></div><div><p class="font-semibold text-sm text-gray-800">\${project.name}</p>\${roleHTML}</div>\`; projectsList.appendChild(projectCardEl); }); projectCard.appendChild(projectButton); projectCard.appendChild(projectsList); projectWrapper.appendChild(projectCard); colContainer.appendChild(projectWrapper); projectButton.addEventListener("click", e => { e.stopPropagation(); projectsList.classList.toggle("hidden"); projectButton.querySelector(".projects-toggle-arrow").classList.toggle("rotate-180"); }); } const contentBlock = itemElement.querySelector(".timeline-item-content"); contentBlock.addEventListener("click", () => { itemElement.querySelector(".details").classList.toggle("show"); }); }); } renderColumn("work-timeline", workData, "work"); renderColumn("learning-journey-timeline", learningData, "learning"); }
+        
+        function renderDialView() { const carousel = document.getElementById("year-carousel"); carousel.innerHTML = ""; sortedYears.slice().reverse().forEach(year => { const yearEl = document.createElement("div"); yearEl.className = "carousel-year"; yearEl.textContent = year; yearEl.dataset.year = year; yearEl.addEventListener("click", () => updateCarouselForYear(year)); carousel.appendChild(yearEl); }); if(sortedYears.length > 0) { updateCarouselForYear(sortedYears[sortedYears.length - 1]); } }
+        
+        let currentCarouselYearIndex = 0; function updateCarouselForYear(year) { const reversedYears = sortedYears.slice().reverse(); currentCarouselYearIndex = reversedYears.findIndex(y => y === year); document.querySelectorAll(".carousel-year").forEach((el, index) => { el.style.display = Math.abs(index - currentCarouselYearIndex) <= 2 ? "block" : "none"; el.classList.remove("active"); if (index === currentCarouselYearIndex) { el.classList.add("active"); } }); const contentDisplay = document.getElementById("dial-content-display"); contentDisplay.style.opacity = 0; setTimeout(() => { contentDisplay.innerHTML = ""; const workItems = timelineData.filter(item => item.type === 'work' && getYearsFromDate(item.date).includes(year)); const learningItems = timelineData.filter(item => (item.type === 'education' || item.type === 'certification') && getYearsFromDate(item.date).includes(year)); if (workItems.length === 0 && learningItems.length === 0) { contentDisplay.innerHTML = '<p class="text-gray-500 italic mt-8">No activities recorded for this year.</p>'; } else { const summaryDiv = document.createElement("div"); summaryDiv.className = "bg-white rounded-lg shadow p-4 mb-8 max-w-md mx-auto"; summaryDiv.innerHTML = \`<div class="flex justify-center items-center space-x-6"><div class="text-center"><p class="text-2xl font-bold text-indigo-600">\${workItems.length}</p><p class="text-sm text-gray-500">Work Roles</p></div><div class="h-10 w-px bg-gray-200"></div><div class="text-center"><p class="text-2xl font-bold text-purple-600">\${learningItems.length}</p><p class="text-sm text-gray-500">Learnings</p></div></div>\`; contentDisplay.appendChild(summaryDiv); } const grid = document.createElement("div"); grid.className = "grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-5xl mx-auto"; const workCol = document.createElement("div"); workCol.className = "space-y-4"; const workHeader = document.createElement("h3"); workHeader.className = "text-xl font-bold text-indigo-600 flex items-center space-x-2 pb-2 border-b-2 border-indigo-200"; workHeader.innerHTML = \`\${icons.work} <span>Work Experience</span>\`; workCol.appendChild(workHeader); if (workItems.length > 0) { workItems.forEach(item => workCol.appendChild(createCard(item))); } else { workCol.innerHTML += '<p class="text-gray-500 italic p-4 bg-white rounded-lg shadow-sm">No work experience recorded for this year.</p>'; } grid.appendChild(workCol); const learningCol = document.createElement("div"); learningCol.className = "space-y-4"; const learningHeader = document.createElement("h3"); learningHeader.className = "text-xl font-bold text-purple-600 flex items-center space-x-2 pb-2 border-b-2 border-purple-200"; learningHeader.innerHTML = \`\${icons.education} <span>Learning Journey</span>\`; learningCol.appendChild(learningHeader); if (learningItems.length > 0) { learningItems.forEach(item => learningCol.appendChild(createCard(item))); } else { learningCol.innerHTML += '<p class="text-gray-500 italic p-4 bg-white rounded-lg shadow-sm">No learning activities recorded for this year.</p>'; } grid.appendChild(learningCol); contentDisplay.appendChild(grid); contentDisplay.style.opacity = 1; }, 300); }
+        
+        document.getElementById("carousel-prev").addEventListener("click", () => { const reversedYears = sortedYears.slice().reverse(); const newIndex = Math.max(0, currentCarouselYearIndex - 1); updateCarouselForYear(reversedYears[newIndex]); });
+        document.getElementById("carousel-next").addEventListener("click", () => { const reversedYears = sortedYears.slice().reverse(); const newIndex = Math.min(reversedYears.length - 1, currentCarouselYearIndex + 1); updateCarouselForYear(reversedYears[newIndex]); });
+        
+        const experienceView = document.getElementById("experience-view"), timelineView = document.getElementById("timeline-view"), dialView = document.getElementById("dial-view"), timelineBtn = document.getElementById("timeline-view-btn"), experienceBtn = document.getElementById("experience-view-btn"), dialBtn = document.getElementById("dial-view-btn"), switcherBg = document.getElementById("switcher-bg"), globalControls = document.getElementById("global-controls");
+        function switchView(viewName) { timelineView.classList.add("hidden"); experienceView.classList.add("hidden"); dialView.classList.add("hidden"); globalControls.classList.remove("hidden"); if (viewName === 'timeline') { timelineView.classList.remove("hidden"); } else if (viewName === 'experience') { experienceView.classList.remove("hidden"); } else if (viewName === 'dial') { dialView.classList.remove("hidden"); globalControls.classList.add("hidden"); } updateToggleButton(false); document.querySelectorAll(".expanded, .show, .rotate-180").forEach(el => el.classList.remove("expanded", "show", "rotate-180")); document.querySelectorAll(".projects-list").forEach(el => el.classList.add("hidden")); }
+        function setActiveView(viewName) { let activeBtn; if (viewName === 'timeline') { activeBtn = timelineBtn; } else if (viewName === 'experience') { activeBtn = experienceBtn; } else { activeBtn = dialBtn; } switcherBg.style.width = \`\${activeBtn.offsetWidth}px\`; switcherBg.style.left = \`\${activeBtn.offsetLeft}px\`;[timelineBtn, experienceBtn, dialBtn].forEach(btn => { btn.classList.toggle("text-white", btn === activeBtn); btn.classList.toggle("text-gray-700", btn !== activeBtn); }); switchView(viewName); }
+        
+        timelineBtn.addEventListener("click", () => setActiveView("timeline")); experienceBtn.addEventListener("click", () => setActiveView("experience")); dialBtn.addEventListener("click", () => setActiveView("dial"));
+        
+        const toggleBtn = document.getElementById("toggle-all-btn"), toggleText = document.getElementById("toggle-text"), toggleIcon = document.getElementById("toggle-icon"); let isAllExpanded = false; const expandIconPath = '<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9 9H5v2h4v4h2v-4h4V9h-4V5H9v4z" clip-rule="evenodd" />', collapseIconPath = '<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM7 9h6v2H7V9z" clip-rule="evenodd" />';
+        function updateToggleButton(expand) { isAllExpanded = expand; toggleText.textContent = expand ? "Collapse All" : "Expand All"; toggleIcon.innerHTML = expand ? collapseIconPath : expandIconPath; toggleBtn.classList.toggle("bg-gray-500", expand); toggleBtn.classList.toggle("hover:bg-gray-600", expand); toggleBtn.classList.toggle("bg-indigo-500", !expand); toggleBtn.classList.toggle("hover:bg-indigo-600", !expand); }
+        
+        toggleBtn.addEventListener("click", () => { const currentView = timelineBtn.classList.contains("text-white") ? "timeline" : "experience"; const shouldExpand = !isAllExpanded; if (currentView === "timeline") { document.querySelectorAll("#timeline-view .year-content, #timeline-view .year-marker").forEach(el => el.classList.toggle("expanded", shouldExpand)); document.querySelectorAll("#timeline-view .year-marker svg").forEach(el => el.classList.toggle("rotate-180", shouldExpand)); } else { document.querySelectorAll("#experience-view .details").forEach(el => el.classList.toggle("show", shouldExpand)); document.querySelectorAll("#experience-view .projects-list").forEach(el => el.classList.toggle("hidden", !shouldExpand)); document.querySelectorAll("#experience-view .projects-toggle-arrow").forEach(el => el.classList.toggle("rotate-180", shouldExpand)); } updateToggleButton(shouldExpand); });
+        
+        renderTimelineView(); renderExperienceView(); renderDialView(); setTimeout(() => setActiveView("experience"), 100);
+    <\/script>
+</body>
+</html>`;
+        }
+        
+        // --- INITIALIZE APP ---
+        function initializeApp() {
+            // Populate forms with fields
+            tabs.work.form.innerHTML = createFormFields('work');
+            tabs.education.form.innerHTML = createFormFields('education');
+            tabs.training.form.innerHTML = createFormFields('training');
+
+            // Populate date dropdowns for all forms
+            const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+            const currentYear = new Date().getFullYear();
+            
+            document.querySelectorAll('select').forEach(select => {
+                if (select.className.includes('month')) {
+                    select.innerHTML = '<option value="">Month</option>';
+                    months.forEach(month => select.innerHTML += `<option value="${month}">${month}</option>`);
+                }
+                 if (select.className.includes('year')) {
+                    select.innerHTML = '<option value="">Year</option>';
+                    for (let year = currentYear; year >= 1980; year--) {
+                        select.innerHTML += `<option value="${year}">${year}</option>`;
+                    }
+                }
+            });
+
+            // Add event listeners for forms and dynamic elements
+            Object.values(tabs).forEach(tab => {
+                const type = tab.id;
+                const form = tab.form;
+                const saveBtn = form.querySelector('.save-btn');
+                const requiredInputs = form.querySelectorAll('.required-field');
+                
+                const checkFormState = () => {
+                    let isFormValid = true;
+                    requiredInputs.forEach(input => {
+                        if (input.value.trim() === '') {
+                            isFormValid = false;
+                        }
+                    });
+                    saveBtn.disabled = !isFormValid;
+
+                    let isDirty = Array.from(form.elements).some(el => {
+                        if (el.type === 'checkbox') return el.checked !== el.defaultChecked;
+                        return el.value !== '' && el.value !== el.defaultValue;
+                    });
+                     if (isDirty || editingEntryId) {
+                        disableOtherTabs(type);
+                    } else {
+                        enableAllTabs();
+                    }
+                };
+                
+                form.addEventListener('input', checkFormState);
+                form.addEventListener('submit', (e) => {
+                    handleFormSubmit(e, type);
+                    enableAllTabs();
+                });
+
+                const cancelBtn = form.querySelector('.cancel-btn');
+                cancelBtn.addEventListener('click', () => {
+                    resetForm(form);
+                });
+                
+                if (type === 'work' || type === 'education') {
+                     form.querySelector('.present-checkbox').addEventListener('change', (e) => {
+                        form.querySelector('.end-date-selectors').style.display = e.target.checked ? 'none' : 'flex';
+                    });
+                }
+                if (type === 'work') {
+                    form.querySelector('.add-project-btn').addEventListener('click', () => {
+                        addProjectField(undefined, form.querySelector('.projects-container'));
+                        checkFormState(); // Check state after adding project field
+                    });
+                }
+                if (type === 'training') {
+                    const skillsInput = form.querySelector('.skills-input');
+                    const skillsContainer = form.querySelector('.skills-tags-container');
+                    skillsInput.addEventListener('keydown', (e) => {
+                        if (e.key === 'Enter' && skillsInput.value.trim() !== '') {
+                            e.preventDefault();
+                            createSkillTag(skillsInput.value.trim(), skillsContainer);
+                            skillsInput.value = '';
+                            checkFormState();
+                        }
+                    });
+                }
+            });
+            
+            // Set initial state
+            renderTimelineEntries();
+            switchTab('work'); // Start with the work tab active
+        }
+
+        initializeApp();
+
+    </script>
+</body>
+</html>
+
+
