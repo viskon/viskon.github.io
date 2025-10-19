@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -26,14 +24,17 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;700;900&family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <link rel="icon" href="/assets/favicon.ico" type="image/x-icon">
     <style>
         body {
-            font-family: 'Poppins', sans-serif;
-            background: linear-gradient(to right, #e0eafc, #cfdef3);
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6; /* bg-gray-100 */
+        }
+        .header-font {
+             font-family: 'Poppins', sans-serif;
         }
         .card {
             transition: opacity 0.3s ease-in-out;
@@ -42,16 +43,16 @@
             transition: width 0.5s ease-in-out;
         }
          .input-field {
-            @apply w-full px-5 pt-6 pb-2 border border-gray-200 bg-white shadow-sm rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition text-lg;
+            @apply w-full px-4 py-3 border border-gray-300 bg-white shadow-sm rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition text-base focus:bg-indigo-50;
         }
         .textarea-field {
-            @apply w-full px-5 pt-6 pb-2 border border-gray-200 bg-white shadow-sm rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition resize-none text-lg;
+            @apply w-full px-4 py-3 border border-gray-300 bg-white shadow-sm rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition resize-none text-base focus:bg-indigo-50;
         }
         .add-btn, .remove-btn {
             @apply text-sm font-semibold transition;
         }
         .add-btn {
-            @apply text-blue-600 hover:text-blue-800;
+            @apply text-indigo-600 hover:text-indigo-800;
         }
         .remove-btn {
             @apply text-red-600 hover:text-red-800;
@@ -59,37 +60,7 @@
         .nav-button {
             @apply w-16 h-16 rounded-full font-bold text-white transition transform hover:scale-110 shadow-xl flex items-center justify-center text-2xl;
         }
-        /* Floating Label Styles */
-        .input-group {
-            position: relative;
-        }
-        .floating-label {
-            position: absolute;
-            left: 20px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #6b7280; /* gray-500 */
-            pointer-events: none;
-            transition: all 0.2s ease-in-out;
-            background-color: transparent;
-            padding: 0 4px;
-        }
-        .textarea-field:focus + .floating-label,
-        .textarea-field:not(:placeholder-shown) + .floating-label,
-        .input-field:focus + .floating-label,
-        .input-field:not(:placeholder-shown) + .floating-label {
-            top: 0;
-            font-size: 0.875rem; /* text-sm */
-            color: #3b82f6; /* blue-500 */
-            background-color: #fff; 
-            transform: translateY(-50%);
-        }
-         .textarea-field:focus, .input-field:focus {
-            background-color: #fff;
-         }
-        .textarea-field:focus + .floating-label, .input-field:focus + .floating-label {
-            background-color: #fff;
-        }
+        
         @keyframes shake {
           10%, 90% { transform: translate3d(-1px, 0, 0); }
           20%, 80% { transform: translate3d(2px, 0, 0); }
@@ -100,6 +71,9 @@
           animation: shake 0.82s cubic-bezier(.36,.07,.19,.97) both;
         }
         @media print {
+            body {
+                background-color: #fff;
+            }
             body > div:not(.print-container) {
                 display: none;
             }
@@ -109,6 +83,8 @@
                 top: 0;
                 left: 0;
                 width: 100%;
+                box-shadow: none !important;
+                border: none !important;
             }
             #preview-name {
                 background: none !important;
@@ -147,20 +123,19 @@
 </head>
 <body class="p-4 md:p-8">
 
-        <!-- Global Navigation Header -->
-    <nav class="fixed top-0 left-0 right-0 bg-gray-100 shadow-md z-50">
-        <div class="container mx-auto px-4">
+    <!-- Global Navigation Header -->
+    <nav class="fixed top-0 left-0 right-0 bg-white shadow-md z-50">
+        <div class="container mx-auto px-4 max-w-7xl">
             <div class="flex justify-between items-center py-3">
                 <a href="https://viskon.github.io/interactcvgenerator.html" class="flex items-center space-x-2 text-gray-500 hover:text-indigo-600 transition-colors">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                    </svg>
-                    <span class="font-semibold text-lg">InteractCV</span>
+                    <img src="/assets/favicon.ico" alt="InteractCV home" class="h-6 w-6">
+                    <span class="font-semibold text-lg header-font">InteractCV</span>
                 </a>
             </div>
         </div>
     </nav>
-    <div id="main-content">
+    
+    <div id="main-content" class="pt-16">
         <header class="bg-white rounded-xl shadow-lg p-8 md:p-12 mb-12 overflow-hidden relative max-w-7xl mx-auto">
             <div class="absolute top-0 right-0 -mt-24 -mr-24 w-72 h-72 bg-indigo-100 rounded-full opacity-50"></div>
             <div class="absolute bottom-0 left-0 -mb-24 -ml-24 w-72 h-72 bg-purple-100 rounded-full opacity-50"></div>
@@ -171,12 +146,12 @@
                     </div>
                 </div>
                 <div>
-                    <h1 class="text-4xl md:text-5xl font-bold text-gray-900">Interactive CV Generator</h1>
+                    <h1 class="text-4xl md:text-5xl font-bold text-gray-900 header-font">Interactive CV Generator</h1>
                     <p class="text-lg text-gray-600 mt-4 max-w-2xl">
                         Craft a stunning, professional interactive CV in minutes. Stand out to recruiters with a modern resume that tells your story.
                     </p>
                     <p class="text-sm text-gray-500 tracking-wide mt-4">
-                        Designed by Vishal Kondabathini, Enhanced with <i class="fas fa-magic text-yellow-500"></i> Google Gemini
+                        Designed by Vishal Kondabathini
                     </p>
                 </div>
             </div>
@@ -193,19 +168,17 @@
                     </a>
                 </div>
                 <div class="flex flex-wrap justify-center gap-2">
-                    <span class="text-xs font-medium bg-gray-100 text-gray-800 px-3 py-1 rounded-full">Applicant tracking system (ATS) Optimized</span>
+                    <span class="text-xs font-medium bg-gray-100 text-gray-800 px-3 py-1 rounded-full">ATS Optimized</span>
                     <span class="text-xs font-medium bg-purple-100 text-purple-800 px-3 py-1 rounded-full">Works best on PC</span>
-                    <span class="text-xs font-medium bg-blue-100 text-blue-800 px-3 py-1 rounded-full">Generates an interactive CV on your browser and downloads it to your PC</span>
-                    <span class="text-xs font-medium bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full">Your usage is not tracked</span>
-                    <span class="text-xs font-medium bg-green-100 text-green-800 px-3 py-1 rounded-full">No personal data is collected, saved or used</span>
+                    <span class="text-xs font-medium bg-green-100 text-green-800 px-3 py-1 rounded-full">No personal data is collected or saved</span>
                 </div>
-				<div class="flex flex-wrap justify-center gap-2">
-                    <p id="visit-counter" class="text-sm flex items-center">
+				<div class="mt-4 flex flex-wrap justify-center gap-2">
+                    <p id="visit-counter" class="text-sm flex items-center text-gray-500">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1.5" viewBox="0 0 20 20" fill="currentColor">
                               <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
                               <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.022 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd" />
                             </svg>
-                            Anonymous Visits: <span id="visit-count" class="font-semibold ml-1">0</span>
+                            Anonymous Visits: <span id="visit-count" class="font-semibold text-gray-600 ml-1">0</span>
                     </p>
                 </div>
             </div>
@@ -219,10 +192,10 @@
                     <div class="mb-8">
                         <div class="flex justify-between items-baseline mb-2">
                              <span class="text-sm font-semibold text-gray-500 uppercase tracking-wider" id="progress-label">CV Progress</span>
-                             <span id="progress-percent" class="text-xl font-bold text-blue-600">0%</span>
+                             <span id="progress-percent" class="text-xl font-bold text-indigo-600">0%</span>
                         </div>
                         <div class="w-full bg-gray-200 rounded-full h-3">
-                            <div id="progress-bar" class="bg-blue-600 h-3 rounded-full progress-bar-fill" style="width: 0%"></div>
+                            <div id="progress-bar" class="bg-indigo-600 h-3 rounded-full progress-bar-fill" style="width: 0%"></div>
                         </div>
                     </div>
 
@@ -239,29 +212,29 @@
             </div>
 
             <!-- Live Preview Section -->
-            <div id="print-area-container" class="w-full bg-white rounded-2xl shadow-2xl p-8 mt-8 lg:mt-0 space-y-8">
+            <div id="print-area-container" class="w-full bg-white rounded-2xl shadow-2xl p-8 mt-8 lg:mt-0 space-y-8 lg:sticky lg:top-28">
                 <div>
                     <h3 class="text-center font-bold text-gray-500 mb-4 uppercase tracking-wider" id="preview-title">Live Preview</h3>
-                    <div id="print-area" class="bg-gray-100 p-8 rounded-lg">
+                    <div id="print-area" class="bg-white p-8 rounded-lg border border-gray-200 shadow-inner overflow-y-auto" style="max-height: 70vh;">
                         <header class="text-center">
-                            <h1 id="preview-name" class="text-4xl font-black tracking-tighter bg-gradient-to-r from-blue-800 to-blue-500 text-transparent bg-clip-text pb-2 break-words">Your Name</h1>
+                            <h1 id="preview-name" class="text-4xl font-black tracking-tighter bg-gradient-to-r from-blue-800 to-blue-500 text-transparent bg-clip-text pb-2 break-words header-font">Your Name</h1>
                             <h2 id="preview-subtitle" class="mt-1 text-lg font-medium text-gray-600 tracking-wide break-words">Your Subtitle</h2>
                         </header>
                         <div id="preview-content" class="mt-8 text-sm space-y-8">
                             <!-- Dynamic preview content will be injected here -->
                         </div>
                     </div>
-                     <div class="text-center mt-6 flex justify-center gap-4">
+                     <div class="text-center mt-6 flex justify-center gap-4 flex-wrap">
                         <button id="download-html-btn" class="inline-block px-5 py-2.5 bg-gradient-to-r from-green-500 to-teal-600 text-white font-semibold rounded-full shadow-md transform hover:scale-105 transition-transform duration-300 text-sm opacity-50 cursor-not-allowed" disabled>
                             <i class="fas fa-file-code mr-2"></i> Download InteractCV
                         </button>
-                        <button id="download-doc-btn" class="inline-block px-5 py-2.5 bg-gradient-to-r from-blue-600 to-sky-500 text-white font-semibold rounded-full shadow-md transform hover:scale-105 transition-transform duration-300 text-sm opacity-50 cursor-not-allowed" disabled>
+                        <button id="download-doc-btn" class="inline-block px-5 py-2.5 bg-gradient-to-r from-indigo-600 to-blue-500 text-white font-semibold rounded-full shadow-md transform hover:scale-105 transition-transform duration-300 text-sm opacity-50 cursor-not-allowed" disabled>
                             <i class="fas fa-file-word mr-2"></i> Download as Word
                         </button>
                     </div>
                 </div>
 
-                <!-- UPDATED: Career Visualization Section -->
+                <!-- Career Visualization Section -->
                 <div id="visualization-section" class="border-t-2 border-gray-100 pt-8">
                     <h3 class="text-center font-bold text-gray-500 mb-4 uppercase tracking-wider">Career Journey</h3>
                     <div class="text-center mb-4">
@@ -269,7 +242,7 @@
                             <i class="fas fa-stream mr-2"></i> Visualize Journey
                         </button>
                     </div>
-                    <div id="timeline-visualization-container" class="bg-gray-50 p-4 rounded-lg min-h-[400px] flex items-center justify-center relative">
+                    <div id="timeline-visualization-container" class="bg-gray-50 p-4 rounded-lg min-h-[400px] flex items-center justify-center relative border border-gray-200 shadow-inner">
                          <p class="text-gray-400">Your career journey will appear here.</p>
                     </div>
                 </div>
@@ -282,24 +255,24 @@
     <div id="github-modal" class="fixed inset-0 bg-black bg-opacity-75 z-50 hidden items-center justify-center p-4">
         <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-3xl w-full relative max-h-[90vh] overflow-y-auto">
              <button id="close-modal-btn" class="absolute top-4 right-4 text-gray-400 hover:text-gray-800 text-3xl font-bold">&times;</button>
-             <h2 class="text-3xl font-bold text-center mb-6 text-gray-800">Your CV is Ready!</h2>
+             <h2 class="text-3xl font-bold text-center mb-6 text-gray-800 header-font">Your CV is Ready!</h2>
              <p class="text-center text-gray-600 mb-8">Follow these steps to host your new interactive CV online for free using GitHub Pages.</p>
              
              <div class="space-y-6 text-gray-700">
                  <div>
-                     <h3 class="font-bold text-lg mb-2"><span class="bg-blue-600 text-white rounded-full w-8 h-8 inline-flex items-center justify-center mr-3">1</span> Create a GitHub Account & Repository</h3>
-                     <p>If you don't have a GitHub account, <a href="https://github.com/join" target="_blank" class="text-blue-600 hover:underline">sign up for free</a>. Then, create a new repository by clicking the "+" icon in the top-right and selecting "New repository". Name it something like `my-interactive-cv`.</p>
+                     <h3 class="font-bold text-lg mb-2"><span class="bg-indigo-600 text-white rounded-full w-8 h-8 inline-flex items-center justify-center mr-3">1</span> Create a GitHub Account & Repository</h3>
+                     <p>If you don't have a GitHub account, <a href="https://github.com/join" target="_blank" class="text-indigo-600 hover:underline">sign up for free</a>. Then, create a new repository by clicking the "+" icon in the top-right and selecting "New repository". Name it something like `my-interactive-cv`.</p>
                  </div>
                  <div>
-                     <h3 class="font-bold text-lg mb-2"><span class="bg-blue-600 text-white rounded-full w-8 h-8 inline-flex items-center justify-center mr-3">2</span> Upload Your CV File</h3>
+                     <h3 class="font-bold text-lg mb-2"><span class="bg-indigo-600 text-white rounded-full w-8 h-8 inline-flex items-center justify-center mr-3">2</span> Upload Your CV File</h3>
                      <p>In your new repository, click the "Add file" button and choose "Upload files". Drag and drop the `interactcv.html` file you just downloaded into the designated area and click "Commit changes".</p>
                  </div>
                   <div>
-                     <h3 class="font-bold text-lg mb-2"><span class="bg-blue-600 text-white rounded-full w-8 h-8 inline-flex items-center justify-center mr-3">3</span> Enable GitHub Pages</h3>
+                     <h3 class="font-bold text-lg mb-2"><span class="bg-indigo-600 text-white rounded-full w-8 h-8 inline-flex items-center justify-center mr-3">3</span> Enable GitHub Pages</h3>
                      <p>Go to your repository's "Settings" tab. In the left sidebar, click on "Pages". Under "Branch", select `main` from the dropdown menu and click "Save".</p>
                  </div>
                   <div>
-                     <h3 class="font-bold text-lg mb-2"><span class="bg-blue-600 text-white rounded-full w-8 h-8 inline-flex items-center justify-center mr-3">4</span> Share Your Live CV!</h3>
+                     <h3 class="font-bold text-lg mb-2"><span class="bg-indigo-600 text-white rounded-full w-8 h-8 inline-flex items-center justify-center mr-3">4</span> Share Your Live CV!</h3>
                      <p>GitHub will provide you with a public URL (like `https://your-username.github.io/my-interactive-cv/`). It might take a minute or two to go live. Once it's ready, you can share this link with anyone!</p>
                  </div>
              </div>
@@ -405,8 +378,8 @@
                 if (cvData.summary.length > 0 && cvData.summary.some(p => p.trim() !== '')) {
                     previewHTML += `
                     <section>
-                        <h3 class="text-xl font-bold text-center text-gray-700 mb-4 border-b-2 pb-2">Professional Summary</h3>
-                        <ul class="list-disc pl-5 space-y-1 text-gray-700 text-xs">
+                        <h3 class="text-xl font-bold text-center text-gray-700 mb-4 border-b-2 pb-2 header-font">Professional Summary</h3>
+                        <ul class="list-disc pl-5 space-y-1 text-gray-700 text-base">
                             ${cvData.summary.map(p => `<li>${p}</li>`).join('')}
                         </ul>
                     </section>
@@ -416,7 +389,7 @@
                 if (cvData.experience.length > 0) {
                     previewHTML += `
                     <section class="mt-8">
-                        <h3 class="text-xl font-bold text-center text-gray-700 mb-4 border-b-2 pb-2">Work Experience</h3>
+                        <h3 class="text-xl font-bold text-center text-gray-700 mb-4 border-b-2 pb-2 header-font">Work Experience</h3>
                         <div class="space-y-4">
                         ${cvData.experience.map(exp => {
                             if (!exp.company) return '';
@@ -425,16 +398,16 @@
                             return `
                             <div>
                                 <div class="flex justify-between items-baseline">
-                                    <h4 class="font-bold text-gray-900">${exp.company}</h4>
-                                    <p class="text-xs text-gray-500">${period}</p>
+                                    <h4 class="font-bold text-gray-900 text-lg">${exp.company}</h4>
+                                    <p class="text-sm text-gray-500">${period}</p>
                                 </div>
                                 <div class="pl-4 mt-1 space-y-2">
                                 ${(exp.roles || []).map(role => {
                                     if (!role.title) return '';
                                     return `
                                     <div>
-                                        <h5 class="font-semibold text-sm text-gray-800">${role.title}</h5>
-                                        <ul class="list-disc pl-5 mt-1 space-y-1 text-gray-700 text-xs">
+                                        <h5 class="font-semibold text-base text-gray-800">${role.title}</h5>
+                                        <ul class="list-disc pl-5 mt-1 space-y-1 text-gray-700 text-sm">
                                             ${(role.points || []).map(p => p ? `<li>${p}</li>` : '').join('')}
                                         </ul>
                                     </div>
@@ -451,16 +424,16 @@
                 if (cvData.skills.soft.length > 0 || cvData.skills.technical.length > 0) {
                     previewHTML += `
                     <section class="mt-8">
-                        <h3 class="text-xl font-bold text-center text-gray-700 mb-4 border-b-2 pb-2">Core Competencies</h3>
-                        <div class="grid grid-cols-2 gap-6 text-xs">
+                        <h3 class="text-xl font-bold text-center text-gray-700 mb-4 border-b-2 pb-2 header-font">Core Competencies</h3>
+                        <div class="grid grid-cols-2 gap-6 text-sm">
                             ${cvData.skills.soft.length > 0 ? `
                             <div>
-                                <h4 class="font-bold mb-2 text-center">Soft Skills</h4>
+                                <h4 class="font-bold mb-2 text-center text-base">Soft Skills</h4>
                                 <ul class="list-disc pl-5">${cvData.skills.soft.map(s => `<li>${s.name} <span class="text-gray-500">(${s.level})</span></li>`).join('')}</ul>
                             </div>` : ''}
                             ${cvData.skills.technical.length > 0 ? `
                             <div>
-                                <h4 class="font-bold mb-2 text-center">Technical</h4>
+                                <h4 class="font-bold mb-2 text-center text-base">Technical</h4>
                                 <ul class="list-disc pl-5">${cvData.skills.technical.map(s => `<li>${s.name} <span class="text-gray-500">(${s.level})</span></li>`).join('')}</ul>
                             </div>` : ''}
                         </div>
@@ -471,14 +444,14 @@
                 if (cvData.projects.length > 0) {
                     previewHTML += `
                     <section class="mt-8">
-                        <h3 class="text-xl font-bold text-center text-gray-700 mb-4 border-b-2 pb-2">Projects</h3>
+                        <h3 class="text-xl font-bold text-center text-gray-700 mb-4 border-b-2 pb-2 header-font">Projects</h3>
                         <div class="space-y-3">
                         ${cvData.projects.map(p => {
                             if (!p.title) return '';
                             return `
                             <div>
-                                <h4 class="font-bold">${p.title}</h4>
-                                <p class="text-xs text-gray-700 pl-2 italic">${p.summary}</p>
+                                <h4 class="font-bold text-base">${p.title}</h4>
+                                <p class="text-sm text-gray-700 pl-2 italic">${p.summary}</p>
                             </div>
                         `}).join('')}
                         </div>
@@ -491,13 +464,13 @@
                     if (cvData.education.length > 0 && cvData.education.some(e => e.degree)) {
                         previewHTML += `
                             <div>
-                                <h3 class="text-lg font-bold text-center text-gray-700 mb-4 border-b pb-2">Education</h3>
-                                <div class="space-y-3 text-xs">
+                                <h3 class="text-lg font-bold text-center text-gray-700 mb-4 border-b pb-2 header-font">Education</h3>
+                                <div class="space-y-3 text-sm">
                                 ${cvData.education.map(e => `
                                     <div>
                                         <p class="font-semibold">${e.degree}</p>
-                                        <p class="text-xs">${e.institution}</p>
-                                        <p class="text-xs text-gray-500">${e.year}</p>
+                                        <p class="text-sm">${e.institution}</p>
+                                        <p class="text-sm text-gray-500">${e.year}</p>
                                     </div>
                                 `).join('')}
                                 </div>
@@ -507,8 +480,8 @@
                      if (cvData.achievements.length > 0 && cvData.achievements.some(a => a.text)) {
                         previewHTML += `
                             <div>
-                                <h3 class="text-lg font-bold text-center text-gray-700 mb-4 border-b pb-2">Achievements</h3>
-                                <ul class="list-disc pl-5 space-y-1 text-xs">
+                                <h3 class="text-lg font-bold text-center text-gray-700 mb-4 border-b pb-2 header-font">Achievements</h3>
+                                <ul class="list-disc pl-5 space-y-1 text-sm">
                                     ${cvData.achievements.map(a => `<li>${a.text}</li>`).join('')}
                                 </ul>
                             </div>
@@ -617,7 +590,7 @@
 
                 nextBtn.disabled = !isValid;
                 
-                nextBtn.classList.remove('text-blue-500', 'hover:text-blue-700', 'text-green-500', 'hover:text-green-700', 'text-gray-300', 'cursor-not-allowed');
+                nextBtn.classList.remove('text-indigo-500', 'hover:text-indigo-700', 'text-green-500', 'hover:text-green-700', 'text-gray-300', 'cursor-not-allowed');
 
                 if (!isValid) {
                     nextBtn.classList.add('text-gray-300', 'cursor-not-allowed');
@@ -628,7 +601,7 @@
                         nextBtn.disabled = true;
                     } else {
                         nextBtn.innerHTML = '<i class="fas fa-arrow-right"></i>';
-                        nextBtn.classList.add('text-blue-500', 'hover:text-blue-700');
+                        nextBtn.classList.add('text-indigo-500', 'hover:text-indigo-700');
                     }
                 }
                 
@@ -728,37 +701,37 @@
                 cardContainer.innerHTML = `<div id="card-${stepIndex}" class="card p-4"></div>`;
                 const card = document.getElementById(`card-${stepIndex}`);
                 
-                let content = `<h2 class="text-2xl font-bold mb-6 text-gray-800">${steps[stepIndex].title}</h2>`;
+                let content = `<h2 class="text-3xl font-bold text-gray-800 mb-6 header-font">${steps[stepIndex].title}</h2>`;
 
                 switch(step.title) {
                     case 'Personal Information':
                         content += `
-                            <div class="bg-gradient-to-tr from-blue-500/20 to-indigo-400/10 rounded-3xl shadow-2xl p-8 md:p-12 transition-all duration-500">
+                            <div class="bg-gradient-to-tr from-indigo-500/20 to-purple-400/10 rounded-3xl shadow-2xl p-8 md:p-12 transition-all duration-500">
                                 <div class="text-center mb-8">
-                                    <i class="fas fa-address-card text-7xl text-blue-400 mb-4 animate-pulse"></i>
-                                    <h2 class="text-4xl font-extrabold text-indigo-700 mb-2 tracking-tight">Let's Begin Your Story!</h2>
+                                    <i class="fas fa-address-card text-7xl text-indigo-400 mb-4 animate-pulse"></i>
+                                    <h2 class="text-4xl font-extrabold text-indigo-700 mb-2 tracking-tight header-font">Let's Begin Your Story!</h2>
                                     <p class="text-lg text-gray-600">Start by entering your name, headline, contact info, and choose a theme.</p>
                                 </div>
                                 <form autocomplete="off" class="space-y-8 max-w-xl mx-auto">
-                                    <div class="relative">
-                                        <label for="name" class="font-semibold text-gray-600 mb-2 flex items-center"><i class="fas fa-user w-5 mr-2 text-indigo-400"></i>Full Name</label>
-                                        <textarea id="name" name="name" rows="1" placeholder="Type your name…" class="textarea-field transition-shadow focus:shadow-lg focus:bg-blue-50/50 text-center resize-none overflow-hidden w-full px-6 py-4 rounded-xl font-semibold text-2xl text-gray-900 border-2 border-indigo-200 focus:border-blue-500" oninput="autoResize(this); handleValidation()">${cvData.personal.name || ''}</textarea>
+                                    <div class="space-y-2">
+                                        <label for="name" class="block text-sm font-medium text-gray-700"><i class="fas fa-user w-5 mr-2 text-indigo-400"></i>Full Name</label>
+                                        <textarea id="name" name="name" rows="1" placeholder="e.g., Jane Doe" class="transition-shadow focus:shadow-lg focus:bg-indigo-50/50 text-center resize-none overflow-hidden w-full px-6 py-4 rounded-xl font-semibold text-2xl text-gray-900 border-2 border-indigo-200 focus:border-indigo-500" oninput="autoResize(this); handleValidation()">${cvData.personal.name || ''}</textarea>
                                     </div>
-                                    <div class="relative">
-                                        <label for="subtitle" class="font-semibold text-gray-600 mb-2 flex items-center"><i class="fas fa-briefcase w-5 mr-2 text-indigo-400"></i>Subtitle / Job Title</label>
-                                        <textarea id="subtitle" name="subtitle" rows="1" placeholder="e.g., Technical Lead | AI Specialist" class="textarea-field transition-shadow focus:shadow-lg focus:bg-blue-50/50 text-center resize-none overflow-hidden w-full px-6 py-4 rounded-xl font-semibold text-xl text-gray-800 border-2 border-indigo-200 focus:border-blue-500" oninput="autoResize(this); handleValidation()">${cvData.personal.subtitle || ''}</textarea>
+                                    <div class="space-y-2">
+                                        <label for="subtitle" class="block text-sm font-medium text-gray-700"><i class="fas fa-briefcase w-5 mr-2 text-indigo-400"></i>Subtitle / Job Title</label>
+                                        <textarea id="subtitle" name="subtitle" rows="1" placeholder="e.g., Technical Lead | AI Specialist" class="transition-shadow focus:shadow-lg focus:bg-indigo-50/50 text-center resize-none overflow-hidden w-full px-6 py-4 rounded-xl font-semibold text-xl text-gray-800 border-2 border-indigo-200 focus:border-indigo-500" oninput="autoResize(this); handleValidation()">${cvData.personal.subtitle || ''}</textarea>
                                     </div>
                                     <div class="space-y-6 pt-4 border-t border-indigo-200/50">
-                                         <div>
-                                            <label for="email" class="font-semibold text-gray-600 mb-2 flex items-center"><i class="fas fa-envelope w-5 mr-2 text-indigo-400"></i>Email Address</label>
+                                         <div class="space-y-1">
+                                            <label for="email" class="block text-sm font-medium text-gray-700"><i class="fas fa-envelope w-5 mr-2 text-indigo-400"></i>Email Address</label>
                                             <input id="email" type="email" placeholder="your.email@example.com" class="input-field" value="${cvData.personal.email || ''}" oninput="handleValidation()">
                                          </div>
-                                         <div>
-                                            <label for="phone" class="font-semibold text-gray-600 mb-2 flex items-center"><i class="fas fa-phone w-5 mr-2 text-indigo-400"></i>Phone Number</label>
+                                         <div class="space-y-1">
+                                            <label for="phone" class="block text-sm font-medium text-gray-700"><i class="fas fa-phone w-5 mr-2 text-indigo-400"></i>Phone Number</label>
                                             <input id="phone" type="tel" placeholder="+1 (555) 123-4567" class="input-field" value="${cvData.personal.phone || ''}" oninput="handleValidation()">
                                          </div>
-                                         <div>
-                                            <label for="linkedin" class="font-semibold text-gray-600 mb-2 flex items-center"><i class="fab fa-linkedin w-5 mr-2 text-indigo-400"></i>LinkedIn Profile URL</label>
+                                         <div class="space-y-1">
+                                            <label for="linkedin" class="block text-sm font-medium text-gray-700"><i class="fab fa-linkedin w-5 mr-2 text-indigo-400"></i>LinkedIn Profile URL</label>
                                             <input id="linkedin" type="text" placeholder="linkedin.com/in/your-profile" class="input-field" value="${cvData.personal.linkedin || ''}" oninput="handleValidation()">
                                          </div>
                                     </div>
@@ -766,63 +739,54 @@
                                          <h3 class="font-bold text-center text-lg text-gray-700 mt-6 mb-4">Choose a Theme</h3>
                                          <div class="flex justify-center flex-wrap gap-4">
                                             ${Object.keys(themes).map(theme => `
-                                            <label class="flex items-center space-x-2 cursor-pointer p-2 rounded-lg hover:bg-blue-100/50 transition">
-                                                <input type="radio" name="theme" value="${theme}" class="form-radio text-blue-600" ${cvData.personal.theme === theme ? 'checked' : ''} onchange="handleValidation()">
+                                            <label class="flex items-center space-x-2 cursor-pointer p-2 rounded-lg hover:bg-indigo-100/50 transition">
+                                                <input type="radio" name="theme" value="${theme}" class="form-radio text-indigo-600 focus:ring-indigo-500" ${cvData.personal.theme === theme ? 'checked' : ''} onchange="handleValidation()">
                                                 <span class="capitalize font-semibold text-gray-700">${theme}</span>
                                                 <span class="w-5 h-5 rounded-full inline-block" style="background-image: linear-gradient(to right, ${themes[theme].from}, ${themes[theme].to})"></span>
                                             </label>`).join('')}
                                         </div>
                                     </div>
                                 </form>
-                                <div class="text-center mt-8">
-                                     <button id="upload-btn" class="text-sm text-gray-600 hover:text-blue-600 font-semibold transition" disabled>
-                                        <i class="fas fa-upload mr-2"></i> Modify existing CV
-                                    </button>
-                                    <span class="text-xs bg-gray-200 text-gray-600 font-semibold px-2 py-1 rounded-full ml-2">Coming Soon</span>
-                                    <p class="text-xs text-gray-500 mt-2 italic">(Works only with CVs created by this interface)</p>
-                                </div>
                             </div>`;
                         break;
                     case 'Professional Summary':
-                        content += `<div class="bg-gray-100 p-4 rounded-lg"><div id="summary-list" class="space-y-4">${renderSummaryItems()}</div><button onclick="addSummaryPoint()" class="add-btn mt-4">+ Add Point</button></div>`;
+                        content += `<div class="bg-gray-50 p-4 rounded-lg"><div id="summary-list" class="space-y-4">${renderSummaryItems()}</div><button onclick="addSummaryPoint()" class="add-btn mt-4">+ Add Point</button></div>`;
                         break;
                     case 'Work Experience':
-                         content += `<div class="bg-gray-100 p-4 rounded-lg"><div id="experience-list" class="space-y-4">${renderExperienceItems()}</div><button onclick="addExperience()" class="add-btn mt-4">+ Add Experience</button></div>`;
+                         content += `<div class="bg-gray-50 p-4 rounded-lg"><div id="experience-list" class="space-y-4">${renderExperienceItems()}</div><button onclick="addExperience()" class="add-btn mt-4">+ Add Experience</button></div>`;
                         break;
                     case 'Skills':
                         content += `
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                               <div class="bg-gray-100 p-4 rounded-lg">
-                                    <h3 class="font-bold mb-2">Soft Skills</h3>
+                               <div class="bg-gray-50 p-4 rounded-lg">
+                                    <h3 class="font-bold mb-2 text-lg">Soft Skills</h3>
                                     <div id="soft-skills" class="space-y-2">${renderSkillItems('soft')}</div>
                                     <button onclick="addSkill('soft')" class="add-btn mt-2">+ Add Skill</button>
                                 </div>
-                               <div class="bg-gray-100 p-4 rounded-lg">
-                                    <h3 class="font-bold mb-2">Technical & Tools</h3>
+                               <div class="bg-gray-50 p-4 rounded-lg">
+                                    <h3 class="font-bold mb-2 text-lg">Technical & Tools</h3>
                                     <div id="technical-skills" class="space-y-2">${renderSkillItems('technical')}</div>
                                     <button onclick="addSkill('technical')" class="add-btn mt-2">+ Add Skill</button>
                                 </div>
                             </div>`;
                         break;
                     case 'Projects':
-                        content += `<div class="bg-gray-100 p-4 rounded-lg"><div id="project-list" class="space-y-6">${renderProjectItems()}</div><button onclick="addProject()" class="add-btn mt-4">+ Add Project</button></div>`;
+                        content += `<div class="bg-gray-50 p-4 rounded-lg"><div id="project-list" class="space-y-6">${renderProjectItems()}</div><button onclick="addProject()" class="add-btn mt-4">+ Add Project</button></div>`;
                         break;
                      case 'Education':
-                        content += `<div class="bg-gray-100 p-4 rounded-lg"><div id="education-list" class="space-y-6">${renderEducationItems()}</div><button onclick="addEducation()" class="add-btn mt-4">+ Add Education</button></div>`;
+                        content += `<div class="bg-gray-50 p-4 rounded-lg"><div id="education-list" class="space-y-6">${renderEducationItems()}</div><button onclick="addEducation()" class="add-btn mt-4">+ Add Education</button></div>`;
                         break;
                      case 'Achievements':
-                        content += `<div class="bg-gray-100 p-4 rounded-lg"><div id="achievement-list" class="space-y-4">${renderAchievementItems()}</div><button onclick="addAchievement()" class="add-btn mt-4">+ Add Achievement</button></div>`;
+                        content += `<div class="bg-gray-50 p-4 rounded-lg"><div id="achievement-list" class="space-y-4">${renderAchievementItems()}</div><button onclick="addAchievement()" class="add-btn mt-4">+ Add Achievement</button></div>`;
                         break;
                      case 'Finish Up':
-                        content += `<div class="text-center"><p class="text-lg">You're all set! You can now download your CV in your preferred format from the Live Preview panel.</p></div>`;
+                        content += `<div class="text-center p-8 bg-gray-50 rounded-lg"><p class="text-lg text-gray-700">You're all set! You can now download your CV in your preferred format from the Live Preview panel.</p></div>`;
                         break;
 
                 }
                 card.innerHTML = content;
                 
                 if (stepIndex === 0) {
-                     const uploadBtn = document.getElementById('upload-btn');
-                     if(uploadBtn) uploadBtn.addEventListener('click', () => cvUploadInput.click());
                     card.querySelectorAll('textarea').forEach(textarea => {
                         setTimeout(() => autoResize(textarea), 0);
                     });
@@ -846,8 +810,6 @@
                     const availableSkill = SOFT_SKILLS_LIST.find(s => !usedSkills.includes(s));
                     if (availableSkill) {
                         cvData.skills.soft.push({ name: availableSkill, level: 'Proficient' });
-                    } else {
-                        // Optionally, alert the user that all skills have been added.
                     }
                 } else {
                     cvData.skills.technical.push({ level: 'Proficient' });
@@ -878,47 +840,53 @@
                 return cvData.experience.map((exp, i) => {
                     const isCurrent = exp.isCurrent || false;
                     return `
-                    <div class="experience-item p-4 border rounded-lg bg-white shadow-sm">
-                         <button onclick="removeExperience(${i})" class="remove-btn float-right">Remove</button>
-                        <input type="text" name="company" placeholder="Company Name" class="input-field mb-2" value="${exp.company || ''}" oninput="handleValidation()">
+                    <div class="experience-item p-4 border rounded-lg bg-white shadow-sm space-y-3">
+                         <button onclick="removeExperience(${i})" class="remove-btn float-right font-normal">Remove</button>
+                        <div class="space-y-1">
+                            <label class="block text-sm font-medium text-gray-700">Company Name</label>
+                            <input type="text" name="company" placeholder="e.g., Google" class="input-field" value="${exp.company || ''}" oninput="handleValidation()">
+                        </div>
                         
-                        <div class="grid grid-cols-2 gap-4 mb-2 text-sm">
+                        <div class="grid grid-cols-2 gap-4 text-sm">
                             <div>
-                                <label class="font-semibold text-xs">Start Date</label>
+                                <label class="font-semibold text-xs text-gray-600">Start Date</label>
                                 <div class="flex gap-2">
-                                    <select name="start-month-${i}" class="input-field text-sm !p-2" onchange="handleValidation()">${months.map(m => `<option ${exp.startMonth === m ? 'selected': ''}>${m}</option>`).join('')}</select>
-                                    <select name="start-year-${i}" class="input-field text-sm !p-2" onchange="handleValidation()">${years.map(y => `<option ${exp.startYear == y ? 'selected': ''}>${y}</option>`).join('')}</select>
+                                    <select name="start-month-${i}" class="input-field text-sm !p-3" onchange="handleValidation()">${months.map(m => `<option ${exp.startMonth === m ? 'selected': ''}>${m}</option>`).join('')}</select>
+                                    <select name="start-year-${i}" class="input-field text-sm !p-3" onchange="handleValidation()">${years.map(y => `<option ${exp.startYear == y ? 'selected': ''}>${y}</option>`).join('')}</select>
                                 </div>
                             </div>
                              <div>
-                                <label class="font-semibold text-xs">End Date</label>
+                                <label class="font-semibold text-xs text-gray-600">End Date</label>
                                 <div class="flex gap-2">
-                                    <select name="end-month-${i}" class="input-field text-sm !p-2" ${isCurrent ? 'disabled' : ''} onchange="handleValidation()">${months.map(m => `<option ${exp.endMonth === m ? 'selected': ''}>${m}</option>`).join('')}</select>
-                                    <select name="end-year-${i}" class="input-field text-sm !p-2" ${isCurrent ? 'disabled' : ''} onchange="handleValidation()">${years.map(y => `<option ${exp.endYear == y ? 'selected': ''}>${y}</option>`).join('')}</select>
+                                    <select name="end-month-${i}" class="input-field text-sm !p-3 bg-gray-50 disabled:opacity-70" ${isCurrent ? 'disabled' : ''} onchange="handleValidation()">${months.map(m => `<option ${exp.endMonth === m ? 'selected': ''}>${m}</option>`).join('')}</select>
+                                    <select name="end-year-${i}" class="input-field text-sm !p-3 bg-gray-50 disabled:opacity-70" ${isCurrent ? 'disabled' : ''} onchange="handleValidation()">${years.map(y => `<option ${exp.endYear == y ? 'selected': ''}>${y}</option>`).join('')}</select>
                                 </div>
                             </div>
                         </div>
                         <div class="flex items-center justify-between">
-                             <label class="flex items-center text-sm">
-                                <input type="checkbox" name="current-job-${i}" class="form-checkbox mr-2" ${isCurrent ? 'checked' : ''} oninput="handleValidation()"> I currently work here
+                             <label class="flex items-center text-sm text-gray-700">
+                                <input type="checkbox" name="current-job-${i}" class="form-checkbox mr-2 text-indigo-600 focus:ring-indigo-500" ${isCurrent ? 'checked' : ''} onchange="handleValidation()"> I currently work here
                             </label>
-                            <p class="text-sm font-semibold text-blue-600 duration-text">${exp.duration || ''}</p>
+                            <p class="text-sm font-semibold text-indigo-600 duration-text">${exp.duration || ''}</p>
                         </div>
 
-                        <div class="role-list space-y-2 mt-4">
+                        <div class="role-list space-y-3 mt-4">
                             ${(exp.roles || []).map((role, ri) => `
-                                <div class="role-item border-t pt-2">
-                                    <button onclick="removeRole(${i}, ${ri})" class="remove-btn float-right">Remove Role</button>
-                                    <input type="text" name="role-title" placeholder="Role Title" class="input-field mb-2 font-semibold" value="${role.title || ''}" oninput="handleValidation()">
-                                    <div class="point-list space-y-1">
+                                <div class="role-item border-t pt-3">
+                                    <button onclick="removeRole(${i}, ${ri})" class="remove-btn float-right font-normal">Remove Role</button>
+                                    <div class="space-y-1">
+                                        <label class="block text-sm font-medium text-gray-700">Role Title</label>
+                                        <input type="text" name="role-title" placeholder="e.g., Senior Developer" class="input-field font-semibold" value="${role.title || ''}" oninput="handleValidation()">
+                                    </div>
+                                    <div class="point-list space-y-2 mt-2">
                                     ${(role.points || []).map((p, pi) => `
-                                        <div class="flex items-center">
-                                            <input type="text" name="role-point" placeholder="Accomplishment" class="input-field flex-grow" value="${p || ''}" oninput="handleValidation()">
-                                            <button onclick="removePoint(${i}, ${ri}, ${pi})" class="remove-btn ml-2">&times;</button>
+                                        <div class="flex items-center space-x-2">
+                                            <input type="text" name="role-point" placeholder="Accomplishment..." class="input-field flex-grow" value="${p || ''}" oninput="handleValidation()">
+                                            <button onclick="removePoint(${i}, ${ri}, ${pi})" class="remove-btn">&times;</button>
                                         </div>
                                     `).join('')}
                                     </div>
-                                    <button onclick="addPoint(${i}, ${ri})" class="add-btn mt-1 text-xs">+ Add Accomplishment</button>
+                                    <button onclick="addPoint(${i}, ${ri})" class="add-btn mt-2 text-xs">+ Add Accomplishment</button>
                                 </div>`).join('')}
                         </div>
                          <button onclick="addRole(${i})" class="add-btn mt-2">+ Add Role</button>
@@ -933,10 +901,10 @@
                         const availableOptions = SOFT_SKILLS_LIST.filter(s => !usedSkills.includes(s) || s === skill.name);
                         return `
                         <div class="soft-skill flex items-center space-x-2">
-                            <select name="skill-name" class="input-field" onchange="handleValidation()">
+                            <select name="skill-name" class="input-field !p-3" onchange="handleValidation()">
                                 ${availableOptions.map(opt => `<option value="${opt}" ${skill.name === opt ? 'selected' : ''}>${opt}</option>`).join('')}
                             </select>
-                            <select name="skill-level" class="input-field" onchange="handleValidation()">
+                            <select name="skill-level" class="input-field !p-3" onchange="handleValidation()">
                                 <option value="Proficient" ${skill.level === 'Proficient' ? 'selected' : ''}>Proficient</option>
                                 <option value="Advanced" ${skill.level === 'Advanced' ? 'selected' : ''}>Advanced</option>
                                 <option value="Expert" ${skill.level === 'Expert' ? 'selected' : ''}>Expert</option>
@@ -948,25 +916,34 @@
 
                 return cvData.skills.technical.map((skill, i) => `
                 <div class="technical-skill flex items-center space-x-2">
-                    <input type="text" name="skill-name" placeholder="Skill Name" class="input-field" value="${skill.name || ''}" oninput="handleValidation()">
-                    <select name="skill-level" class="input-field" onchange="handleValidation()">
-                        <option value="Proficient" ${skill.level === 'Proficient' ? 'selected' : ''}>Proficient</option>
-                        <option value="Advanced" ${skill.level === 'Advanced' ? 'selected' : ''}>Advanced</option>
-                        <option value="Expert" ${skill.level === 'Expert' ? 'selected' : ''}>Expert</option>
-                    </select>
-                    <button onclick="removeSkill('technical', ${i})" class="remove-btn">&times;</button>
+                    <div class="flex-grow space-y-1">
+                        <label class="block text-sm font-medium text-gray-700">Skill Name</label>
+                        <input type="text" name="skill-name" placeholder="e.g., Python" class="input-field" value="${skill.name || ''}" oninput="handleValidation()">
+                    </div>
+                    <div class="space-y-1">
+                        <label class="block text-sm font-medium text-gray-700">Level</label>
+                        <select name="skill-level" class="input-field !p-3" onchange="handleValidation()">
+                            <option value="Proficient" ${skill.level === 'Proficient' ? 'selected' : ''}>Proficient</option>
+                            <option value="Advanced" ${skill.level === 'Advanced' ? 'selected' : ''}>Advanced</option>
+                            <option value="Expert" ${skill.level === 'Expert' ? 'selected' : ''}>Expert</option>
+                        </select>
+                    </div>
+                    <button onclick="removeSkill('technical', ${i})" class="remove-btn self-end mb-3">&times;</button>
                 </div>`).join('');
             }
 
             function renderProjectItems() {
                  return cvData.projects.map((proj, i) => `
-                <div class="project-item p-4 border-l-4 border-blue-300 rounded-r-lg bg-white shadow-md relative">
+                <div class="project-item p-4 border-l-4 border-indigo-300 rounded-r-lg bg-white shadow-md relative space-y-3">
                      <button onclick="removeProject(${i})" class="remove-btn absolute top-3 right-3 text-lg">&times;</button>
-                    <div class="flex items-center mb-3">
-                        <i class="fas fa-rocket text-blue-500 text-xl mr-3"></i>
-                        <input type="text" name="project-title" placeholder="Project Title" class="input-field !text-xl font-bold !p-2" value="${proj.title || ''}" oninput="handleValidation()">
+                    <div class="space-y-1">
+                        <label class="block text-sm font-medium text-gray-700"><i class="fas fa-rocket text-indigo-500 mr-2"></i>Project Title</label>
+                        <input type="text" name="project-title" placeholder="e.g., E-commerce Platform" class="input-field !text-lg font-bold" value="${proj.title || ''}" oninput="handleValidation()">
                     </div>
-                    <textarea name="project-summary" placeholder="Briefly describe the project, your role, and the outcome." class="textarea-field bg-gray-50/50" oninput="autoResize(this); handleValidation()" rows="2">${proj.summary || ''}</textarea>
+                    <div class="space-y-1">
+                        <label class="block text-sm font-medium text-gray-700">Description</label>
+                        <textarea name="project-summary" placeholder="Briefly describe the project, your role, and the outcome." class="textarea-field bg-gray-50/50" oninput="autoResize(this); handleValidation()" rows="2">${proj.summary || ''}</textarea>
+                    </div>
                 </div>`).join('');
             }
             
@@ -975,19 +952,19 @@
                 const years = Array.from({length: 50}, (_, i) => currentYear - i);
 
                  return cvData.education.map((edu, i) => `
-                <div class="education-item p-4 border-l-4 border-indigo-300 rounded-r-lg bg-white shadow-md relative space-y-3">
+                <div class="education-item p-4 border-l-4 border-teal-300 rounded-r-lg bg-white shadow-md relative space-y-3">
                     <button onclick="removeEducation(${i})" class="remove-btn absolute top-3 right-3 text-lg">&times;</button>
-                    <div class="flex items-center">
-                        <i class="fas fa-graduation-cap text-indigo-500 w-6 mr-3"></i>
-                        <input type="text" name="degree" placeholder="Degree (e.g., MSc in Electrical Engineering)" class="input-field font-semibold !p-2" value="${edu.degree || ''}" oninput="handleValidation()">
+                    <div class="space-y-1">
+                        <label class="block text-sm font-medium text-gray-700"><i class="fas fa-graduation-cap text-teal-500 w-5 mr-2"></i>Degree</label>
+                        <input type="text" name="degree" placeholder="e.g., MSc in Electrical Engineering" class="input-field font-semibold" value="${edu.degree || ''}" oninput="handleValidation()">
                     </div>
-                     <div class="flex items-center">
-                        <i class="fas fa-university text-indigo-500 w-6 mr-3"></i>
-                        <input type="text" name="institution" placeholder="Institution Name" class="input-field !p-2" value="${edu.institution || ''}" oninput="handleValidation()">
+                     <div class="space-y-1">
+                        <label class="block text-sm font-medium text-gray-700"><i class="fas fa-university text-teal-500 w-5 mr-2"></i>Institution</label>
+                        <input type="text" name="institution" placeholder="e.g., University of Technology" class="input-field" value="${edu.institution || ''}" oninput="handleValidation()">
                     </div>
-                     <div class="flex items-center">
-                        <i class="fas fa-calendar-alt text-indigo-500 w-6 mr-3"></i>
-                        <select name="year" class="input-field !p-2" onchange="handleValidation()">
+                     <div class="space-y-1">
+                        <label class="block text-sm font-medium text-gray-700"><i class="fas fa-calendar-alt text-teal-500 w-5 mr-2"></i>Year</label>
+                        <select name="year" class="input-field !p-3" onchange="handleValidation()">
                             <option value="">Completion Year</option>
                             <option value="Ongoing">Ongoing</option>
                             ${years.map(y => `<option value="${y}" ${edu.year == y ? 'selected': ''}>${y}</option>`).join('')}
@@ -999,9 +976,11 @@
             function renderAchievementItems() {
                  return cvData.achievements.map((ach, i) => `
                 <div class="achievement-item flex items-center space-x-3">
-                    <i class="fas fa-trophy text-amber-500"></i>
-                    <input type="text" name="achievement-text" placeholder="e.g., 2x Patents filed, Top Master Thesis" class="input-field flex-grow" value="${ach.text || ''}" oninput="handleValidation()">
-                    <button onclick="removeAchievement(${i})" class="remove-btn text-xl">&times;</button>
+                    <div class="flex-grow space-y-1">
+                        <label class="block text-sm font-medium text-gray-700"><i class="fas fa-trophy text-amber-500 mr-2"></i>Achievement</label>
+                        <input type="text" name="achievement-text" placeholder="e.g., 2x Patents filed" class="input-field" value="${ach.text || ''}" oninput="handleValidation()">
+                    </div>
+                    <button onclick="removeAchievement(${i})" class="remove-btn text-xl self-end mb-3">&times;</button>
                 </div>`).join('');
             }
             
@@ -1034,13 +1013,13 @@
                     `).join('');
 
                     bodyHtml = `
-                        <h2 class="text-2xl font-bold text-gray-900">${d.company}</h2>
+                        <h2 class="text-2xl font-bold text-gray-900 header-font">${d.company}</h2>
                         <p class="text-sm text-gray-500 font-semibold">${d.startYear} - ${d.isCurrent ? 'Present' : d.endYear} (${d.duration})</p>
                         <div class="mt-4 border-t pt-4">${rolesHtml}</div>
                     `;
                 } else { // Education
                      bodyHtml = `
-                        <h2 class="text-2xl font-bold text-gray-900">${d.degree}</h2>
+                        <h2 class="text-2xl font-bold text-gray-900 header-font">${d.degree}</h2>
                         <p class="text-md text-gray-700">${d.institution}</p>
                         <p class="text-sm text-gray-500 font-semibold mt-1">${d.year}</p>
                     `;
@@ -1239,30 +1218,32 @@
         <script src="https://cdn.tailwindcss.com/"><\/script>
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;700;900&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;700;900&family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
         <style>
             :root, [data-theme-active="default"] { --color-primary: #003E6B; --color-accent: #36A8A4; --color-accent-light: #E6F7F7; --color-accent-translucent: rgba(54, 168, 164, 0.9); --color-header-gradient-from: #003E6B; --color-header-gradient-to: #36A8A4; }
             [data-theme-active="sunset"] { --color-primary: #6D28D9; --color-accent: #F97316; --color-accent-light: #FFEDD5; --color-accent-translucent: rgba(249, 115, 22, 0.9); --color-header-gradient-from: #6D28D9; --color-header-gradient-to: #F97316; }
             [data-theme-active="forest"] { --color-primary: #166534; --color-accent: #CA8A04; --color-accent-light: #FEFCE8; --color-accent-translucent: rgba(202, 138, 4, 0.9); --color-header-gradient-from: #166534; --color-header-gradient-to: #854d0e; }
             [data-theme-active="monochrome"] { --color-primary: #1F2937; --color-accent: #6B7280; --color-accent-light: #F3F4F6; --color-accent-translucent: rgba(107, 114, 128, 0.9); --color-header-gradient-from: #111827; --color-header-gradient-to: #6B7280; }
-            body { font-family: 'Poppins', sans-serif; }
+            body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
+            .header-font { font-family: 'Poppins', sans-serif; }
             .color-primary { color: var(--color-primary); } .color-accent { color: var(--color-accent); } .bg-accent-light { background-color: var(--color-accent-light); }
             #navbar { background-color: var(--color-accent-translucent); }
             .timeline-item::before { content: ''; position: absolute; top: 1.25rem; left: -0.5rem; width: 1rem; height: 1rem; background-color: var(--color-primary); border-radius: 9999px; border: 4px solid #f7f9fb; z-index: 10; }
             .accordion-content { overflow: hidden; max-height: 0; transition: max-height 0.3s ease-out; }
+            .accordion-header { cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
         </style>
     </head>
-    <body class="bg-gray-100">
+    <body>
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <header class="text-center py-16">
-                <h1 class="text-5xl md:text-7xl font-black tracking-tighter bg-gradient-to-r from-[var(--color-header-gradient-from)] to-[var(--color-header-gradient-to)] text-transparent bg-clip-text pb-2">${cvData.personal.name}</h1>
+                <h1 class="text-5xl md:text-7xl font-black tracking-tighter bg-gradient-to-r from-[var(--color-header-gradient-from)] to-[var(--color-header-gradient-to)] text-transparent bg-clip-text pb-2 header-font">${cvData.personal.name}</h1>
                 <h2 class="mt-2 text-xl md:text-2xl font-medium text-gray-600 tracking-wide">${cvData.personal.subtitle}</h2>
             </header>
             <main class="mb-24 space-y-12">
                 <!-- Professional Summary Section -->
                 <section id="summary">
-                    <h3 class="text-3xl font-bold text-center text-gray-800 mb-8">Professional Summary</h3>
+                    <h3 class="text-3xl font-bold text-center text-gray-800 mb-8 header-font">Professional Summary</h3>
                     <div class="max-w-4xl mx-auto bg-white p-8 rounded-2xl shadow-xl">
                         <ul class="space-y-4 text-lg text-gray-700">
                             ${cvData.summary.map(point => `
@@ -1276,21 +1257,22 @@
                 </section>
                 <!-- Timeline Section -->
                 <section id="timeline">
-                    <h3 class="text-3xl font-bold text-center text-gray-800 mb-8">Career Timeline</h3>
+                    <h3 class="text-3xl font-bold text-center text-gray-800 mb-8 header-font">Career Timeline</h3>
                     <div class="mt-12 max-w-3xl mx-auto border-l-2 border-[var(--color-primary)] pl-8 space-y-10">
                         ${cvData.experience.map(exp => {
                             const endPeriod = exp.isCurrent ? 'Present' : `${exp.endMonth} ${exp.endYear}`;
                             const period = `${exp.startMonth} ${exp.startYear} – ${endPeriod}`;
                             return `
                             <div class="timeline-item relative">
-                                <div class="timeline-header cursor-pointer p-4 rounded-lg bg-white shadow-md">
-                                    <div class="flex justify-between items-center">
+                                <div class="timeline-header accordion-header p-4 rounded-lg bg-white shadow-md">
+                                    <div class="flex items-center space-x-4">
+                                        <span class="text-3xl">🏢</span>
                                         <div>
                                             <h4 class="text-xl font-bold text-gray-900">${exp.company}</h4>
                                             <p class="text-sm text-gray-500">${period} | ${exp.duration}</p>
                                         </div>
-                                        <svg class="w-6 h-6 color-primary transform transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
                                     </div>
+                                    <svg class="w-6 h-6 color-primary transform transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
                                 </div>
                                 <div class="accordion-content pl-4 mt-2">
                                     <div class="bg-gray-50 p-6 rounded-lg border border-gray-200 space-y-4">
@@ -1311,7 +1293,7 @@
                 </section>
                 <!-- Skills Section -->
                 <section id="skills">
-                    <h3 class="text-3xl font-bold text-center text-gray-800">Core Competencies</h3>
+                    <h3 class="text-3xl font-bold text-center text-gray-800 header-font">Core Competencies</h3>
                      <div class="max-w-6xl mx-auto mt-6 bg-white p-4 rounded-lg shadow-inner">
                         <h4 class="text-sm font-semibold mb-2" style="color: var(--color-primary);">Proficiency Key:</h4>
                         <div class="flex rounded overflow-hidden">
@@ -1322,7 +1304,7 @@
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-6xl mx-auto mt-12">
                         <div class="bg-white p-6 rounded-2xl shadow-lg">
-                            <h4 class="text-xl font-bold text-center text-gray-800 mb-4">Soft Skills</h4>
+                            <h4 class="text-xl font-bold text-center text-gray-800 mb-4 header-font">Soft Skills</h4>
                             ${(cvData.skills.soft || []).map(s => `
                                 <div class="mb-4">
                                     <div class="flex justify-between items-center mb-1">
@@ -1335,7 +1317,7 @@
                                 </div>`).join('')}
                         </div>
                         <div class="bg-white p-6 rounded-2xl shadow-lg">
-                            <h4 class="text-xl font-bold text-center text-gray-800 mb-4">Technical & Tools</h4>
+                            <h4 class="text-xl font-bold text-center text-gray-800 mb-4 header-font">Technical & Tools</h4>
                             ${(cvData.skills.technical || []).map(s => `
                                  <div class="mb-4">
                                     <div class="flex justify-between items-center mb-1">
@@ -1351,7 +1333,7 @@
                 </section>
                  <!-- Projects Section -->
                  <section id="projects">
-                    <h3 class="text-3xl font-bold text-center text-gray-800 mb-8">Project Portfolio</h3>
+                    <h3 class="text-3xl font-bold text-center text-gray-800 mb-8 header-font">Project Portfolio</h3>
                     <div class="space-y-4 max-w-4xl mx-auto">
                     ${cvData.projects.map(p => `
                         <div class="bg-white rounded-xl shadow-lg border">
@@ -1370,11 +1352,11 @@
                 <section id="education-achievements">
                      <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-6xl mx-auto">
                         <div class="bg-white p-6 rounded-2xl shadow-lg">
-                            <h4 class="text-xl font-bold text-center text-gray-800 mb-4">Education</h4>
+                            <h4 class="text-xl font-bold text-center text-gray-800 mb-4 header-font">Education</h4>
                             ${cvData.education.map(e => `<div class="mb-4"><p class="font-bold">${e.degree}</p><p>${e.institution}</p><p class="text-sm text-gray-500">${e.year}</p></div>`).join('')}
                         </div>
                         <div class="bg-white p-6 rounded-2xl shadow-lg">
-                            <h4 class="text-xl font-bold text-center text-gray-800 mb-4">Key Achievements</h4>
+                            <h4 class="text-xl font-bold text-center text-gray-800 mb-4 header-font">Key Achievements</h4>
                             <ul class="list-disc pl-5 space-y-2">
                              ${cvData.achievements.map(a => `<li>${a.text}</li>`).join('')}
                             </ul>
@@ -1382,9 +1364,9 @@
                      </div>
                 </section>
             </main>
-            <footer class="text-center py-8 border-t">
+            <footer class="text-center py-8 border-t border-gray-200">
                 <div class="flex justify-center space-x-6">
-                    ${cvData.personal.linkedin ? `<a href="${cvData.personal.linkedin}" target="_blank" class="text-gray-600 hover:color-primary"><i class="fab fa-linkedin fa-2x"></i></a>` : ''}
+                    ${cvData.personal.linkedin ? `<a href="${cvData.personal.linkedin.startsWith('http') ? '' : 'https://'}${cvData.personal.linkedin}" target="_blank" class="text-gray-600 hover:color-primary"><i class="fab fa-linkedin fa-2x"></i></a>` : ''}
                     ${cvData.personal.email ? `<a href="mailto:${cvData.personal.email}" class="text-gray-600 hover:color-primary"><i class="fas fa-envelope fa-2x"></i></a>` : ''}
                     ${cvData.personal.phone ? `<a href="tel:${cvData.personal.phone}" class="text-gray-600 hover:color-primary"><i class="fas fa-phone-square fa-2x"></i></a>` : ''}
                 </div>
@@ -1500,7 +1482,7 @@
                         const type = d.type === 'education' ? d3.symbolDiamond : d3.symbolCircle;
                         return symbol.type(type).size(100)();
                     })
-                    .attr("fill", d => d.type === 'education' ? '#a78bfa' : '#60a5fa')
+                    .attr("fill", d => d.type === 'education' ? '#14b8a6' : '#4f46e5') // teal, indigo
                     .on("click", (event, d) => showDetails(event, d));
 
                 // Draw labels
@@ -1526,69 +1508,6 @@
             updateProgressBar();
             updatePreview();
 			
-			// Visit Counter Logic
-            document.addEventListener('DOMContentLoaded', function() {
-                console.log('DOM Content Loaded - Starting visit counter logic');
-
-                if (typeof firebase === 'undefined' || !db) {
-                    console.error('Firebase or Firestore not initialized');
-                    return;
-                }
-
-                const visitCountElement = document.getElementById('visit-count');
-                if (!visitCountElement) {
-                    console.error('Visit count element not found');
-                    return;
-                }
-
-                // Get the current page name
-                const pageName = window.location.pathname.split('/').pop().replace('.html', '') || 'index';
-                console.log('Page name for counter:', pageName);
-
-                // Build the complete path according to Firestore rules
-                const collectionPath = 'artifacts/interactcv/public/data/visitCounters';
-                const counterRef = db.collection(collectionPath).doc(pageName);
-                
-                console.log('Attempting to access counter at path:', counterRef.path);
-
-                // First try to get the current document
-                counterRef.get()
-                    .then((doc) => {
-                        console.log('Retrieved document. Exists:', doc.exists);
-                        if (doc.exists) {
-                            console.log('Current count:', doc.data().count);
-                        }
-
-                        // Use a transaction for atomic update
-                        return db.runTransaction(async (transaction) => {
-                            const freshDoc = await transaction.get(counterRef);
-                            
-                            if (!freshDoc.exists) {
-                                console.log('Creating new counter document with count 1');
-                                transaction.set(counterRef, { count: 1 });
-                                return 1;
-                            }
-
-                            const newCount = (freshDoc.data().count || 0) + 1;
-                            console.log('Updating counter to:', newCount);
-                            transaction.update(counterRef, { count: newCount });
-                            return newCount;
-                        });
-                    })
-                    .then((newCount) => {
-                        console.log('Successfully updated counter to:', newCount);
-                        visitCountElement.textContent = newCount;
-                    })
-                    .catch((error) => {
-                        console.error("Error with visit counter:", error);
-                        console.error("Error details:", {
-                            code: error.code,
-                            message: error.message,
-                            stack: error.stack
-                        });
-                        visitCountElement.textContent = '?';
-                    });
-            });
         });
     </script>
 </body>
