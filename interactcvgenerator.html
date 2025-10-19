@@ -141,6 +141,12 @@
         .step-dot {
             @apply w-2 h-2 rounded-full mr-2 transition-colors duration-300;
         }
+
+        #card-container {
+            max-height: 60vh;
+            overflow-y: auto;
+            padding-right: 1rem; /* for scrollbar */
+        }
     </style>
 	<script src="/assets/js/firebase-config.js"></script>
     <script src="/assets/js/visit-counter-client.js"></script>
@@ -181,7 +187,7 @@
     </nav>
     
     <div id="main-content" class="pt-16">
-        <header class="bg-white rounded-xl shadow-lg p-8 md:p-12 mb-12 overflow-hidden relative max-w-7xl mx-auto">
+        <header id="page-header" class="bg-white rounded-xl shadow-lg p-8 md:p-12 mb-12 overflow-hidden relative max-w-7xl mx-auto transition-all duration-500">
             <div class="absolute top-0 right-0 -mt-24 -mr-24 w-72 h-72 bg-indigo-100 rounded-full opacity-50"></div>
             <div class="absolute bottom-0 left-0 -mb-24 -ml-24 w-72 h-72 bg-purple-100 rounded-full opacity-50"></div>
             <div class="relative z-10 flex flex-col md:flex-row items-center text-center md:text-left">
@@ -201,7 +207,12 @@
                 </div>
             </div>
             <div class="relative z-10 mt-8 pt-6 border-t border-gray-200 flex flex-col items-center">
-                <div class="flex flex-wrap justify-center gap-2">
+                 <div class="mt-8 text-center">
+                    <button id="start-building-btn" class="inline-block px-8 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold text-lg rounded-full shadow-lg transform hover:scale-105 transition-transform duration-300">
+                        Create Yours! <i class="fas fa-arrow-right ml-2"></i>
+                    </button>
+                </div>
+                <div class="flex flex-wrap justify-center gap-2 mt-8">
                     <span class="text-xs font-medium bg-gray-100 text-gray-800 px-3 py-1 rounded-full">ATS Optimized</span>
                     <span class="text-xs font-medium bg-purple-100 text-purple-800 px-3 py-1 rounded-full">Works best on PC</span>
                     <span class="text-xs font-medium bg-green-100 text-green-800 px-3 py-1 rounded-full">No personal data is collected or saved</span>
@@ -218,7 +229,7 @@
             </div>
         </header>
 
-        <div class="w-full max-w-7xl mx-auto">
+        <div id="builder-wrapper" class="w-full max-w-7xl mx-auto hidden">
             <div class="w-full bg-white rounded-2xl shadow-2xl p-8">
                 <!-- Tabs -->
                 <div>
@@ -248,7 +259,7 @@
                                 <!-- Stepper will be dynamically generated here -->
                             </div>
                             <!-- Card Container -->
-                            <div id="card-container" class="relative" style="min-height: 480px;">
+                            <div id="card-container" class="relative pr-4">
                                 <!-- Cards will be injected by JS -->
                             </div>
                         </div>
@@ -365,6 +376,9 @@
             const detailModalContent = document.getElementById('modal-content');
             const detailModalBody = document.getElementById('modal-body');
             const closeDetailModalBtn = document.getElementById('close-detail-modal-btn');
+            const startBuildingBtn = document.getElementById('start-building-btn');
+            const pageHeader = document.getElementById('page-header');
+            const builderWrapper = document.getElementById('builder-wrapper');
 
             // Tab variables
             const tabBuilder = document.getElementById('tab-builder');
@@ -398,6 +412,29 @@
                 education: [],
                 achievements: []
             };
+            
+            const initialCvData = JSON.stringify(cvData);
+
+            window.addEventListener('beforeunload', (e) => {
+                if (JSON.stringify(cvData) !== initialCvData) {
+                    e.preventDefault();
+                    e.returnValue = '';
+                }
+            });
+
+            startBuildingBtn.addEventListener('click', () => {
+                pageHeader.style.opacity = '0';
+                pageHeader.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    pageHeader.classList.add('hidden');
+                    builderWrapper.classList.remove('hidden');
+                    builderWrapper.style.transition = 'opacity 0.5s ease-in-out, transform 0.5s ease-in-out';
+                    setTimeout(() => {
+                         builderWrapper.style.opacity = '1';
+                         builderWrapper.style.transform = 'scale(1)';
+                    }, 50);
+                }, 500);
+            });
             
             const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
@@ -896,11 +933,11 @@
                                 <form autocomplete="off" class="space-y-8 max-w-xl mx-auto">
                                     <div class="space-y-2">
                                         <label for="name" class="block text-sm font-medium text-gray-700"><i class="fas fa-user w-5 mr-2 text-indigo-400"></i>Full Name</label>
-                                        <textarea id="name" name="name" rows="1" placeholder="e.g., Jane Doe" class="transition-shadow focus:shadow-lg focus:bg-indigo-50/50 text-center resize-none overflow-hidden w-full px-6 py-4 rounded-xl font-semibold text-2xl text-gray-900 border-2 border-indigo-200 focus:border-indigo-500" oninput="autoResize(this); handleValidation()">${cvData.personal.name || ''}</textarea>
+                                        <input id="name" name="name" type="text" placeholder="e.g., Jane Doe" class="transition-shadow focus:shadow-lg focus:bg-indigo-50/50 text-center w-full px-6 py-4 rounded-xl font-semibold text-2xl text-gray-900 border-2 border-indigo-200 focus:border-indigo-500" oninput="handleValidation()" value="${cvData.personal.name || ''}">
                                     </div>
                                     <div class="space-y-2">
                                         <label for="subtitle" class="block text-sm font-medium text-gray-700"><i class="fas fa-briefcase w-5 mr-2 text-indigo-400"></i>Subtitle / Job Title</label>
-                                        <textarea id="subtitle" name="subtitle" rows="1" placeholder="e.g., Technical Lead | AI Specialist" class="transition-shadow focus:shadow-lg focus:bg-indigo-50/50 text-center resize-none overflow-hidden w-full px-6 py-4 rounded-xl font-semibold text-xl text-gray-800 border-2 border-indigo-200 focus:border-indigo-500" oninput="autoResize(this); handleValidation()">${cvData.personal.subtitle || ''}</textarea>
+                                        <input id="subtitle" name="subtitle" type="text" placeholder="e.g., Technical Lead | AI Specialist" class="transition-shadow focus:shadow-lg focus:bg-indigo-50/50 text-center w-full px-6 py-4 rounded-xl font-semibold text-xl text-gray-800 border-2 border-indigo-200 focus:border-indigo-500" oninput="handleValidation()" value="${cvData.personal.subtitle || ''}">
                                     </div>
                                     <div class="space-y-6 pt-4 border-t border-indigo-200/50">
                                          <div class="space-y-1">
