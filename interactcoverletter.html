@@ -1,5 +1,5 @@
-
 <!DOCTYPE html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -24,22 +24,16 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="icon" href="/assets/favicon.ico" type="image/x-icon">
-
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interactive Cover Letter Builder</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;700;900&family=Lato:wght@400;700&family=Roboto:wght@400;700&family=Merriweather:wght@400;700&family=Lora:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;700;900&family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="icon" href="/assets/favicon.ico" type="image/x-icon">
     <style>
         body {
-            font-family: 'Poppins', sans-serif;
-            background: linear-gradient(to right, #eef2f3, #8e9eab);
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6; /* bg-gray-100 */
+        }
+        .header-font {
+             font-family: 'Poppins', sans-serif;
         }
         .progress-bar-fill {
             transition: width 0.5s ease-in-out;
@@ -60,39 +54,82 @@
             @apply text-center text-gray-500 mt-1 px-2;
             font-size: 0.65rem; /* custom smaller size */
         }
+        #author-dropdown-menu.hidden {
+            display: none;
+        }
     </style>
     <script src="/assets/js/firebase-config.js"></script>
     <script src="/assets/js/visit-counter-client.js"></script>
 </head>
 <body class="p-4 md:p-8">
 
-    <div id="main-content">
-        <div class="w-full max-w-7xl mx-auto mb-8 text-center">
-            <div class="bg-white rounded-2xl shadow-lg p-6 relative">
-                <a href="https://viskon.github.io/interactcvgenerator.html" class="absolute top-6 left-6 text-gray-400 hover:text-gray-700 transition-colors" title="Back to CV Builder">
-                    <i class="fas fa-arrow-left text-2xl"></i>
+    <!-- Global Navigation Header -->
+    <nav class="fixed top-0 left-0 right-0 bg-white shadow-md z-50">
+        <div class="container mx-auto px-4 max-w-7xl">
+            <div class="flex justify-between items-center py-3">
+                <a href="https://viskon.github.io/interactcvgenerator.html" class="flex items-center space-x-2 text-gray-500 hover:text-indigo-600 transition-colors">
+                    <img src="/assets/favicon.ico" alt="InteractCV home" class="h-6 w-6">
+                    <span class="font-semibold text-lg header-font">InteractCV</span>
                 </a>
-                <h1 class="text-4xl font-extrabold text-gray-800 mb-2">ATS Optimized Cover Letter Generator</h1>
-                <p class="text-sm text-gray-500 tracking-wide">
-                    Craft the perfect cover letter, section by section.
-                </p>
-                <div class="mt-6 flex flex-wrap justify-center gap-2">
-                    <span class="text-xs font-medium bg-gray-100 text-gray-800 px-3 py-1 rounded-full">ATS Optimized</span>
-                    <span class="text-xs font-medium bg-purple-100 text-purple-800 px-3 py-1 rounded-full">Works best on PC</span>
-                    <span class="text-xs font-medium bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full">Your usage is not tracked</span>
-                    <span class="text-xs font-medium bg-green-100 text-green-800 px-3 py-1 rounded-full">No personal data is collected or saved</span>
+                <div class="flex items-center space-x-4">
+                    <div class="relative">
+                        <button id="author-work-btn" class="flex items-center space-x-2 text-sm font-medium text-gray-600 hover:text-indigo-600 bg-gray-100 hover:bg-gray-200 px-3 py-2 rounded-md transition-colors">
+                            <span>Author's Work</span>
+                            <i id="author-chevron" class="fas fa-chevron-down text-xs transition-transform"></i>
+                        </button>
+                        <div id="author-dropdown-menu" class="hidden absolute right-0 mt-2 w-56 bg-white rounded-md shadow-lg py-1 z-20 origin-top-right transition-all duration-200 ease-out transform opacity-0 scale-95">
+                            <a href="https://viskon.github.io/interactcv.html" target="_blank" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-indigo-600">
+                                <i class="fas fa-id-card-alt w-6 mr-2"></i>
+                                <span>My Interactive CV</span>
+                            </a>
+                            <a href="https://viskon.github.io/interactimeline.html" target="_blank" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-indigo-600">
+                                <i class="fas fa-stream w-6 mr-2"></i>
+                                <span>My Interactive Timeline</span>
+                            </a>
+                        </div>
+                    </div>
+                     <a href="https://viskon.github.io/interactcvgenerator.html" class="inline-block px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-semibold rounded-full shadow-md transform hover:scale-105 transition-transform duration-300 text-sm">
+                        Build a CV
+                    </a>
                 </div>
             </div>
-            <div class="mt-6 flex flex-col md:flex-row items-center justify-center md:justify-start space-y-3 md:space-y-0 md:space-x-6 text-gray-500">
-                         <p id="visit-counter" class="text-sm flex items-center">
+        </div>
+    </nav>
+
+    <div id="main-content" class="pt-16">
+        <header id="page-header" class="bg-white rounded-xl shadow-lg p-8 md:p-12 mb-12 overflow-hidden relative max-w-7xl mx-auto transition-all duration-500">
+            <div class="absolute top-0 right-0 -mt-24 -mr-24 w-72 h-72 bg-indigo-100 rounded-full opacity-50"></div>
+            <div class="absolute bottom-0 left-0 -mb-24 -ml-24 w-72 h-72 bg-pink-100 rounded-full opacity-50"></div>
+            <div class="relative z-10 flex flex-col md:flex-row items-center text-center md:text-left">
+                 <div class="flex-shrink-0 mb-6 md:mb-0 md:mr-10">
+                    <div class="w-32 h-32 bg-indigo-600 rounded-full flex items-center justify-center text-white shadow-lg ring-4 ring-white">
+                        <i class="fas fa-pen-alt text-6xl"></i>
+                    </div>
+                </div>
+                <div>
+                    <h1 class="text-4xl md:text-5xl font-bold text-gray-900 header-font">Cover Letter Generator</h1>
+                    <p class="text-lg text-gray-600 mt-4 max-w-2xl">
+                       Craft the perfect, ATS-optimized cover letter for any job application, section by section.
+                    </p>
+                </div>
+            </div>
+            <div class="relative z-10 mt-8 pt-6 border-t border-gray-200 flex flex-col items-center">
+                 <div class="flex flex-wrap justify-center gap-2">
+                    <span class="text-xs font-medium bg-gray-100 text-gray-800 px-3 py-1 rounded-full">ATS Optimized</span>
+                    <span class="text-xs font-medium bg-purple-100 text-purple-800 px-3 py-1 rounded-full">Works best on PC</span>
+                    <span class="text-xs font-medium bg-green-100 text-green-800 px-3 py-1 rounded-full">No personal data is collected or saved</span>
+                </div>
+                <div class="mt-4 flex flex-wrap justify-center gap-2">
+                    <p id="visit-counter" class="text-sm flex items-center text-gray-500">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1.5" viewBox="0 0 20 20" fill="currentColor">
                               <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
                               <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.022 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd" />
                             </svg>
-                            Anonymous Visits: <span id="visit-count" class="font-semibold ml-1">0</span>
-                          </p>
-                    </div>
-        </div>
+                            Anonymous Visits: <span id="visit-count" class="font-semibold text-gray-600 ml-1">0</span>
+                    </p>
+                </div>
+            </div>
+        </header>
 
         <div class="w-full max-w-7xl mx-auto lg:grid lg:grid-cols-2 lg:gap-8 lg:items-start">
             <!-- Builder Card -->
@@ -124,7 +161,7 @@
             </div>
 
             <!-- Live Preview Section -->
-            <div class="w-full bg-white rounded-2xl shadow-2xl p-8 mt-8 lg:mt-0 sticky top-8">
+            <div class="w-full bg-white rounded-2xl shadow-2xl p-8 mt-8 lg:mt-0 sticky top-24">
                 <div id="preview-section">
                     <h3 class="text-center font-bold text-gray-500 mb-4 uppercase tracking-wider" id="preview-title">Live Preview</h3>
                     <div id="preview-area" class="bg-white p-8 rounded-lg border border-gray-200 shadow-inner h-[75vh] overflow-y-auto text-sm">
@@ -175,6 +212,11 @@
             const progressPercent = document.getElementById('progress-percent');
             const previewArea = document.getElementById('preview-area');
             const downloadDocBtn = document.getElementById('download-doc-btn');
+            
+            // Author Dropdown
+            const authorWorkBtn = document.getElementById('author-work-btn');
+            const authorDropdownMenu = document.getElementById('author-dropdown-menu');
+            const authorChevron = document.getElementById('author-chevron');
 
             let currentStep = 0;
             const coverLetterData = {
@@ -185,7 +227,7 @@
                 bodyParagraphs: [''],
                 companyConnection: '',
                 closing: '',
-                font: 'Poppins'
+                font: 'Inter'
             };
 
             const steps = [
@@ -196,6 +238,42 @@
                 { title: 'Your Interest in the Company', icon: 'fa-heart', color: 'rose' },
                 { title: 'Closing Paragraph', icon: 'fa-pen-fancy', color: 'fuchsia' }
             ];
+            
+            // Author Dropdown Logic
+            if (authorWorkBtn && authorDropdownMenu) {
+                authorWorkBtn.addEventListener('click', (event) => {
+                    event.stopPropagation();
+                    const isOpen = !authorDropdownMenu.classList.contains('hidden');
+                    if (isOpen) {
+                        authorDropdownMenu.classList.add('opacity-0', 'scale-95');
+                        authorDropdownMenu.classList.remove('opacity-100', 'scale-100');
+                        authorChevron.classList.remove('rotate-180');
+                        setTimeout(() => {
+                            authorDropdownMenu.classList.add('hidden');
+                        }, 200);
+                    } else {
+                        authorDropdownMenu.classList.remove('hidden');
+                        setTimeout(() => {
+                            authorDropdownMenu.classList.remove('opacity-0', 'scale-95');
+                            authorDropdownMenu.classList.add('opacity-100', 'scale-100');
+                            authorChevron.classList.add('rotate-180');
+                        }, 10);
+                    }
+                });
+
+                window.addEventListener('click', (event) => {
+                    const isOpen = !authorDropdownMenu.classList.contains('hidden');
+                    if (isOpen && !authorWorkBtn.contains(event.target)) {
+                        authorDropdownMenu.classList.add('opacity-0', 'scale-95');
+                        authorDropdownMenu.classList.remove('opacity-100', 'scale-100');
+                        authorChevron.classList.remove('rotate-180');
+                        setTimeout(() => {
+                            authorDropdownMenu.classList.add('hidden');
+                        }, 200);
+                    }
+                });
+            }
+
 
             function updateProgressBar() {
                 const percentage = (currentStep / (steps.length - 1)) * 100;
@@ -204,7 +282,7 @@
             }
 
             function updatePreview() {
-                previewArea.style.fontFamily = `'${coverLetterData.font}', serif`;
+                previewArea.style.fontFamily = `'${coverLetterData.font}', sans-serif`;
                 let previewHTML = `
                     <div class="text-right mb-8">
                         <p class="font-bold text-lg">${coverLetterData.yourInfo.name || ''}</p>
@@ -353,7 +431,7 @@
                     <div class="bg-gradient-to-tr from-${color}-500/20 to-${color}-400/10 rounded-3xl shadow-2xl p-8 transition-all duration-500">
                         <div class="text-center mb-8">
                              <i class="fas ${step.icon} text-7xl text-${color}-400 mb-4"></i>
-                             <h2 class="text-4xl font-extrabold text-${color}-700 mb-2 tracking-tight">${step.title}</h2>
+                             <h2 class="text-4xl font-extrabold text-${color}-700 mb-2 tracking-tight header-font">${step.title}</h2>
                         </div>
                         <div class="form-content space-y-6"></div>
                     </div>`;
@@ -371,11 +449,12 @@
                             <div class="mb-6">
                                 <label for="font-select" class="font-semibold text-gray-600 mb-2 flex items-center"><i class="fas fa-font w-5 mr-2 text-indigo-400"></i>Choose a Font</label>
                                 <select id="font-select" class="input-field">
-                                    <option value="Poppins">Poppins</option>
-                                    <option value="Lato">Lato</option>
-                                    <option value="Roboto">Roboto</option>
-                                    <option value="Merriweather">Merriweather</option>
-                                    <option value="Lora">Lora</option>
+                                    <option value="Inter">Inter (Modern)</option>
+                                    <option value="Poppins">Poppins (Stylish)</option>
+                                    <option value="Lato">Lato (Friendly)</option>
+                                    <option value="Roboto">Roboto (Classic)</option>
+                                    <option value="Merriweather">Merriweather (Serif)</option>
+                                    <option value="Lora">Lora (Elegant Serif)</option>
                                 </select>
                             </div>
                             ${createRemovableInput('yourName', 'fa-user', 'Full Name', coverLetterData.yourInfo.name, { isRequired: true, recommendation: 'Your name is essential for the letter.' })}
@@ -500,7 +579,7 @@
                     <head><meta charset='utf-8'><title>Cover Letter</title>
                     <link href="https://fonts.googleapis.com/css2?family=${googleFont}:wght@400;700&display=swap" rel="stylesheet">
                     <style>
-                        body { font-family: '${font}', serif; font-size: 11pt; line-height: 1.5; }
+                        body { font-family: '${font}', sans-serif; font-size: 11pt; line-height: 1.5; }
                         p { margin: 0 0 1em 0; }
                     </style>
                     </head>
@@ -565,4 +644,3 @@
     </script>
 </body>
 </html>
-
