@@ -48,14 +48,20 @@
             @apply text-sm text-gray-500 italic bg-gray-100 p-3 rounded-lg border-l-4 border-indigo-400;
         }
         .styled-textarea {
-            @apply transition-shadow focus:shadow-lg focus:bg-blue-50/50 text-center resize-none overflow-hidden w-full px-6 py-4 rounded-xl font-semibold text-xl text-gray-800 border-2 border-indigo-200 focus:border-blue-500;
+            @apply transition-shadow focus:shadow-lg focus:bg-blue-50/50 resize-none overflow-hidden w-full px-4 py-3 rounded-xl font-semibold text-gray-800 border-2 border-indigo-200 focus:border-blue-500;
         }
         .recommendation {
-            @apply text-center text-gray-500 mt-1 px-2;
-            font-size: 0.65rem; /* custom smaller size */
+            @apply text-gray-500 mt-1 px-1;
+            font-size: 0.75rem; /* custom smaller size */
         }
         #author-dropdown-menu.hidden {
             display: none;
+        }
+        .tab-button.active {
+            @apply border-indigo-500 text-indigo-600;
+        }
+        .tab-button {
+             @apply whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm;
         }
     </style>
     <script src="/assets/js/firebase-config.js"></script>
@@ -114,7 +120,12 @@
                 </div>
             </div>
             <div class="relative z-10 mt-8 pt-6 border-t border-gray-200 flex flex-col items-center">
-                 <div class="flex flex-wrap justify-center gap-2">
+                 <div class="mt-8 text-center">
+                    <button id="start-building-btn" class="inline-block px-8 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold text-lg rounded-full shadow-lg transform hover:scale-105 transition-transform duration-300">
+                        Create! <i class="fas fa-arrow-right ml-2"></i>
+                    </button>
+                </div>
+                 <div class="flex flex-wrap justify-center gap-2 mt-8">
                     <span class="text-xs font-medium bg-gray-100 text-gray-800 px-3 py-1 rounded-full">ATS Optimized</span>
                     <span class="text-xs font-medium bg-purple-100 text-purple-800 px-3 py-1 rounded-full">Works best on PC</span>
                     <span class="text-xs font-medium bg-green-100 text-green-800 px-3 py-1 rounded-full">No personal data is collected or saved</span>
@@ -131,46 +142,64 @@
             </div>
         </header>
 
-        <div class="w-full max-w-7xl mx-auto lg:grid lg:grid-cols-2 lg:gap-8 lg:items-start">
-            <!-- Builder Card -->
-            <div class="w-full bg-white rounded-2xl shadow-2xl p-8">
-                <div id="builder-content">
-                    <!-- Progress Bar -->
-                    <div class="mb-8">
-                        <div class="flex justify-between items-center mb-2">
-                            <div>
-                                <span class="text-base font-medium text-gray-700" id="progress-label">Cover Letter Progress</span>
-                                <span id="progress-percent" class="text-sm font-medium text-gray-700 ml-2">0%</span>
+        <div id="builder-wrapper" class="w-full max-w-7xl mx-auto hidden">
+             <div class="w-full bg-white rounded-2xl shadow-2xl p-8">
+                <!-- Tabs -->
+                <div>
+                    <div class="border-b border-gray-200">
+                        <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+                            <button id="tab-builder" class="tab-button border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300">
+                                Builder
+                            </button>
+                            <button id="tab-preview" class="tab-button border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300">
+                                Live Preview
+                            </button>
+                        </nav>
+                    </div>
+                </div>
+                
+                <!-- Tab Panels -->
+                <div id="tab-panels" class="mt-8">
+                     <!-- Builder Panel -->
+                    <div id="panel-builder">
+                        <div id="builder-content">
+                            <!-- Progress Bar -->
+                            <div class="mb-8">
+                                <div class="flex justify-between items-center mb-2">
+                                    <div>
+                                        <span class="text-base font-medium text-gray-700" id="progress-label">Cover Letter Progress</span>
+                                        <span id="progress-percent" class="text-sm font-medium text-gray-700 ml-2">0%</span>
+                                    </div>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2.5">
+                                    <div id="progress-bar" class="bg-indigo-600 h-2.5 rounded-full progress-bar-fill" style="width: 0%"></div>
+                                </div>
+                            </div>
+
+                            <!-- Card Container -->
+                            <div id="card-container" class="relative" style="min-height: 480px;">
+                                <!-- Cards will be injected by JS -->
                             </div>
                         </div>
-                        <div class="w-full bg-gray-200 rounded-full h-2.5">
-                            <div id="progress-bar" class="bg-indigo-600 h-2.5 rounded-full progress-bar-fill" style="width: 0%"></div>
+                         <!-- Navigation Buttons -->
+                        <div class="flex justify-between mt-8 items-center">
+                            <button id="prev-btn" class="transition text-5xl text-gray-400 hover:text-gray-600"><i class="fas fa-arrow-left"></i></button>
+                            <button id="next-btn" class="transition text-5xl"><i class="fas fa-arrow-right"></i></button>
                         </div>
                     </div>
-
-                    <!-- Card Container -->
-                    <div id="card-container" class="relative" style="min-height: 480px;">
-                        <!-- Cards will be injected by JS -->
-                    </div>
-                </div>
-                 <!-- Navigation Buttons -->
-                <div class="flex justify-between mt-8 items-center">
-                    <button id="prev-btn" class="transition text-5xl text-gray-400 hover:text-gray-600"><i class="fas fa-arrow-left"></i></button>
-                    <button id="next-btn" class="transition text-5xl"><i class="fas fa-arrow-right"></i></button>
-                </div>
-            </div>
-
-            <!-- Live Preview Section -->
-            <div class="w-full bg-white rounded-2xl shadow-2xl p-8 mt-8 lg:mt-0 sticky top-24">
-                <div id="preview-section">
-                    <h3 class="text-center font-bold text-gray-500 mb-4 uppercase tracking-wider" id="preview-title">Live Preview</h3>
-                    <div id="preview-area" class="bg-white p-8 rounded-lg border border-gray-200 shadow-inner h-[75vh] overflow-y-auto text-sm">
-                        <!-- Cover Letter Preview will be rendered here by JS -->
-                    </div>
-                     <div class="text-center mt-6">
-                        <button id="download-doc-btn" class="inline-block px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold rounded-full shadow-md transform hover:scale-105 transition-transform duration-300 text-base opacity-50 cursor-not-allowed" disabled>
-                            <i class="fas fa-file-word mr-2"></i> Download as Word
-                        </button>
+                    <!-- Preview Panel -->
+                    <div id="panel-preview" class="hidden">
+                         <div id="preview-section">
+                            <h3 class="text-center font-bold text-gray-500 mb-4 uppercase tracking-wider" id="preview-title">Live Preview</h3>
+                            <div id="preview-area" class="bg-white p-8 rounded-lg border border-gray-200 shadow-inner h-[80vh] overflow-y-auto text-sm">
+                                <!-- Cover Letter Preview will be rendered here by JS -->
+                            </div>
+                             <div class="text-center mt-6">
+                                <button id="download-doc-btn" class="inline-block px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold rounded-full shadow-md transform hover:scale-105 transition-transform duration-300 text-base opacity-50 cursor-not-allowed" disabled>
+                                    <i class="fas fa-file-word mr-2"></i> Download as Word
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -212,6 +241,16 @@
             const progressPercent = document.getElementById('progress-percent');
             const previewArea = document.getElementById('preview-area');
             const downloadDocBtn = document.getElementById('download-doc-btn');
+
+            const startBuildingBtn = document.getElementById('start-building-btn');
+            const pageHeader = document.getElementById('page-header');
+            const builderWrapper = document.getElementById('builder-wrapper');
+            const tabBuilder = document.getElementById('tab-builder');
+            const tabPreview = document.getElementById('tab-preview');
+            const panelBuilder = document.getElementById('panel-builder');
+            const panelPreview = document.getElementById('panel-preview');
+            const tabs = [tabBuilder, tabPreview];
+            const panels = [panelBuilder, panelPreview];
             
             // Author Dropdown
             const authorWorkBtn = document.getElementById('author-work-btn');
@@ -238,6 +277,37 @@
                 { title: 'Your Interest in the Company', icon: 'fa-heart', color: 'rose' },
                 { title: 'Closing Paragraph', icon: 'fa-pen-fancy', color: 'fuchsia' }
             ];
+
+            startBuildingBtn.addEventListener('click', () => {
+                pageHeader.style.transition = 'opacity 0.5s ease-out, transform 0.5s ease-out';
+                pageHeader.style.opacity = '0';
+                pageHeader.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    pageHeader.classList.add('hidden');
+                    builderWrapper.classList.remove('hidden');
+                    builderWrapper.style.opacity = '0';
+                    builderWrapper.style.transform = 'scale(0.95)';
+                    setTimeout(() => {
+                         builderWrapper.style.transition = 'opacity 0.5s ease-in-out, transform 0.5s ease-in-out';
+                         builderWrapper.style.opacity = '1';
+                         builderWrapper.style.transform = 'scale(1)';
+                    }, 50);
+                }, 500);
+            });
+
+            tabs.forEach((tab, index) => {
+                tab.addEventListener('click', () => {
+                    tabs.forEach(t => t.classList.remove('active'));
+                    panels.forEach(p => p.classList.add('hidden'));
+
+                    tab.classList.add('active');
+                    panels[index].classList.remove('hidden');
+
+                    if (panels[index] === panelPreview) {
+                        updatePreview();
+                    }
+                });
+            });
             
             // Author Dropdown Logic
             if (authorWorkBtn && authorDropdownMenu) {
@@ -318,6 +388,14 @@
 
             function navigate(direction) {
                 saveStepData(currentStep);
+
+                if (direction === 'next' && currentStep === steps.length - 1) {
+                    if(validateStep(currentStep)) {
+                        tabPreview.click();
+                    }
+                    return; 
+                }
+
                 let nextStep = currentStep;
                 if (direction === 'next' && currentStep < steps.length - 1) {
                     nextStep++;
@@ -340,16 +418,21 @@
                 
                 nextBtn.disabled = !isValid;
                 
+                // Reset classes that conflict between states
+                nextBtn.className = 'transition';
+
                 if (currentStep === steps.length - 1) {
-                    nextBtn.innerHTML = '<i class="fas fa-check"></i>';
-                    nextBtn.classList.add('text-green-500');
-                    nextBtn.disabled = true;
+                    nextBtn.innerHTML = 'Preview & Download <i class="fas fa-eye ml-2"></i>';
+                    nextBtn.classList.add('inline-block', 'px-6', 'py-3', 'bg-gradient-to-r', 'from-green-500', 'to-teal-600', 'text-white', 'font-semibold', 'rounded-full', 'shadow-md', 'transform', 'hover:scale-105', 'transition-transform', 'duration-300', 'text-base');
+                    if (!isValid) {
+                        nextBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                    }
                     downloadDocBtn.disabled = false;
                     downloadDocBtn.classList.remove('opacity-50', 'cursor-not-allowed');
                 } else {
                     nextBtn.innerHTML = '<i class="fas fa-arrow-right"></i>';
-                    nextBtn.classList.remove('text-green-500');
-                     nextBtn.classList.toggle('text-gray-400', !isValid);
+                    nextBtn.classList.add('text-5xl');
+                    nextBtn.classList.toggle('text-gray-400', !isValid);
                     nextBtn.classList.toggle('cursor-not-allowed', !isValid);
                     nextBtn.classList.toggle('text-indigo-500', isValid);
                 }
@@ -446,31 +529,33 @@
                     case 'Your Information':
                         formContent.innerHTML = `
                             <p class="guidance">Let's start with your contact details and choose a font for your letter.</p>
-                            <div class="mb-6">
-                                <label for="font-select" class="font-semibold text-gray-600 mb-2 flex items-center"><i class="fas fa-font w-5 mr-2 text-indigo-400"></i>Choose a Font</label>
-                                <select id="font-select" class="input-field">
-                                    <option value="Inter">Inter (Modern)</option>
-                                    <option value="Poppins">Poppins (Stylish)</option>
-                                    <option value="Lato">Lato (Friendly)</option>
-                                    <option value="Roboto">Roboto (Classic)</option>
-                                    <option value="Merriweather">Merriweather (Serif)</option>
-                                    <option value="Lora">Lora (Elegant Serif)</option>
-                                </select>
+                            <div class="relative group mb-4 grid grid-cols-1 sm:grid-cols-3 gap-x-4 items-center">
+                                <label for="font-select" class="font-semibold text-gray-600 mb-1 sm:mb-0 sm:text-right flex items-center sm:justify-end"><i class="fas fa-font w-5 mr-2 text-${color}-400"></i>Choose a Font</label>
+                                <div class="sm:col-span-2">
+                                    <select id="font-select" class="input-field">
+                                        <option value="Inter">Inter (Modern)</option>
+                                        <option value="Poppins">Poppins (Stylish)</option>
+                                        <option value="Lato">Lato (Friendly)</option>
+                                        <option value="Roboto">Roboto (Classic)</option>
+                                        <option value="Merriweather">Merriweather (Serif)</option>
+                                        <option value="Lora">Lora (Elegant Serif)</option>
+                                    </select>
+                                </div>
                             </div>
-                            ${createRemovableInput('yourName', 'fa-user', 'Full Name', coverLetterData.yourInfo.name, { isRequired: true, recommendation: 'Your name is essential for the letter.' })}
-                            ${createRemovableInput('yourAddress', 'fa-map-marker-alt', 'Full Address', coverLetterData.yourInfo.address, { isTextarea: true, recommendation: 'Recommended for formal letters.' })}
-                            ${createRemovableInput('yourPhone', 'fa-phone', 'Phone Number', coverLetterData.yourInfo.phone, { recommendation: 'Recommended for quick contact.' })}
-                            ${createRemovableInput('yourEmail', 'fa-envelope', 'Email Address', coverLetterData.yourInfo.email, { recommendation: 'Essential for digital communication.' })}
-                            ${createRemovableInput('yourLinkedin', 'fa-linkedin', 'LinkedIn Profile URL', coverLetterData.yourInfo.linkedin, { recommendation: 'Good for showing your professional profile.' })}
+                            ${createRemovableInput('yourName', 'fa-user', 'Full Name', coverLetterData.yourInfo.name, color, { isRequired: true, recommendation: 'Your name is essential for the letter.' })}
+                            ${createRemovableInput('yourAddress', 'fa-map-marker-alt', 'Full Address', coverLetterData.yourInfo.address, color, { isTextarea: true, recommendation: 'Recommended for formal letters.' })}
+                            ${createRemovableInput('yourPhone', 'fa-phone', 'Phone Number', coverLetterData.yourInfo.phone, color, { recommendation: 'Recommended for quick contact.' })}
+                            ${createRemovableInput('yourEmail', 'fa-envelope', 'Email Address', coverLetterData.yourInfo.email, color, { recommendation: 'Essential for digital communication.' })}
+                            ${createRemovableInput('yourLinkedin', 'fa-linkedin', 'LinkedIn Profile URL', coverLetterData.yourInfo.linkedin, color, { recommendation: 'Good for showing your professional profile.' })}
                         `;
                         break;
                     case 'Company Information':
                         formContent.innerHTML = `
                             <p class="guidance">Address the letter to a specific person if possible. If you can't find a name, 'Hiring Manager' is a safe default.</p>
-                            ${createRemovableInput('managerName', 'fa-user-tie', "Hiring Manager's Name", coverLetterData.companyInfo.managerName, { recommendation: 'Highly recommended for a personal touch.' })}
-                            ${createRemovableInput('managerTitle', 'fa-id-badge', "Hiring Manager's Title", coverLetterData.companyInfo.managerTitle, { recommendation: 'Optional, but adds professionalism.' })}
-                            ${createRemovableInput('companyName', 'fa-building', 'Company Name', coverLetterData.companyInfo.companyName, { isRequired: true, recommendation: 'This field is required.' })}
-                            ${createRemovableInput('companyAddress', 'fa-globe', "Company's Full Address", coverLetterData.companyInfo.companyAddress, { isTextarea: true, recommendation: 'Recommended for formal letters.' })}
+                            ${createRemovableInput('managerName', 'fa-user-tie', "Hiring Manager's Name", coverLetterData.companyInfo.managerName, color, { recommendation: 'Highly recommended for a personal touch.' })}
+                            ${createRemovableInput('managerTitle', 'fa-id-badge', "Hiring Manager's Title", coverLetterData.companyInfo.managerTitle, color, { recommendation: 'Optional, but adds professionalism.' })}
+                            ${createRemovableInput('companyName', 'fa-building', 'Company Name', coverLetterData.companyInfo.companyName, color, { isRequired: true, recommendation: 'This field is required.' })}
+                            ${createRemovableInput('companyAddress', 'fa-globe', "Company's Full Address", coverLetterData.companyInfo.companyAddress, color, { isTextarea: true, recommendation: 'Recommended for formal letters.' })}
                         `;
                         break;
                     case 'The Opening':
@@ -530,8 +615,9 @@
                 });
             }
 
-            function createRemovableInput(id, icon, placeholder, value, options = {}) {
+            function createRemovableInput(id, icon, placeholder, value, color, options = {}) {
                 const { isTextarea = false, isRequired = false, recommendation = '' } = options;
+                const finalIcon = id === 'yourLinkedin' ? 'fa-brands fa-linkedin' : `fas ${icon}`;
                 const onInputLogic = `handleInput();`;
                 const validationLogic = (id === 'yourEmail' || id === 'yourPhone') ? `validateField(this);` : '';
                 const inputType = isTextarea 
@@ -539,11 +625,13 @@
                     : `<input id="${id}" class="styled-textarea" placeholder="${placeholder}" value="${value}" oninput="${onInputLogic} ${validationLogic}">`;
 
                 return `
-                    <div class="relative group mb-4">
-                        <label for="${id}" class="font-semibold text-gray-600 mb-2 flex items-center"><i class="fas ${icon} w-5 mr-2 text-indigo-400"></i>${placeholder}</label>
+                    <div class="relative group mb-4 grid grid-cols-1 sm:grid-cols-3 gap-x-4 items-center">
+                        <label for="${id}" class="font-semibold text-gray-600 mb-1 sm:mb-0 sm:text-right flex items-center sm:justify-end"><i class="${finalIcon} w-5 mr-2 text-${color}-400"></i><span>${placeholder}</span></label>
+                        <div class="sm:col-span-2">
                         ${inputType}
-                        <div id="${id}-error" class="text-red-500 text-xs mt-1 hidden text-center">Invalid format</div>
-                        ${recommendation ? `<div class="recommendation">${recommendation}</div>` : ''}
+                        <div id="${id}-error" class="text-red-500 text-xs mt-1 hidden text-left">Invalid format</div>
+                        ${recommendation ? `<div class="recommendation text-left">${recommendation}</div>` : ''}
+                        </div>
                     </div>
                 `;
             }
@@ -640,6 +728,7 @@
             updateNavButtons();
             updateProgressBar();
             updatePreview();
+            tabBuilder.click();
         });
     </script>
 </body>
