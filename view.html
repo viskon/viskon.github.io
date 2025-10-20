@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive View</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;700;900&family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+        }
+        #loading-spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border-left-color: #4f46e5;
+            animation: spin 1s ease infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen">
+    <div id="content-container" class="w-full max-w-7xl mx-auto p-4">
+        <div id="loading-spinner" class="mx-auto"></div>
+        <p id="error-message" class="text-center text-red-500 font-semibold hidden"></p>
+        <div id="view-content"></div>
+    </div>
+
+<script>
+    // PASTE YOUR FIREBASE CONFIGURATION HERE
+    // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+    const firebaseConfig = {
+    apiKey: "AIzaSyDPyFt8yhwG8MDO_qqmaYMgE77xYv6u_bc",
+    authDomain: "interactcv-7b41f.firebaseapp.com",
+    projectId: "interactcv-7b41f",
+    storageBucket: "interactcv-7b41f.firebasestorage.app",
+    messagingSenderId: "294550060415",
+    appId: "1:294550060415:web:37bf78cbccafbcaacaae4a",
+    measurementId: "G-11KRLPKXTZ"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const viewContent = document.getElementById('view-content');
+        const loadingSpinner = document.getElementById('loading-spinner');
+        const errorMessage = document.getElementById('error-message');
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const shareId = urlParams.get('id');
+
+        if (!shareId) {
+            showError("No content ID provided.");
+            return;
+        }
+
+        db.collection('publicShares').doc(shareId).get()
+            .then(doc => {
+                if (doc.exists) {
+                    const shareData = doc.data();
+                    if (shareData.type === 'cv') {
+                        renderCv(shareData.data);
+                    } else if (shareData.type === 'timeline') {
+                        renderTimeline(shareData.data);
+                    } else {
+                        showError("Invalid content type.");
+                    }
+                    loadingSpinner.classList.add('hidden');
+                } else {
+                    showError("The requested content does not exist or has been removed.");
+                }
+            })
+            .catch(err => {
+                console.error("Error fetching document: ", err);
+                showError("Could not load the requested content.");
+            });
+
+        function showError(message) {
+            loadingSpinner.classList.add('hidden');
+            errorMessage.textContent = message;
+            errorMessage.classList.remove('hidden');
+        }
+
+        function renderCv(cvData) {
+            const html = generateCvHTML(cvData);
+            const iframe = document.createElement('iframe');
+            iframe.srcdoc = html;
+            iframe.style.width = '100%';
+            iframe.style.height = '90vh';
+            iframe.style.border = 'none';
+            viewContent.appendChild(iframe);
+        }
+
+        function renderTimeline(cvData) {
+            const timelineData = getTimelineDataFromCv(cvData);
+            const html = generateTimelineHTML(timelineData, cvData.personal);
+            const iframe = document.createElement('iframe');
+            iframe.srcdoc = html;
+            iframe.style.width = '100%';
+            iframe.style.height = '90vh';
+            iframe.style.border = 'none';
+            viewContent.appendChild(iframe);
+        }
+
+        // --- Duplicated Helper Functions from Generator ---
+        // In a real app, you would share this code instead of duplicating it.
+        function getTimelineDataFromCv(cvData) {
+            const timelineEvents = [];
+
+            (cvData.experience || []).forEach(exp => {
+                const period = `${exp.startMonth} ${exp.startYear} - ${exp.isCurrent ? 'Present' : (exp.endMonth + ' ' + exp.endYear)}`;
+                (exp.roles || []).forEach(role => {
+                        timelineEvents.push({ 
+                        type: 'work', 
+                        date: period,
+                        title: role.title,
+                        company: exp.company,
+                        details: (role.points || []).join('. '),
+                        projects: (role.projects || [])
+                    });
+                });
+            });
+
+            (cvData.education || []).forEach(edu => {
+                timelineEvents.push({ type: 'education', date: edu.year, title: edu.degree, institution: edu.institution, details: '' });
+            });
+
+            (cvData.certifications || []).forEach(cert => {
+                timelineEvents.push({ type: 'certification', date: cert.year, title: cert.title, institution: cert.institution, link: cert.link, skills: cert.skills, details: '' });
+            });
+            
+            const parseDateForSort = (dateStr) => {
+                if (!dateStr) return new Date(0);
+                const match = dateStr.match(/(\\w{3,})\\s(\\d{4})/);
+                if (!match) return new Date(0);
+                const monthName = match[1];
+                const year = parseInt(match[2], 10);
+                const month = months.findIndex(m => m.startsWith(monthName.substring(0,3)));
+                return new Date(year, month);
+            };
+            
+            return timelineEvents.sort((a, b) => parseDateForSort(a.date) - parseDateForSort(b.date));
+        }
+
+        function generateCvHTML(cvData) {
+            // This function is a simplified version of generateAndDownloadHtml's content
+            // It's scoped to only what's needed for viewing
+            const theme = cvData.personal.theme || 'default';
+            // A simplified version of themes object
+             const themes = {
+                default: { from: '#003E6B', to: '#36A8A4'},
+                sunset: { from: '#6D28D9', to: '#F97316'},
+                forest: { from: '#166534', to: '#854d0e'},
+                monochrome: { from: '#111827', to: '#6B7280'},
+            };
+            const SKILL_LEVELS_DATA = { "Expert": { percent: 100, color: '#65A30D' }, "Advanced": { percent: 80, color: '#A3E635' }, "Proficient": { percent: 60, color: '#D9F99D' }};
+            // The full HTML generation logic from your main file would go here
+            // For brevity, I'm returning a placeholder.
+            // **ACTION: Copy the full content of `generateAndDownloadHtml`'s htmlContent variable here.**
+             return `
+                <!DOCTYPE html>
+                <html lang="en" class="scroll-smooth" data-theme-active="${theme}">
+                <head>
+                    <title>Interactive CV - ${cvData.personal.name}</title>
+                    <script src="https://cdn.tailwindcss.com/"><\/script>
+                    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;700;900&family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet">
+                    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+                    <style>
+                        :root, [data-theme-active="default"] { --color-primary: #003E6B; --color-accent: #36A8A4; --color-accent-light: #E6F7F7; --color-header-gradient-from: #003E6B; --color-header-gradient-to: #36A8A4; }
+                        [data-theme-active="sunset"] { --color-primary: #6D28D9; --color-accent: #F97316; --color-accent-light: #FFEDD5; --color-header-gradient-from: #6D28D9; --color-header-gradient-to: #F97316; }
+                        [data-theme-active="forest"] { --color-primary: #166534; --color-accent: #CA8A04; --color-accent-light: #FEFCE8; --color-header-gradient-from: #166534; --color-header-gradient-to: #854d0e; }
+                        [data-theme-active="monochrome"] { --color-primary: #1F2937; --color-accent: #6B7280; --color-accent-light: #F3F4F6; --color-header-gradient-from: #111827; --color-header-gradient-to: #6B7280; }
+                        body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
+                        .header-font { font-family: 'Poppins', sans-serif; }
+                        .color-primary { color: var(--color-primary); } .color-accent { color: var(--color-accent); } .bg-accent-light { background-color: var(--color-accent-light); }
+                        .timeline-item::before { content: ''; position: absolute; top: 1.25rem; left: -0.5rem; width: 1rem; height: 1rem; background-color: var(--color-primary); border-radius: 9999px; border: 4px solid #f7f9fb; z-index: 10; }
+                        .accordion-content { overflow: hidden; max-height: 0; transition: max-height 0.3s ease-out; }
+                        .accordion-header { cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+                    </style>
+                </head>
+                <body>
+                    <!-- **ACTION: Copy the full HTML structure from inside the main <body> tag of generateAndDownloadHtml() here** -->
+                </body></html>`;
+        }
+
+        function generateTimelineHTML(data, personalData) {
+             // **ACTION: Copy the full return value of the `generateTimelineHTML` function from your main file here.**
+             // Replace hardcoded name/subtitle with personalData.name and personalData.subtitle
+            return `<!DOCTYPE html>...`
+        }
+    });
+
+</script>
+</body>
+</html>

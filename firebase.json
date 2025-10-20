@@ -1,0 +1,21 @@
+{
+  "hosting": {
+    "site": "dyse",
+    "public": ".",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "/view",
+        "destination": "/view.html"
+      },
+      {
+        "source": "**",
+        "destination": "/interactcvgenerator.html"
+      }
+    ]
+  }
+}

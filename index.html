@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Dyse</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;700;900&family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="icon" href="/assets/favicon.ico" type="image/x-icon">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .header-font {
+            font-family: 'Poppins', sans-serif;
+        }
+    </style>
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="assets/js/firebase-config.js"></script>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+
+    <div class="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-indigo-50 via-white to-purple-50 z-0"></div>
+
+    <main class="relative z-10 text-center p-8 max-w-lg w-full">
+        <div class="bg-white/60 backdrop-blur-xl rounded-2xl shadow-2xl p-8 md:p-12">
+            <div class="flex justify-center mb-6">
+                <div class="w-24 h-24 bg-indigo-600 rounded-full flex items-center justify-center text-white shadow-lg ring-4 ring-white">
+                    <img src="assets/logo.png" alt="Dyse Logo" class="w-20 h-20 object-contain">
+                </div>
+            </div>
+            <h1 class="text-4xl md:text-5xl font-bold text-gray-900 header-font">Dyse</h1>
+            <div class="mt-2">
+                <span class="inline-block bg-indigo-100 text-indigo-800 text-sm font-semibold px-4 py-1 rounded-full tracking-wide">
+                    Design Your Story Effectively
+                </span>
+            </div>
+            <p class="text-lg text-gray-600 mt-4">
+                Build, Save, and Share Your Interactive CV & Timeline.
+            </p>
+
+            <div class="mt-10">
+                <button id="login-btn" class="w-full max-w-xs mx-auto inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-semibold rounded-full shadow-lg transform hover:scale-105 transition-transform duration-300 text-lg">
+                    <i class="fab fa-google mr-3"></i> Sign in with Google
+                </button>
+            </div>
+             <p id="error-message" class="text-red-500 text-sm mt-4 hidden"></p>
+        </div>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!window.firebaseConfig) {
+                console.error("Firebase config object not found.");
+                document.getElementById('error-message').textContent = 'Firebase is not configured. Please check the console.';
+                document.getElementById('error-message').classList.remove('hidden');
+                return;
+            }
+            
+            // Initialize Firebase
+            firebase.initializeApp(window.firebaseConfig);
+            const auth = firebase.auth();
+            const loginBtn = document.getElementById('login-btn');
+            const errorMessage = document.getElementById('error-message');
+
+            // 1. Check if user is already logged in
+            auth.onAuthStateChanged(user => {
+                if (user) {
+                    // If logged in, redirect to the main app
+                    window.location.href = '/interactcvgenerator.html';
+                }
+                // If not logged in, just stay on this page.
+            });
+
+            // 2. Handle login button click
+            loginBtn.addEventListener('click', () => {
+                const provider = new firebase.auth.GoogleAuthProvider();
+                auth.signInWithPopup(provider)
+                    .then((result) => {
+                        // This will trigger the onAuthStateChanged listener above, which handles the redirect.
+                        console.log("Login successful", result.user.displayName);
+                    })
+                    .catch((error) => {
+                        console.error("Login failed:", error);
+                        errorMessage.textContent = `Login failed: ${error.message}`;
+                        errorMessage.classList.remove('hidden');
+                    });
+            });
+        });
+    </script>
+</body>
+</html>
+
