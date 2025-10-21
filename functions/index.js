@@ -1,54 +1,48 @@
-const functions = require('firebase-functions');
-const admin = require('firebase-admin');
+const functions = require("firebase-functions");
+const admin = require("firebase-admin");
 
 admin.initializeApp();
 const db = admin.firestore();
-const COLLECTION_PATH = 'artifacts/interactcv/public/data/visitCounters';
 
-exports.incrementVisit = functions.https.onRequest((req, res) => {
-  // Always set CORS headers
-  res.set('Access-Control-Allow-Origin', 'https://viskon.github.io');
-  res.set('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.set('Access-Control-Allow-Headers', 'Content-Type');
-
-  // Handle preflight OPTIONS request
-  if (req.method === 'OPTIONS') {
-    return res.status(204).send('');
+/**
+ * A modern, secure "Callable" function to increment a view count.
+ * This is called directly from the view.html page.
+ */
+exports.incrementVisitCount = functions.https.onCall(async (data, context) => {
+  // Ensure the user is calling the function with the required 'shareId'
+  const shareId = data.shareId;
+  if (!shareId) {
+    throw new functions.https.HttpsError(
+      "invalid-argument",
+      "The function must be called with a 'shareId' argument."
+    );
   }
 
-  if (req.method !== 'POST') {
-    return res.status(405).send({ error: 'Method not allowed' });
-  }
+  // Define the path to the counter document in Firestore
+  const counterRef = db.collection("publicShares").doc(shareId);
 
-  const page = req.body && typeof req.body.page === 'string' ? req.body.page : null;
-  if (!page) {
-    return res.status(400).send({ error: 'Missing page parameter' });
-  }
+  try {
+    // Use a transaction to safely update the count
+    await db.runTransaction(async (transaction) => {
+      const doc = await transaction.get(counterRef);
+      
+      // Get the current count, or initialize it to 0 if it doesn't exist
+      const currentCount = doc.data()?.visitCount || 0;
+      const newCount = currentCount + 1;
 
-  const docRef = db.collection(COLLECTION_PATH).doc(page);
-
-  db.runTransaction(async (t) => {
-    const snap = await t.get(docRef);
-    if (!snap.exists) {
-      t.set(docRef, { count: 1, updatedAt: admin.firestore.FieldValue.serverTimestamp() });
-      return 1;
-    }
-    const current = snap.data().count || 0;
-    const updated = current + 1;
-    t.update(docRef, { count: updated, updatedAt: admin.firestore.FieldValue.serverTimestamp() });
-    return updated;
-  })
-    .then((newCount) => {
-      res.set('Cache-Control', 'private, no-store, max-age=0');
-      return res.status(200).send({ count: newCount });
-    })
-    .catch((err) => {
-      console.error('incrementVisit error:', err);
-      // ** ADD THESE LINES **
-      res.set('Access-Control-Allow-Origin', 'https://viskon.github.io');
-      res.set('Access-Control-Allow-Methods', 'POST, OPTIONS');
-      res.set('Access-Control-Allow-Headers', 'Content-Type');
-      // ** END OF ADDED LINES **
-      return res.status(500).send({ error: 'Internal error' });
+      // Update the visitCount field. Using .update will create the field if it doesn't exist on the document.
+      transaction.update(counterRef, { visitCount: newCount });
     });
+
+    console.log(`Successfully incremented visit count for ${shareId}`);
+    return { success: true };
+
+  } catch (error) {
+    console.error("Transaction failed: ", error);
+    // Throw a specific error back to the client
+    throw new functions.https.HttpsError(
+      "internal",
+      "Failed to update visit count."
+    );
+  }
 });

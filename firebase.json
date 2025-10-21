@@ -11,11 +11,13 @@
       {
         "source": "/view",
         "destination": "/view.html"
-      },
-      {
-        "source": "**",
-        "destination": "/interactcvgenerator.html"
       }
     ]
+  },
+  "firestore": {
+    "rules": "firestore.rules"
+  },
+  "functions": {
+    "source": "functions"
   }
 }

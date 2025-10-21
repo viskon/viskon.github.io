@@ -11,17 +11,13 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="icon" href="/assets/favicon.ico" type="image/x-icon">
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
-        }
-        .header-font {
-            font-family: 'Poppins', sans-serif;
-        }
+        body { font-family: 'Inter', sans-serif; }
+        .header-font { font-family: 'Poppins', sans-serif; }
     </style>
     <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
-    <script src="assets/js/firebase-config.js"></script>
+    <script src="/assets/js/firebase-config.js"></script>
 </head>
 <body class="bg-gray-100 flex items-center justify-center min-h-screen">
 
@@ -30,9 +26,7 @@
     <main class="relative z-10 text-center p-8 max-w-lg w-full">
         <div class="bg-white/60 backdrop-blur-xl rounded-2xl shadow-2xl p-8 md:p-12">
             <div class="flex justify-center mb-6">
-                <div class="w-24 h-24 bg-indigo-600 rounded-full flex items-center justify-center text-white shadow-lg ring-4 ring-white">
-                    <img src="assets/logo.png" alt="Dyse Logo" class="w-20 h-20 object-contain">
-                </div>
+                <img src="/assets/logo.png" alt="Dyse Logo" class="w-24 h-24 object-contain">
             </div>
             <h1 class="text-4xl md:text-5xl font-bold text-gray-900 header-font">Dyse</h1>
             <div class="mt-2">
@@ -57,34 +51,25 @@
         document.addEventListener('DOMContentLoaded', () => {
             if (!window.firebaseConfig) {
                 console.error("Firebase config object not found.");
-                document.getElementById('error-message').textContent = 'Firebase is not configured. Please check the console.';
+                document.getElementById('error-message').textContent = 'Firebase is not configured.';
                 document.getElementById('error-message').classList.remove('hidden');
                 return;
             }
             
-            // Initialize Firebase
             firebase.initializeApp(window.firebaseConfig);
             const auth = firebase.auth();
             const loginBtn = document.getElementById('login-btn');
             const errorMessage = document.getElementById('error-message');
 
-            // 1. Check if user is already logged in
             auth.onAuthStateChanged(user => {
                 if (user) {
-                    // If logged in, redirect to the main app
-                    window.location.href = '/interactcvgenerator.html';
+                    window.location.href = '/interactcvgenerator';
                 }
-                // If not logged in, just stay on this page.
             });
 
-            // 2. Handle login button click
             loginBtn.addEventListener('click', () => {
                 const provider = new firebase.auth.GoogleAuthProvider();
                 auth.signInWithPopup(provider)
-                    .then((result) => {
-                        // This will trigger the onAuthStateChanged listener above, which handles the redirect.
-                        console.log("Login successful", result.user.displayName);
-                    })
                     .catch((error) => {
                         console.error("Login failed:", error);
                         errorMessage.textContent = `Login failed: ${error.message}`;
@@ -95,4 +80,6 @@
     </script>
 </body>
 </html>
+
+
 

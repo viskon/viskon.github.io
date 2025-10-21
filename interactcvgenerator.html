@@ -31,11 +31,6 @@
         .input-field { @apply w-full px-4 py-3 border border-gray-300 bg-white shadow-sm rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition text-base focus:bg-indigo-50; }
         .textarea-field { @apply w-full px-4 py-3 border border-gray-300 bg-white shadow-sm rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition resize-none text-base focus:bg-indigo-50; }
     </style>
-    <!-- Firebase SDKs -->
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
-    <script src="assets/js/firebase-config.js"></script>
 </head>
 <body class="p-4 md:p-8">
 
@@ -55,8 +50,11 @@
     </nav>
     
     <div id="main-content" class="pt-16">
+        <div id="loading-screen" class="flex items-center justify-center h-64">
+            <div class="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-indigo-500"></div>
+        </div>
         <div id="builder-wrapper" class="w-full max-w-7xl mx-auto hidden">
-            <div class="w-full bg-white rounded-2xl shadow-2xl p-8">
+             <div class="w-full bg-white rounded-2xl shadow-2xl p-8">
                 <!-- Tabs -->
                 <div>
                     <div class="border-b border-gray-200">
@@ -70,15 +68,9 @@
 
                 <!-- Tab Panels -->
                 <div id="tab-panels" class="mt-8">
-                    <div id="panel-builder">
-                        <!-- Builder UI is injected by setupUI() -->
-                    </div>
-                    <div id="panel-cv-preview" class="hidden">
-                        <!-- CV Preview UI is injected by setupUI() -->
-                    </div>
-                    <div id="panel-timeline-preview" class="hidden">
-                         <!-- Timeline Preview UI is injected by setupUI() -->
-                    </div>
+                    <div id="panel-builder"></div>
+                    <div id="panel-cv-preview" class="hidden"></div>
+                    <div id="panel-timeline-preview" class="hidden"></div>
                 </div>
             </div>
         </div>
@@ -89,546 +81,482 @@
         <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-4xl w-full relative max-h-[90vh] overflow-y-auto">
              <button id="close-profile-modal-btn" class="absolute top-4 right-4 text-gray-400 hover:text-gray-800 text-3xl font-bold">&times;</button>
              <h2 class="text-3xl font-bold text-center mb-6 text-gray-800 header-font">My Documents</h2>
-             <div id="saved-documents-container" class="space-y-4">
-                <!-- Saved documents will be listed here -->
+             <div class="text-center mb-4">
+                <button id="create-new-btn" class="action-btn add-btn text-sm">
+                    <i class="fas fa-plus mr-2"></i>Create New CV
+                </button>
              </div>
+             <div id="saved-documents-container" class="space-y-4"></div>
         </div>
     </div>
+    
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    <script src="/assets/js/firebase-config.js"></script>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            if (!window.firebaseConfig) {
-                document.body.innerHTML = '<p class="text-red-500 text-center p-8">Firebase configuration is missing. The application cannot start.</p>';
-                return;
+    // --- FIREBASE INITIALIZATION ---
+    if (!window.firebaseConfig) {
+        document.body.innerHTML = '<p class="text-red-500 text-center p-8">Firebase configuration is missing. The application cannot start.</p>';
+        return;
+    }
+    firebase.initializeApp(window.firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+    let currentUser = null;
+
+    // --- AUTHENTICATION LISTENER ---
+    auth.onAuthStateChanged(user => {
+        if (user) {
+            currentUser = user;
+            document.getElementById('loading-screen').classList.add('hidden');
+            document.getElementById('builder-wrapper').classList.remove('hidden');
+            setupUserProfile(user);
+            
+            // Only setup the UI and logic once
+            if (!document.getElementById('panel-builder').innerHTML.trim()) { 
+                setupUI();
+                initializeGeneratorLogic(); 
             }
-            firebase.initializeApp(window.firebaseConfig);
-            const auth = firebase.auth();
-            const db = firebase.firestore();
-            let currentUser = null;
+            loadUserDocuments();
+        } else {
+            // If no user is logged in, redirect to the login page.
+            window.location.href = '/index.html';
+        }
+    });
 
-            const builderWrapper = document.getElementById('builder-wrapper');
-            const authContainer = document.getElementById('auth-container');
+    // --- UI SETUP FUNCTIONS ---
+    function setupUserProfile(user) {
+        const authContainer = document.getElementById('auth-container');
+        authContainer.innerHTML = `
+            <a href="/interactcoverletter.html" class="action-btn bg-purple-600 hover:bg-purple-700 focus:ring-purple-500 text-sm font-semibold">Build a Cover Letter</a>
+            <div class="relative">
+                <button id="profile-btn" class="flex items-center space-x-3 text-gray-700">
+                    <img src="${user.photoURL}" alt="${user.displayName}" class="w-10 h-10 rounded-full border-2 border-gray-200 hover:border-indigo-500 transition">
+                </button>
+            </div>`;
+
+        document.getElementById('profile-btn').addEventListener('click', (e) => {
+            e.stopPropagation();
             const profileModal = document.getElementById('profile-modal');
-            const panelBuilder = document.getElementById('panel-builder');
-            const panelCvPreview = document.getElementById('panel-cv-preview');
-            const panelTimelinePreview = document.getElementById('panel-timeline-preview');
+            profileModal.classList.remove('hidden');
+            profileModal.classList.add('flex');
+        });
+        
+        document.getElementById('close-profile-modal-btn').addEventListener('click', () => {
+            document.getElementById('profile-modal').classList.add('hidden');
+        });
 
-            auth.onAuthStateChanged(user => {
-                if (user) {
-                    currentUser = user;
-                    builderWrapper.classList.remove('hidden');
-                    setupUserProfile(user);
-                    if (!panelBuilder.innerHTML.trim()) { 
-                        setupUI();
-                        initializeGeneratorLogic(); 
+        document.getElementById('create-new-btn').addEventListener('click', () => {
+            if (confirm('Create a new blank document? Any unsaved changes will be lost.')) {
+                initializeGeneratorLogic(); // This will reset the state
+                document.getElementById('profile-modal').classList.add('hidden');
+            }
+        });
+    }
+
+    function setupUI() {
+        document.getElementById('panel-builder').innerHTML = `<div id="builder-content"><div id="stepper" class="mb-12 relative bg-gray-200 rounded-full p-1 flex justify-between"><div id="stepper-pill" class="absolute top-1 bottom-1 bg-indigo-600 rounded-full shadow transition-all duration-500 ease-in-out"></div></div><div id="card-container" class="relative pr-4"></div></div><div class="flex justify-between mt-8 items-center"><button id="prev-btn" class="transition text-5xl text-gray-400 hover:text-gray-600"><i class="fas fa-arrow-left"></i></button><button id="next-btn" class="transition text-5xl"><i class="fas fa-arrow-right"></i></button></div>`;
+        document.getElementById('panel-cv-preview').innerHTML = `<div id="print-area-container" class="w-full space-y-8"><div><h3 class="text-center font-bold text-gray-500 mb-4 uppercase tracking-wider">CV Preview</h3><div id="print-area" class="bg-white p-8 rounded-lg border border-gray-200 shadow-inner overflow-y-auto" style="max-height: 70vh;"><header class="text-center"><h1 id="preview-name" class="text-4xl font-black tracking-tighter bg-gradient-to-r from-blue-800 to-blue-500 text-transparent bg-clip-text pb-2 break-words header-font">Your Name</h1><h2 id="preview-subtitle" class="mt-1 text-lg font-medium text-gray-600 tracking-wide break-words">Your Subtitle</h2></header><div id="preview-content" class="mt-8 text-sm space-y-8"></div></div><div class="text-center mt-6 flex justify-center gap-4 flex-wrap"><button id="download-html-btn" class="action-btn add-btn text-sm opacity-50 cursor-not-allowed" disabled><i class="fas fa-file-code mr-2"></i>Download InteractCV</button><button id="download-doc-btn" class="action-btn add-btn text-sm opacity-50 cursor-not-allowed" disabled><i class="fas fa-file-word mr-2"></i>Download as Word</button></div></div></div>`;
+        document.getElementById('panel-timeline-preview').innerHTML = `<div id="timeline-preview-section" class="pt-8"><h3 class="text-center font-bold text-gray-500 mb-4 uppercase tracking-wider">Timeline Preview</h3><div id="timeline-preview-container" class="bg-gray-50 p-1 rounded-lg border border-gray-200 shadow-inner"><iframe id="timeline-iframe"></iframe></div><div class="text-center mt-6"><button id="download-timeline-btn" class="action-btn add-btn text-sm opacity-50 cursor-not-allowed" disabled><i class="fas fa-file-download mr-2"></i>Download InteractTimeline</button></div></div>`;
+    }
+
+    // --- CORE GENERATOR LOGIC ---
+    function initializeGeneratorLogic(dataToLoad = null) {
+        const cardContainer = document.getElementById('card-container');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const previewName = document.getElementById('preview-name');
+        const previewSubtitle = document.getElementById('preview-subtitle');
+        const previewContent = document.getElementById('preview-content');
+        const downloadDocBtn = document.getElementById('download-doc-btn');
+        const downloadHtmlBtn = document.getElementById('download-html-btn');
+        const downloadTimelineBtn = document.getElementById('download-timeline-btn');
+        const tabBuilder = document.getElementById('tab-builder');
+        const tabCvPreview = document.getElementById('tab-cv-preview');
+        const tabTimelinePreview = document.getElementById('tab-timeline-preview');
+        const panelBuilder = document.getElementById('panel-builder');
+        const panelCvPreview = document.getElementById('panel-cv-preview');
+        const panelTimelinePreview = document.getElementById('panel-timeline-preview');
+        const tabs = [tabBuilder, tabCvPreview, tabTimelinePreview];
+        const panels = [panelBuilder, panelCvPreview, panelTimelinePreview];
+
+        let currentStep = 0;
+        let cvData = dataToLoad || {
+            personal: { name: '', subtitle: '', linkedin: '', email: '', phone: '', theme: 'default' },
+            summary: [], experience: [], education: [], certifications: [],
+            skills: { soft: [], technical: [] }, achievements: [],
+            docId: null, 
+            publicShareId: null,
+        };
+
+        window.cvData = cvData;
+        window.currentStep = currentStep;
+
+        const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+        const themes = {
+            default: { from: '#003E6B', to: '#36A8A4'},
+            sunset: { from: '#6D28D9', to: '#F97316'},
+            forest: { from: '#166534', to: '#854d0e'},
+            monochrome: { from: '#111827', to: '#6B7280'},
+        };
+        const SOFT_SKILLS_LIST = [ "Communication", "Teamwork & Collaboration", "Problem-Solving", "Leadership", "Adaptability & Flexibility", "Time Management", "Critical Thinking", "Creativity & Innovation", "Emotional Intelligence", "Work Ethic & Dependability", "Interpersonal Skills", "Conflict Resolution", "Decision Making", "Negotiation", "Presentation Skills", "Project Management", "Resilience & Stress Tolerance", "Attention to Detail" ].sort();
+        const steps = [ { title: 'Personal Information', short: 'Info' }, { title: 'Professional Summary', short: 'Summary' }, { title: 'Work Experience', short: 'Experience' }, { title: 'Education', short: 'Education' }, { title: 'Certificates', short: 'Certs' }, { title: 'Skills', short: 'Skills' }, { title: 'Achievements', short: 'Awards' }, { title: 'Finish Up', short: 'Finish' } ];
+        
+        tabs.forEach((tab, index) => {
+            tab.addEventListener('click', () => {
+                tabs.forEach(t => t.classList.remove('active'));
+                panels.forEach(p => p.classList.add('hidden'));
+                tab.classList.add('active');
+                panels[index].classList.remove('hidden');
+                if (panels[index] === panelCvPreview) { updatePreview(); }
+                if (panels[index] === panelTimelinePreview) { updateTimelinePreview(); }
+            });
+        });
+
+        function checkStepHasData(stepIndex) {
+             switch (steps[stepIndex].title) {
+                case 'Personal Information': return cvData.personal.name.trim() !== '';
+                case 'Professional Summary': return cvData.summary.length > 0 && cvData.summary.some(p => p.trim() !== '');
+                case 'Work Experience': return cvData.experience.length > 0 && cvData.experience.some(e => e.company.trim() !== '');
+                case 'Education': return cvData.education.length > 0 && cvData.education.some(e => e.degree.trim() !== '');
+                case 'Certificates': return cvData.certifications.length > 0 && cvData.certifications.some(c => c.title.trim() !== '');
+                case 'Skills': return cvData.skills.soft.length > 0 || cvData.skills.technical.length > 0;
+                case 'Achievements': return cvData.achievements.length > 0 && cvData.achievements.some(a => a.text.trim() !== '');
+                default: return false;
+            }
+        }
+
+        function renderStepper() {
+            const stepperContainer = document.getElementById('stepper');
+            stepperContainer.innerHTML = '<div id="stepper-pill" class="absolute top-1 bottom-1 bg-indigo-600 rounded-full shadow transition-all duration-500 ease-in-out"></div>'; // Reset
+            steps.forEach((step, index) => {
+                const stepButton = document.createElement('button');
+                stepButton.id = `step-button-${index}`;
+                stepButton.className = 'step-segment';
+                stepButton.dataset.stepIndex = index;
+                const dot = document.createElement('span');
+                dot.className = 'step-dot bg-gray-400';
+                const label = document.createElement('span');
+                label.textContent = step.short;
+                stepButton.appendChild(dot);
+                stepButton.appendChild(label);
+                stepperContainer.appendChild(stepButton);
+                stepButton.addEventListener('click', () => {
+                    if(index < window.currentStep) {
+                        saveStepData(window.currentStep);
+                        window.currentStep = index;
+                        renderStep(window.currentStep);
+                        updateStepper();
+                        updateNavButtons();
                     }
-                    loadUserDocuments();
+                });
+            });
+        }
+
+        function updateStepper() {
+            const stepperPill = document.getElementById('stepper-pill');
+            if (!stepperPill) return;
+            const currentButton = document.getElementById(`step-button-${window.currentStep}`);
+            if (!currentButton) return;
+            stepperPill.style.width = `${currentButton.offsetWidth}px`;
+            stepperPill.style.left = `${currentButton.offsetLeft}px`;
+            document.querySelectorAll('.step-segment').forEach((btn, index) => {
+                btn.classList.remove('current', 'completed');
+                const dot = btn.querySelector('.step-dot');
+                if(index < window.currentStep) { btn.classList.add('completed'); } 
+                else if (index === window.currentStep) { btn.classList.add('current'); }
+                
+                if (checkStepHasData(index)) {
+                    dot.classList.remove('bg-gray-400');
+                    dot.classList.add('bg-green-500');
                 } else {
-                    window.location.href = '/index.html';
+                    dot.classList.add('bg-gray-400');
+                    dot.classList.remove('bg-green-500');
                 }
             });
+        }
 
-            function setupUserProfile(user) {
-                authContainer.innerHTML = `
-                    <div class="relative">
-                        <button id="profile-btn" class="flex items-center space-x-3 text-gray-700">
-                            <img src="${user.photoURL}" alt="${user.displayName}" class="w-10 h-10 rounded-full border-2 border-gray-200 hover:border-indigo-500 transition">
-                            <span class="font-semibold text-sm hidden md:block">${user.displayName}</span>
-                        </button>
-                        <div id="profile-dropdown" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-20">
-                            <a href="#" id="my-documents-btn" class="block px-4 py-2 text-sm text-gray-700 hover:bg-indigo-100">My Documents</a>
-                            <a href="#" id="logout-btn" class="block px-4 py-2 text-sm text-gray-700 hover:bg-indigo-100">Logout</a>
-                        </div>
-                    </div>`;
-                const profileBtn = document.getElementById('profile-btn');
-                const profileDropdown = document.getElementById('profile-dropdown');
-                
-                profileBtn.addEventListener('click', (e) => { e.stopPropagation(); profileDropdown.classList.toggle('hidden'); });
-                document.addEventListener('click', () => { if (profileDropdown) profileDropdown.classList.add('hidden'); });
-
-                document.getElementById('logout-btn').addEventListener('click', (e) => { e.preventDefault(); auth.signOut(); });
-                document.getElementById('my-documents-btn').addEventListener('click', (e) => {
-                    e.preventDefault();
-                    if(profileDropdown) profileDropdown.classList.add('hidden');
-                    profileModal.classList.remove('hidden');
-                    profileModal.classList.add('flex');
-                });
-                 document.getElementById('close-profile-modal-btn').addEventListener('click', () => {
-                    profileModal.classList.add('hidden');
-                    profileModal.classList.remove('flex');
-                });
+        function updatePreview() {
+            if(!previewName) return;
+            previewName.textContent = cvData.personal.name || 'Your Name';
+            previewSubtitle.textContent = cvData.personal.subtitle || 'Your Subtitle';
+            const themeColors = themes[cvData.personal.theme];
+            previewName.style.backgroundImage = `linear-gradient(to right, ${themeColors.from}, ${themeColors.to})`;
+            let previewHTML = '';
+            if (cvData.summary.length > 0 && cvData.summary.some(p => p.trim() !== '')) { previewHTML += `<section><h3 class="text-xl font-bold text-center text-gray-700 mb-4 border-b-2 pb-2 header-font">Professional Summary</h3><ul class="list-disc pl-5 space-y-1 text-gray-700 text-base">${cvData.summary.map(p => `<li>${p}</li>`).join('')}</ul></section>`; }
+            if (cvData.experience.length > 0) { previewHTML += `<section class="mt-8"><h3 class="text-xl font-bold text-center text-gray-700 mb-4 border-b-2 pb-2 header-font">Work Experience</h3><div class="space-y-4">${cvData.experience.map(exp => { if (!exp.company) return ''; const endPeriod = exp.isCurrent ? 'Present' : `${exp.endMonth} ${exp.endYear}`; const period = `${exp.startMonth} ${exp.startYear} – ${endPeriod}`; return `<div><div class="flex justify-between items-baseline"><h4 class="font-bold text-gray-900 text-lg">${exp.company}</h4><p class="text-sm text-gray-500">${period}</p></div><div class="pl-4 mt-1 space-y-2">${(exp.roles || []).map(role => { if (!role.title) return ''; return `<div><h5 class="font-semibold text-base text-gray-800">${role.title}</h5><ul class="list-disc pl-5 mt-1 space-y-1 text-gray-700 text-sm">${(role.points || []).map(p => p ? `<li>${p}</li>` : '').join('')}</ul>${(role.projects && role.projects.length > 0) ? `<div class="mt-2"><h6 class="font-semibold text-xs text-gray-600">Key Projects:</h6><ul class="list-decimal pl-5 mt-1 space-y-1 text-gray-700 text-xs">${role.projects.map(proj => `<li><strong>${proj.title}:</strong> ${proj.summary}</li>`).join('')}</ul></div>` : ''}</div>`}).join('')}</div></div>`; }).join('')}</div></section>`; }
+            if (cvData.skills.soft.length > 0 || cvData.skills.technical.length > 0) { previewHTML += `<section class="mt-8"><h3 class="text-xl font-bold text-center text-gray-700 mb-4 border-b-2 pb-2 header-font">Core Competencies</h3><div class="grid grid-cols-2 gap-6 text-sm">${cvData.skills.soft.length > 0 ? `<div><h4 class="font-bold mb-2 text-center text-base">Soft Skills</h4><ul class="list-disc pl-5">${cvData.skills.soft.map(s => `<li>${s.name} <span class="text-gray-500">(${s.level})</span></li>`).join('')}</ul></div>` : ''}${cvData.skills.technical.length > 0 ? `<div><h4 class="font-bold mb-2 text-center text-base">Technical</h4><ul class="list-disc pl-5">${cvData.skills.technical.map(s => `<li>${s.name} <span class="text-gray-500">(${s.level})</span></li>`).join('')}</ul></div>` : ''}</div></section>`; }
+            if (cvData.education.length > 0 || cvData.certifications.length > 0 || cvData.achievements.length > 0) {
+                previewHTML += '<section class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">';
+                let contentBlocks = '';
+                if (cvData.education.length > 0 && cvData.education.some(e => e.degree)) { contentBlocks += `<div><h3 class="text-lg font-bold text-center text-gray-700 mb-4 border-b pb-2 header-font">Education</h3><div class="space-y-3 text-sm">${cvData.education.map(e => `<div><p class="font-semibold">${e.degree}</p><p class="text-sm">${e.institution}</p><p class="text-sm text-gray-500">${e.year}</p></div>`).join('')}</div></div>`; }
+                if (cvData.certifications.length > 0 && cvData.certifications.some(c => c.title)) { contentBlocks += `<div><h3 class="text-lg font-bold text-center text-gray-700 mb-4 border-b pb-2 header-font">Certifications</h3><ul class="list-disc pl-5 space-y-1 text-sm">${cvData.certifications.map(c => `<li>${c.title} - ${c.institution} (${c.year})</li>`).join('')}</ul></div>`; }
+                if (cvData.achievements.length > 0 && cvData.achievements.some(a => a.text)) { contentBlocks += `<div><h3 class="text-lg font-bold text-center text-gray-700 mb-4 border-b pb-2 header-font">Achievements</h3><ul class="list-disc pl-5 space-y-1 text-sm">${cvData.achievements.map(a => `<li>${a.text}</li>`).join('')}</ul></div>`; }
+                previewHTML += contentBlocks + '</section>';
             }
+            previewContent.innerHTML = previewHTML;
+        }
+        
+        function navigate(direction) {
+            saveStepData(window.currentStep);
+            let nextStep = window.currentStep;
+            if (direction === 'next' && window.currentStep < steps.length - 1) { nextStep++; } 
+            else if (direction === 'prev' && window.currentStep > 0) { nextStep--; }
 
-            function setupUI() {
-                panelBuilder.innerHTML = `
-                    <div id="builder-content">
-                        <div id="stepper" class="mb-12 relative bg-gray-200 rounded-full p-1 flex justify-between">
-                            <div id="stepper-pill" class="absolute top-1 bottom-1 bg-indigo-600 rounded-full shadow transition-all duration-500 ease-in-out"></div>
-                        </div>
-                        <div id="card-container" class="relative pr-4"></div>
-                    </div>
-                    <div class="flex justify-between mt-8 items-center">
-                        <button id="prev-btn" class="transition text-5xl text-gray-400 hover:text-gray-600"><i class="fas fa-arrow-left"></i></button>
-                        <button id="next-btn" class="transition text-5xl"><i class="fas fa-arrow-right"></i></button>
-                    </div>`;
-
-                panelCvPreview.innerHTML = `
-                    <div id="print-area-container" class="w-full space-y-8">
-                        <div>
-                            <h3 class="text-center font-bold text-gray-500 mb-4 uppercase tracking-wider">CV Preview</h3>
-                            <div id="print-area" class="bg-white p-8 rounded-lg border border-gray-200 shadow-inner overflow-y-auto" style="max-height: 70vh;">
-                                <header class="text-center">
-                                    <h1 id="preview-name" class="text-4xl font-black tracking-tighter bg-gradient-to-r from-blue-800 to-blue-500 text-transparent bg-clip-text pb-2 break-words header-font">Your Name</h1>
-                                    <h2 id="preview-subtitle" class="mt-1 text-lg font-medium text-gray-600 tracking-wide break-words">Your Subtitle</h2>
-                                </header>
-                                <div id="preview-content" class="mt-8 text-sm space-y-8"></div>
-                            </div>
-                            <div class="text-center mt-6 flex justify-center gap-4 flex-wrap">
-                                <button id="download-html-btn" class="action-btn add-btn text-sm opacity-50 cursor-not-allowed" disabled><i class="fas fa-file-code mr-2"></i>Download InteractCV</button>
-                                <button id="download-doc-btn" class="action-btn add-btn text-sm opacity-50 cursor-not-allowed" disabled><i class="fas fa-file-word mr-2"></i>Download as Word</button>
-                            </div>
-                        </div>
-                    </div>`;
-
-                panelTimelinePreview.innerHTML = `
-                    <div id="timeline-preview-section" class="pt-8">
-                        <h3 class="text-center font-bold text-gray-500 mb-4 uppercase tracking-wider">Timeline Preview</h3>
-                        <div id="timeline-preview-container" class="bg-gray-50 p-1 rounded-lg border border-gray-200 shadow-inner">
-                            <iframe id="timeline-iframe"></iframe>
-                        </div>
-                        <div class="text-center mt-6">
-                            <button id="download-timeline-btn" class="action-btn add-btn text-sm opacity-50 cursor-not-allowed" disabled><i class="fas fa-file-download mr-2"></i>Download InteractTimeline</button>
-                        </div>
-                    </div>`;
-            }
-
-            function initializeGeneratorLogic() {
-                const cardContainer = document.getElementById('card-container');
-                const prevBtn = document.getElementById('prev-btn');
-                const nextBtn = document.getElementById('next-btn');
-                const previewName = document.getElementById('preview-name');
-                const previewSubtitle = document.getElementById('preview-subtitle');
-                const previewContent = document.getElementById('preview-content');
-                
-                const downloadDocBtn = document.getElementById('download-doc-btn');
-                const downloadHtmlBtn = document.getElementById('download-html-btn');
-                const downloadTimelineBtn = document.getElementById('download-timeline-btn');
-
-                const tabBuilder = document.getElementById('tab-builder');
-                const tabCvPreview = document.getElementById('tab-cv-preview');
-                const tabTimelinePreview = document.getElementById('tab-timeline-preview');
-                const panels = [panelBuilder, panelCvPreview, panelTimelinePreview];
-                const tabs = [tabBuilder, tabCvPreview, tabTimelinePreview];
-
-                let currentStep = 0;
-                let cvData = {
-                    personal: { name: '', subtitle: '', linkedin: '', email: '', phone: '', theme: 'default' },
-                    summary: [], experience: [], education: [], certifications: [],
-                    skills: { soft: [], technical: [] }, achievements: []
-                };
-
-                window.cvData = cvData;
-                window.currentStep = currentStep;
-
-                const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-                const themes = {
-                    default: { from: '#003E6B', to: '#36A8A4'},
-                    sunset: { from: '#6D28D9', to: '#F97316'},
-                    forest: { from: '#166534', to: '#854d0e'},
-                    monochrome: { from: '#111827', to: '#6B7280'},
-                };
-                const SOFT_SKILLS_LIST = [
-                    "Communication", "Teamwork & Collaboration", "Problem-Solving", "Leadership", "Adaptability & Flexibility",
-                    "Time Management", "Critical Thinking", "Creativity & Innovation", "Emotional Intelligence",
-                    "Work Ethic & Dependability", "Interpersonal Skills", "Conflict Resolution", "Decision Making",
-                    "Negotiation", "Presentation Skills", "Project Management", "Resilience & Stress Tolerance",
-                    "Attention to Detail"
-                ].sort();
-
-                const steps = [
-                    { title: 'Personal Information', short: 'Info' }, { title: 'Professional Summary', short: 'Summary' }, { title: 'Work Experience', short: 'Experience' },
-                    { title: 'Education', short: 'Education' }, { title: 'Certificates', short: 'Certs' }, { title: 'Skills', short: 'Skills' },
-                    { title: 'Achievements', short: 'Awards' }, { title: 'Finish Up', short: 'Finish' }
-                ];
-                
-                tabs.forEach((tab, index) => {
-                    tab.addEventListener('click', () => {
-                        tabs.forEach(t => t.classList.remove('active'));
-                        panels.forEach(p => p.classList.add('hidden'));
-                        tab.classList.add('active');
-                        panels[index].classList.remove('hidden');
-                        if (panels[index] === panelCvPreview) { updatePreview(); }
-                        if (panels[index] === panelTimelinePreview) { updateTimelinePreview(); }
-                    });
-                });
-
-                function checkStepHasData(stepIndex) {
-                    switch (steps[stepIndex].title) {
-                        case 'Personal Information': return cvData.personal.name.trim() !== '';
-                        case 'Professional Summary': return cvData.summary.length > 0 && cvData.summary.some(p => p.trim() !== '');
-                        case 'Work Experience': return cvData.experience.length > 0 && cvData.experience.some(e => e.company.trim() !== '');
-                        case 'Education': return cvData.education.length > 0 && cvData.education.some(e => e.degree.trim() !== '');
-                        case 'Certificates': return cvData.certifications.length > 0 && cvData.certifications.some(c => c.title.trim() !== '');
-                        case 'Skills': return cvData.skills.soft.length > 0 || cvData.skills.technical.length > 0;
-                        case 'Achievements': return cvData.achievements.length > 0 && cvData.achievements.some(a => a.text.trim() !== '');
-                        default: return false;
-                    }
-                }
-
-                function renderStepper() {
-                    const stepperContainer = document.getElementById('stepper');
-                    stepperContainer.innerHTML = '';
-                    steps.forEach((step, index) => {
-                        const stepButton = document.createElement('button');
-                        stepButton.id = `step-button-${index}`;
-                        stepButton.className = 'step-segment';
-                        stepButton.dataset.stepIndex = index;
-                        const dot = document.createElement('span');
-                        dot.className = 'step-dot bg-gray-400';
-                        const label = document.createElement('span');
-                        label.textContent = step.short;
-                        stepButton.appendChild(dot);
-                        stepButton.appendChild(label);
-                        stepperContainer.appendChild(stepButton);
-                        stepButton.addEventListener('click', () => {
-                            if(index < window.currentStep) {
-                                saveStepData(window.currentStep);
-                                window.currentStep = index;
-                                renderStep(window.currentStep);
-                                updateStepper();
-                                updateNavButtons();
-                            }
-                        });
-                    });
-                }
-
-                function updateStepper() {
-                    const stepperPill = document.getElementById('stepper-pill');
-                    if (!stepperPill) return;
-                    const currentButton = document.getElementById(`step-button-${window.currentStep}`);
-                    if (!currentButton) return;
-                    stepperPill.style.width = `${currentButton.offsetWidth}px`;
-                    stepperPill.style.left = `${currentButton.offsetLeft}px`;
-                    document.querySelectorAll('.step-segment').forEach((btn, index) => {
-                        btn.classList.remove('current', 'completed');
-                        const dot = btn.querySelector('.step-dot');
-                        if(index < window.currentStep) { btn.classList.add('completed'); } 
-                        else if (index === window.currentStep) { btn.classList.add('current'); }
-                        
-                        if (checkStepHasData(index)) {
-                            dot.classList.remove('bg-gray-400');
-                            dot.classList.add('bg-green-500');
-                        } else {
-                            dot.classList.add('bg-gray-400');
-                            dot.classList.remove('bg-green-500');
-                        }
-                    });
-                }
-
-                function updatePreview() {
-                    if(!previewName) return;
-                    previewName.textContent = cvData.personal.name || 'Your Name';
-                    previewSubtitle.textContent = cvData.personal.subtitle || 'Your Subtitle';
-                    const themeColors = themes[cvData.personal.theme];
-                    previewName.style.backgroundImage = `linear-gradient(to right, ${themeColors.from}, ${themeColors.to})`;
-                    let previewHTML = '';
-                    if (cvData.summary.length > 0 && cvData.summary.some(p => p.trim() !== '')) { previewHTML += `<section><h3 class="text-xl font-bold text-center text-gray-700 mb-4 border-b-2 pb-2 header-font">Professional Summary</h3><ul class="list-disc pl-5 space-y-1 text-gray-700 text-base">${cvData.summary.map(p => `<li>${p}</li>`).join('')}</ul></section>`; }
-                    if (cvData.experience.length > 0) { previewHTML += `<section class="mt-8"><h3 class="text-xl font-bold text-center text-gray-700 mb-4 border-b-2 pb-2 header-font">Work Experience</h3><div class="space-y-4">${cvData.experience.map(exp => { if (!exp.company) return ''; const endPeriod = exp.isCurrent ? 'Present' : `${exp.endMonth} ${exp.endYear}`; const period = `${exp.startMonth} ${exp.startYear} – ${endPeriod}`; return `<div><div class="flex justify-between items-baseline"><h4 class="font-bold text-gray-900 text-lg">${exp.company}</h4><p class="text-sm text-gray-500">${period}</p></div><div class="pl-4 mt-1 space-y-2">${(exp.roles || []).map(role => { if (!role.title) return ''; return `<div><h5 class="font-semibold text-base text-gray-800">${role.title}</h5><ul class="list-disc pl-5 mt-1 space-y-1 text-gray-700 text-sm">${(role.points || []).map(p => p ? `<li>${p}</li>` : '').join('')}</ul>${(role.projects && role.projects.length > 0) ? `<div class="mt-2"><h6 class="font-semibold text-xs text-gray-600">Key Projects:</h6><ul class="list-decimal pl-5 mt-1 space-y-1 text-gray-700 text-xs">${role.projects.map(proj => `<li><strong>${proj.title}:</strong> ${proj.summary}</li>`).join('')}</ul></div>` : ''}</div>`}).join('')}</div></div>`; }).join('')}</div></section>`; }
-                    if (cvData.skills.soft.length > 0 || cvData.skills.technical.length > 0) { previewHTML += `<section class="mt-8"><h3 class="text-xl font-bold text-center text-gray-700 mb-4 border-b-2 pb-2 header-font">Core Competencies</h3><div class="grid grid-cols-2 gap-6 text-sm">${cvData.skills.soft.length > 0 ? `<div><h4 class="font-bold mb-2 text-center text-base">Soft Skills</h4><ul class="list-disc pl-5">${cvData.skills.soft.map(s => `<li>${s.name} <span class="text-gray-500">(${s.level})</span></li>`).join('')}</ul></div>` : ''}${cvData.skills.technical.length > 0 ? `<div><h4 class="font-bold mb-2 text-center text-base">Technical</h4><ul class="list-disc pl-5">${cvData.skills.technical.map(s => `<li>${s.name} <span class="text-gray-500">(${s.level})</span></li>`).join('')}</ul></div>` : ''}</div></section>`; }
-                    if (cvData.education.length > 0 || cvData.certifications.length > 0 || cvData.achievements.length > 0) {
-                        previewHTML += '<section class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">';
-                        let contentBlocks = '';
-                        if (cvData.education.length > 0 && cvData.education.some(e => e.degree)) { contentBlocks += `<div><h3 class="text-lg font-bold text-center text-gray-700 mb-4 border-b pb-2 header-font">Education</h3><div class="space-y-3 text-sm">${cvData.education.map(e => `<div><p class="font-semibold">${e.degree}</p><p class="text-sm">${e.institution}</p><p class="text-sm text-gray-500">${e.year}</p></div>`).join('')}</div></div>`; }
-                        if (cvData.certifications.length > 0 && cvData.certifications.some(c => c.title)) { contentBlocks += `<div><h3 class="text-lg font-bold text-center text-gray-700 mb-4 border-b pb-2 header-font">Certifications</h3><ul class="list-disc pl-5 space-y-1 text-sm">${cvData.certifications.map(c => `<li>${c.title} - ${c.institution} (${c.year})</li>`).join('')}</ul></div>`; }
-                        if (cvData.achievements.length > 0 && cvData.achievements.some(a => a.text)) { contentBlocks += `<div><h3 class="text-lg font-bold text-center text-gray-700 mb-4 border-b pb-2 header-font">Achievements</h3><ul class="list-disc pl-5 space-y-1 text-sm">${cvData.achievements.map(a => `<li>${a.text}</li>`).join('')}</ul></div>`; }
-                        previewHTML += contentBlocks + '</section>';
-                    }
-                    previewContent.innerHTML = previewHTML;
-                }
-                
-                function navigate(direction) {
-                    saveStepData(window.currentStep);
-                    let nextStep = window.currentStep;
-                    if (direction === 'next' && window.currentStep < steps.length - 1) { nextStep++; } 
-                    else if (direction === 'prev' && window.currentStep > 0) { nextStep--; }
-
-                    if (nextStep !== window.currentStep) {
-                        const oldCard = cardContainer.querySelector('.card');
-                        if(oldCard) { oldCard.style.opacity = '0'; }
-                        window.currentStep = nextStep;
-                        setTimeout(() => {
-                            renderStep(window.currentStep);
-                            const newCard = cardContainer.querySelector('.card');
-                            if(newCard) { newCard.style.opacity = '0'; requestAnimationFrame(() => { newCard.style.opacity = '1'; }); }
-                            updateStepper();
-                            updateNavButtons();
-                            updatePreview();
-                        }, 150);
-                    }
-                }
-
-                function validateStep(stepIndex) {
-                    const card = document.querySelector(`#card-${stepIndex}`);
-                    if (!card) return true;
-                    switch (steps[stepIndex].title) {
-                        case 'Personal Information': { const nameInput = card.querySelector('#name'); const email = card.querySelector('#email').value.trim(); const linkedin = card.querySelector('#linkedin').value.trim(); return nameInput && nameInput.value.trim() !== '' && (email !== '' || linkedin !== ''); }
-                        case 'Professional Summary': { const points = card.querySelectorAll('[name="summary-point"]'); if (points.length === 0) return false; return Array.from(points).every(p => p.value.trim() !== ''); }
-                        case 'Work Experience': { const experiences = card.querySelectorAll('.experience-item'); if (experiences.length === 0) return true; return Array.from(experiences).every(exp => { const company = exp.querySelector('[name="company"]').value.trim(); const roles = exp.querySelectorAll('.role-item'); const hasValidRoles = roles.length > 0 && Array.from(roles).every(role => { return role.querySelector('[name="role-title"]').value.trim() !== ''; }); return company !== '' && hasValidRoles; }); }
-                        case 'Education': { const educations = card.querySelectorAll('.education-item'); if (educations.length === 0) return true; return Array.from(educations).every(edu => { const degree = edu.querySelector('[name="degree"]').value.trim(); const institution = edu.querySelector('[name="institution"]').value.trim(); return degree !== '' && institution !== ''; }); }
-                        case 'Certificates': { const certifications = card.querySelectorAll('.certification-item'); if (certifications.length === 0) return true; return Array.from(certifications).every(cert => { return cert.querySelector('[name="cert-title"]').value.trim() !== '' && cert.querySelector('[name="cert-institution"]').value.trim() !== ''; }); }
-                        case 'Skills': { const skills = card.querySelectorAll('.soft-skill select[name="skill-name"], .technical-skill input[name="skill-name"]'); if (skills.length === 0) return true; return Array.from(skills).every(s => s.value.trim() !== ''); }
-                        case 'Achievements': { const achievements = card.querySelectorAll('[name="achievement-text"]'); if (achievements.length === 0) return true; return Array.from(achievements).every(a => a.value.trim() !== ''); }
-                        default: return true;
-                    }
-                }
-
-                function updateNavButtons() {
-                    prevBtn.style.visibility = window.currentStep === 0 ? 'hidden' : 'visible';
-                    const isValid = validateStep(window.currentStep);
-                    nextBtn.disabled = !isValid;
-                    nextBtn.classList.remove('text-indigo-500', 'hover:text-indigo-700', 'text-green-500', 'hover:text-green-700', 'text-gray-300', 'cursor-not-allowed');
-                    if (!isValid) { nextBtn.classList.add('text-gray-300', 'cursor-not-allowed'); } 
-                    else {
-                        if (window.currentStep === steps.length - 1) {
-                            nextBtn.innerHTML = '<i class="fas fa-check"></i>';
-                            nextBtn.classList.add('text-green-500');
-                            nextBtn.disabled = true;
-                        } else {
-                            nextBtn.innerHTML = '<i class="fas fa-arrow-right"></i>';
-                            nextBtn.classList.add('text-indigo-500', 'hover:text-indigo-700');
-                        }
-                    }
-                    const enableDownloads = window.currentStep === steps.length - 1;
-                    [downloadDocBtn, downloadHtmlBtn, downloadTimelineBtn].forEach(btn => {
-                        if(btn) {
-                            btn.disabled = !enableDownloads;
-                            btn.classList.toggle('opacity-50', !enableDownloads);
-                            btn.classList.toggle('cursor-not-allowed', !enableDownloads);
-                        }
-                    });
-                }
-                
-                window.handleValidation = () => {
-                    updateNavButtons();
-                    saveStepData(window.currentStep);
-                    updatePreview();
+            if (nextStep !== window.currentStep) {
+                const oldCard = cardContainer.querySelector('.card');
+                if(oldCard) { oldCard.style.opacity = '0'; }
+                window.currentStep = nextStep;
+                setTimeout(() => {
+                    renderStep(window.currentStep);
+                    const newCard = cardContainer.querySelector('.card');
+                    if(newCard) { newCard.style.opacity = '0'; requestAnimationFrame(() => { newCard.style.opacity = '1'; }); }
                     updateStepper();
-                };
-                
-                function saveStepData(stepIndex) {
-                    const card = document.querySelector(`#card-${stepIndex}`);
-                    if (!card) return;
-                    switch (steps[stepIndex].title) {
-                        case 'Personal Information': cvData.personal.name = card.querySelector('#name').value; cvData.personal.subtitle = card.querySelector('#subtitle').value; cvData.personal.linkedin = card.querySelector('#linkedin').value; cvData.personal.email = card.querySelector('#email').value; cvData.personal.phone = card.querySelector('#phone').value; const selectedTheme = card.querySelector('input[name="theme"]:checked'); if (selectedTheme) cvData.personal.theme = selectedTheme.value; break;
-                        case 'Professional Summary': cvData.summary = Array.from(card.querySelectorAll('[name="summary-point"]')).map(input => input.value); break;
-                        case 'Work Experience': cvData.experience = Array.from(card.querySelectorAll('.experience-item')).map((item, expIndex) => {
-                            const startYear = item.querySelector(`[name='start-year-${expIndex}']`).value; const startMonth = item.querySelector(`[name='start-month-${expIndex}']`).value; const endYear = item.querySelector(`[name='end-year-${expIndex}']`).value; const endMonth = item.querySelector(`[name='end-month-${expIndex}']`).value; const isCurrent = item.querySelector(`[name='current-job-${expIndex}']`).checked;
-                            let durationStr = ''; if(startYear && startMonth) { const startDate = new Date(`${startYear}-${months.indexOf(startMonth)+1}-01`); const endDate = isCurrent ? new Date() : (endYear && endMonth ? new Date(`${endYear}-${months.indexOf(endMonth)+1}-01`) : null); if (endDate) { let years = endDate.getFullYear() - startDate.getFullYear(); let monthsDiff = endDate.getMonth() - startDate.getMonth(); if (monthsDiff < 0) { years--; monthsDiff += 12; } if (years > 0) durationStr += `${years} Year${years > 1 ? 's' : ''} `; if (monthsDiff > 0) durationStr += `${monthsDiff} Month${monthsDiff > 1 ? 's' : ''}`; if (durationStr.trim() === '') durationStr = '1 Month'; } } item.querySelector('.duration-text').textContent = durationStr;
-                            return { company: item.querySelector('[name="company"]').value, startYear, startMonth, endYear, endMonth, isCurrent, duration: durationStr, roles: Array.from(item.querySelectorAll('.role-item')).map((role) => ({ title: role.querySelector('[name="role-title"]').value, points: Array.from(role.querySelectorAll('[name="role-point"]')).map(p => p.value), projects: Array.from(role.querySelectorAll('.project-item')).map(proj => ({ title: proj.querySelector('[name="project-title"]').value, summary: proj.querySelector('[name="project-summary"]').value })) })) };
-                        }); break;
-                        case 'Education': cvData.education = Array.from(card.querySelectorAll('.education-item')).map(item => ({ degree: item.querySelector('[name="degree"]').value, institution: item.querySelector('[name="institution"]').value, year: item.querySelector('[name="year"]').value })); break;
-                        case 'Certificates': cvData.certifications = Array.from(card.querySelectorAll('.certification-item')).map(item => ({ title: item.querySelector('[name="cert-title"]').value, institution: item.querySelector('[name="cert-institution"]').value, year: item.querySelector('[name="cert-year"]').value, link: item.querySelector('[name="cert-link"]').value, skills: item.querySelector('[name="cert-skills"]').value.split(',').map(s => s.trim()).filter(Boolean) })); break;
-                        case 'Skills': cvData.skills.soft = Array.from(card.querySelectorAll('.soft-skill')).map(item => ({ name: item.querySelector('[name="skill-name"]').value, level: item.querySelector('[name="skill-level"]').value })); cvData.skills.technical = Array.from(card.querySelectorAll('.technical-skill')).map(item => ({ name: item.querySelector('[name="skill-name"]').value, level: item.querySelector('[name="skill-level"]').value })); break;
-                        case 'Achievements': cvData.achievements = Array.from(card.querySelectorAll('.achievement-item')).map(item => ({ text: item.querySelector('[name="achievement-text"]').value })); break;
-                    }
-                }
-                
-                function renderStep(stepIndex) {
-                    const step = steps[stepIndex];
-                    cardContainer.innerHTML = `<div id="card-${stepIndex}" class="card p-4"></div>`;
-                    const card = document.getElementById(`card-${stepIndex}`);
-                    let content = `<h2 class="text-3xl font-bold text-gray-800 mb-6 header-font">${steps[stepIndex].title}</h2>`;
-                    switch(step.title) {
-                        case 'Personal Information': content += `
-                            <div class="bg-gradient-to-tr from-indigo-500/20 to-purple-400/10 rounded-3xl shadow-2xl p-8 md:p-12 transition-all duration-500">
-                                <div class="text-center mb-8">
-                                    <i class="fas fa-address-card text-7xl text-indigo-400 mb-4 animate-pulse"></i>
-                                    <h2 class="text-4xl font-extrabold text-indigo-700 mb-2 tracking-tight header-font">Let's Begin Your Story!</h2>
-                                    <p class="text-lg text-gray-600">Start by entering your name, headline, contact info, and choose a theme.</p>
-                                </div>
-                                <form autocomplete="off" class="space-y-8 max-w-xl mx-auto">
-                                    <div class="space-y-2">
-                                        <label for="name" class="block text-sm font-medium text-gray-700"><i class="fas fa-user w-5 mr-2 text-indigo-400"></i>Full Name</label>
-                                        <input id="name" name="name" type="text" placeholder="e.g., Jane Doe" class="transition-shadow focus:shadow-lg focus:bg-indigo-50/50 text-center w-full px-6 py-4 rounded-xl font-semibold text-2xl text-gray-900 border-2 border-indigo-200 focus:border-indigo-500" oninput="handleValidation()" value="${cvData.personal.name || ''}">
-                                    </div>
-                                    <div class="space-y-2">
-                                        <label for="subtitle" class="block text-sm font-medium text-gray-700"><i class="fas fa-briefcase w-5 mr-2 text-indigo-400"></i>Subtitle / Job Title</label>
-                                        <input id="subtitle" name="subtitle" type="text" placeholder="e.g., Technical Lead | AI Specialist" class="transition-shadow focus:shadow-lg focus:bg-indigo-50/50 text-center w-full px-6 py-4 rounded-xl font-semibold text-xl text-gray-800 border-2 border-indigo-200 focus:border-indigo-500" oninput="handleValidation()" value="${cvData.personal.subtitle || ''}">
-                                    </div>
-                                    <div class="space-y-6 pt-4 border-t border-indigo-200/50">
-                                         <div class="space-y-1">
-                                            <label for="email" class="block text-sm font-medium text-gray-700"><i class="fas fa-envelope w-5 mr-2 text-indigo-400"></i>Email Address</label>
-                                            <input id="email" type="email" placeholder="your.email@example.com" class="input-field" value="${cvData.personal.email || ''}" oninput="handleValidation()">
-                                         </div>
-                                         <div class="space-y-1">
-                                            <label for="phone" class="block text-sm font-medium text-gray-700"><i class="fas fa-phone w-5 mr-2 text-indigo-400"></i>Phone Number</label>
-                                            <input id="phone" type="tel" placeholder="+1 (555) 123-4567" class="input-field" value="${cvData.personal.phone || ''}" oninput="handleValidation()">
-                                         </div>
-                                         <div class="space-y-1">
-                                            <label for="linkedin" class="block text-sm font-medium text-gray-700"><i class="fab fa-linkedin w-5 mr-2 text-indigo-400"></i>LinkedIn Profile URL</label>
-                                            <input id="linkedin" type="text" placeholder="linkedin.com/in/your-profile" class="input-field" value="${cvData.personal.linkedin || ''}" oninput="handleValidation()">
-                                         </div>
-                                    </div>
-                                    <div>
-                                         <h3 class="font-bold text-center text-lg text-gray-700 mt-6 mb-4">Choose a Theme</h3>
-                                         <div class="flex justify-center flex-wrap gap-4">
-                                            ${Object.keys(themes).map(theme => `
-                                            <label class="flex items-center space-x-2 cursor-pointer p-2 rounded-lg hover:bg-indigo-100/50 transition">
-                                                <input type="radio" name="theme" value="${theme}" class="form-radio text-indigo-600 focus:ring-indigo-500" ${cvData.personal.theme === theme ? 'checked' : ''} onchange="handleValidation()">
-                                                <span class="capitalize font-semibold text-gray-700">${theme}</span>
-                                                <span class="w-5 h-5 rounded-full inline-block" style="background-image: linear-gradient(to right, ${themes[theme].from}, ${themes[theme].to})"></span>
-                                            </label>`).join('')}
-                                        </div>
-                                    </div>
-                                </form>
-                            </div>`; break;
-                        case 'Professional Summary': content += `<div class="bg-gray-50 p-6 rounded-lg border"><div id="summary-list" class="space-y-4">${renderSummaryItems()}</div><button onclick="addSummaryPoint()" class="add-link-btn mt-4">+ Add Point</button></div>`; break;
-                        case 'Work Experience': content += `<div class="bg-gray-50 p-6 rounded-lg border"><div id="experience-list" class="space-y-6">${renderExperienceItems()}</div><button onclick="addExperience()" class="action-btn add-btn mt-6"><i class="fas fa-plus mr-2"></i>Add Experience</button></div>`; break;
-                        case 'Education': content += `<div class="bg-gray-50 p-6 rounded-lg border"><div id="education-list" class="space-y-6">${renderEducationItems()}</div><button onclick="addEducation()" class="action-btn add-btn mt-6"><i class="fas fa-plus mr-2"></i>Add Education</button></div>`; break;
-                        case 'Certificates': content += `<div class="bg-gray-50 p-6 rounded-lg border"><div id="certification-list" class="space-y-6">${renderCertificationItems()}</div><button onclick="addCertification()" class="action-btn add-btn mt-6"><i class="fas fa-plus mr-2"></i>Add Certificate</button></div>`; break;
-                        case 'Skills': content += `<div class="grid grid-cols-1 md:grid-cols-2 gap-8"><div class="bg-gray-50 p-6 rounded-lg border"><h3 class="font-bold mb-4 text-lg">Soft Skills</h3><div id="soft-skills" class="space-y-4">${renderSkillItems('soft')}</div><button onclick="addSkill('soft')" class="add-link-btn mt-4">+ Add Skill</button></div><div class="bg-gray-50 p-6 rounded-lg border"><h3 class="font-bold mb-4 text-lg">Technical & Tools</h3><div id="technical-skills" class="space-y-4">${renderSkillItems('technical')}</div><button onclick="addSkill('technical')" class="add-link-btn mt-4">+ Add Skill</button></div></div>`; break;
-                        case 'Achievements': content += `<div class="bg-gray-50 p-6 rounded-lg border"><div id="achievement-list" class="space-y-6">${renderAchievementItems()}</div><button onclick="addAchievement()" class="action-btn add-btn mt-6"><i class="fas fa-plus mr-2"></i>Add Achievement</button></div>`; break;
-                        case 'Finish Up': content += `<div class="text-center p-8 bg-gray-50 rounded-lg border"><p class="text-lg text-gray-700 mb-6">You're all set! You can now download your assets or save them to your profile to generate a shareable link.</p><div class="flex justify-center gap-4"><button id="save-doc-btn" class="action-btn add-btn text-base"><i class="fas fa-save mr-2"></i>Save to Profile</button></div></div>`; break;
-                    }
-                    card.innerHTML = content;
-                    if (step.title === 'Finish Up') { document.getElementById('save-doc-btn').addEventListener('click', () => saveDocument('CV & Timeline')); }
                     updateNavButtons();
-                }
-
-                function renderSummaryItems() { return cvData.summary.map((p,i)=>`<div class="summary-item flex items-center space-x-2"><textarea name="summary-point" placeholder="e.g., Strategic Leader with Technical Expertise..." class="textarea-field flex-grow" rows="1" oninput="autoResize(this); handleValidation()">${p||""}</textarea><button onclick="removeSummaryPoint(${i})" class="remove-btn text-xl">&times;</button></div>`).join("") }
-                function renderExperienceItems() { const y=new Date().getFullYear(),Y=Array.from({length:50},(_,i)=>y-i);return cvData.experience.map((e,i)=>{const t=e.isCurrent||!1;return`<div class="experience-item p-6 border rounded-lg bg-white shadow-sm space-y-4"><div class="flex justify-between items-start"><div class="space-y-1 flex-grow"><label class="block text-sm font-medium text-gray-700">Company Name</label><input type="text" name="company" placeholder="e.g., Google" class="input-field" value="${e.company||""}" oninput="handleValidation()"></div><button onclick="removeExperience(${i})" class="action-btn remove-btn ml-4 mt-6"><i class="fas fa-trash-alt mr-2"></i>Remove</button></div><div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm"><div><label class="font-semibold text-xs text-gray-600">Start Date</label><div class="flex gap-2"><select name="start-month-${i}" class="input-field text-sm !p-3" onchange="handleValidation()">${months.map(m=>`<option ${e.startMonth===m?"selected":""}>${m}</option>`).join("")}</select><select name="start-year-${i}" class="input-field text-sm !p-3" onchange="handleValidation()">${Y.map(y=>`<option ${e.startYear==y?"selected":""}>${y}</option>`).join("")}</select></div></div><div><label class="font-semibold text-xs text-gray-600">End Date</label><div class="flex gap-2"><select name="end-month-${i}" class="input-field text-sm !p-3 bg-gray-50 disabled:opacity-70" ${t?"disabled":""} onchange="handleValidation()">${months.map(m=>`<option ${e.endMonth===m?"selected":""}>${m}</option>`).join("")}</select><select name="end-year-${i}" class="input-field text-sm !p-3 bg-gray-50 disabled:opacity-70" ${t?"disabled":""} onchange="handleValidation()">${Y.map(y=>`<option ${e.endYear==y?"selected":""}>${y}</option>`).join("")}</select></div></div></div><div class="flex items-center justify-between"><label class="flex items-center text-sm text-gray-700"><input type="checkbox" name="current-job-${i}" class="form-checkbox mr-2 text-indigo-600 focus:ring-indigo-500" ${t?"checked":""} onchange="handleValidation()"> I currently work here</label><p class="text-sm font-semibold text-indigo-600 duration-text">${e.duration||""}</p></div><div class="role-list space-y-4 mt-4">${(e.roles||[]).map((r,l)=>`<div class="role-item border-t-2 border-dashed border-gray-200 pt-4"><div class="flex justify-between items-center mb-2"><label class="block text-base font-semibold text-gray-800">Role #${l+1}</label><button onclick="removeRole(${i}, ${l})" class="action-btn remove-btn"><i class="fas fa-minus-circle mr-2"></i>Remove Role</button></div><div class="space-y-1"><label class="block text-sm font-medium text-gray-700">Role Title</label><input type="text" name="role-title" placeholder="e.g., Senior Developer" class="input-field font-semibold" value="${r.title||""}" oninput="handleValidation()"></div><div class="point-list space-y-3 mt-4 pl-4 border-l-2 border-gray-200"><label class="block text-sm font-medium text-gray-700">Accomplishments</label>${(r.points||[]).map((p,d)=>`<div class="flex items-center space-x-2"><textarea name="role-point" placeholder="Accomplishment..." class="textarea-field flex-grow" rows="1" oninput="autoResize(this); handleValidation()">${p||""}</textarea><button onclick="removePoint(${i}, ${l}, ${d})" class="remove-btn text-lg p-2 rounded-full h-8 w-8 flex items-center justify-center">&times;</button></div>`).join("")}<button onclick="addPoint(${i}, ${l})" class="action-btn add-btn"><i class="fas fa-plus mr-2"></i>Add Accomplishment</button></div><div class="project-list-container mt-4 pl-4 border-l-2 border-gray-200"><label class="block text-sm font-medium text-gray-700 mb-2">Projects for this Role</label><div class="project-list space-y-3">${(r.projects||[]).map((p,d)=>`<div class="project-item p-4 border rounded-lg bg-indigo-50/50 space-y-2 relative"><button onclick="removeProjectFromRole(${i}, ${l}, ${d})" class="absolute top-2 right-2 remove-btn text-lg p-1 rounded-full h-6 w-6 flex items-center justify-center">&times;</button><div class="space-y-1"><label class="block text-xs font-medium text-gray-600">Project Title</label><input type="text" name="project-title" placeholder="e.g., Internal Dashboard" class="input-field !py-2 !text-sm" value="${p.title||""}" oninput="handleValidation()"></div><div class="space-y-1"><label class="block text-xs font-medium text-gray-600">Project Summary</label><textarea name="project-summary" placeholder="A brief summary..." class="textarea-field !py-2 !text-sm" rows="2" oninput="autoResize(this); handleValidation()">${p.summary||""}</textarea></div></div>`).join("")}</div><button onclick="addProjectToRole(${i}, ${l})" class="action-btn add-btn mt-3"><i class="fas fa-project-diagram mr-2"></i>Add Project</button></div></div>`).join("")}</div><button onclick="addRole(${i})" class="action-btn add-btn mt-4"><i class="fas fa-user-plus mr-2"></i>Add Another Role</button></div>`}).join("") }
-                function renderEducationItems() { const y=new Date().getFullYear(),Y=Array.from({length:50},(_,i)=>y-i);return cvData.education.map((e,i)=>`<div class="education-item p-6 border-l-4 border-teal-300 rounded-r-lg bg-white shadow-md relative space-y-4"><button onclick="removeEducation(${i})" class="action-btn remove-btn absolute top-4 right-4"><i class="fas fa-trash-alt"></i></button><div class="space-y-1"><label class="block text-sm font-medium text-gray-700"><i class="fas fa-graduation-cap text-teal-500 w-5 mr-2"></i>Degree</label><input type="text" name="degree" placeholder="e.g., MSc in Electrical Engineering" class="input-field font-semibold" value="${e.degree||""}" oninput="handleValidation()"></div><div class="space-y-1"><label class="block text-sm font-medium text-gray-700"><i class="fas fa-university text-teal-500 w-5 mr-2"></i>Institution</label><input type="text" name="institution" placeholder="e.g., University of Technology" class="input-field" value="${e.institution||""}" oninput="handleValidation()"></div><div class="space-y-1"><label class="block text-sm font-medium text-gray-700"><i class="fas fa-calendar-alt text-teal-500 w-5 mr-2"></i>Year</label><select name="year" class="input-field !p-3" onchange="handleValidation()"><option value="">Completion Year</option><option value="Ongoing">Ongoing</option>${Y.map(y=>`<option value="${y}" ${e.year==y?"selected":""}>${y}</option>`).join("")}</select></div></div>`).join("") }
-                function renderCertificationItems() { const y=new Date().getFullYear(),Y=Array.from({length:50},(_,i)=>y-i);return cvData.certifications.map((e,i)=>`<div class="certification-item p-6 border-l-4 border-purple-300 rounded-r-lg bg-white shadow-md relative space-y-4"><button onclick="removeCertification(${i})" class="action-btn remove-btn absolute top-4 right-4"><i class="fas fa-trash-alt"></i></button><div class="grid grid-cols-1 md:grid-cols-2 gap-4"><div class="space-y-1"><label class="block text-sm font-medium text-gray-700"><i class="fas fa-award text-purple-500 w-5 mr-2"></i>Certificate Title</label><input type="text" name="cert-title" placeholder="e.g., Certified SAFE® 5 Agilist" class="input-field font-semibold" value="${e.title||""}" oninput="handleValidation()"></div><div class="space-y-1"><label class="block text-sm font-medium text-gray-700"><i class="fas fa-building-columns text-purple-500 w-5 mr-2"></i>Issuing Organization</label><input type="text" name="cert-institution" placeholder="e.g., Scaled Agile, Inc." class="input-field" value="${e.institution||""}" oninput="handleValidation()"></div><div class="space-y-1"><label class="block text-sm font-medium text-gray-700"><i class="fas fa-calendar-alt text-purple-500 w-5 mr-2"></i>Year</label><select name="cert-year" class="input-field !p-3" onchange="handleValidation()"><option value="">Completion Year</option>${Y.map(y=>`<option value="${y}" ${e.year==y?"selected":""}>${y}</option>`).join("")}</select></div><div class="space-y-1"><label class="block text-sm font-medium text-gray-700"><i class="fas fa-link text-purple-500 w-5 mr-2"></i>Credential URL</label><input type="url" name="cert-link" placeholder="https://link-to-credential.com" class="input-field" value="${e.link||""}" oninput="handleValidation()"></div></div><div class="space-y-1"><label class="block text-sm font-medium text-gray-700"><i class="fas fa-star text-purple-500 w-5 mr-2"></i>Skills (comma-separated)</label><input type="text" name="cert-skills" placeholder="e.g., Agile, Project Management" class="input-field" value="${(e.skills||[]).join(", ")}" oninput="handleValidation()"></div></div>`).join("") }
-                function renderSkillItems(type) { if(type==='soft'){const e=cvData.skills.soft.map(s=>s.name);return cvData.skills.soft.map((s,i)=>{const t=SOFT_SKILLS_LIST.filter(l=>!e.includes(l)||l===s.name);return`<div class="soft-skill flex items-center space-x-2"><select name="skill-name" class="input-field !p-3" onchange="handleValidation()">${t.map(l=>`<option value="${l}" ${s.name===l?"selected":""}>${l}</option>`).join("")}</select><select name="skill-level" class="input-field !p-3" onchange="handleValidation()"><option value="Proficient" ${s.level==="Proficient"?"selected":""}>Proficient</option><option value="Advanced" ${s.level==="Advanced"?"selected":""}>Advanced</option><option value="Expert" ${s.level==="Expert"?"selected":""}>Expert</option></select><button onclick="removeSkill('soft', ${i})" class="remove-btn text-lg p-2 rounded-full h-8 w-8 flex items-center justify-center">&times;</button></div>`}).join("")}return cvData.skills.technical.map((s,i)=>`<div class="technical-skill flex items-end space-x-2"><div class="flex-grow space-y-1"><label class="block text-sm font-medium text-gray-700">Skill Name</label><input type="text" name="skill-name" placeholder="e.g., Python" class="input-field" value="${s.name||""}" oninput="handleValidation()"></div><div class="space-y-1"><label class="block text-sm font-medium text-gray-700">Level</label><select name="skill-level" class="input-field !p-3" onchange="handleValidation()"><option value="Proficient" ${s.level==="Proficient"?"selected":""}>Proficient</option><option value="Advanced" ${s.level==="Advanced"?"selected":""}>Advanced</option><option value="Expert" ${s.level==="Expert"?"selected":""}>Expert</option></select></div><button onclick="removeSkill('technical', ${i})" class="remove-btn text-lg p-2 rounded-full h-11 w-11 flex items-center justify-center">&times;</button></div>`).join("") }
-                function renderAchievementItems() { return cvData.achievements.map((e,i)=>`<div class="achievement-item flex items-end space-x-3"><div class="flex-grow space-y-1"><label class="block text-sm font-medium text-gray-700"><i class="fas fa-trophy text-amber-500 mr-2"></i>Achievement</label><input type="text" name="achievement-text" placeholder="e.g., 2x Patents filed" class="input-field" value="${e.text||""}" oninput="handleValidation()"></div><button onclick="removeAchievement(${i})" class="remove-btn text-lg p-2 rounded-full h-11 w-11 flex items-center justify-center">&times;</button></div>`).join("") }
-
-                window.addSummaryPoint = () => { saveStepData(window.currentStep); cvData.summary.push(''); renderStep(window.currentStep); };
-                window.removeSummaryPoint = (index) => { saveStepData(window.currentStep); cvData.summary.splice(index, 1); renderStep(window.currentStep); };
-                window.addExperience = () => { saveStepData(currentStep); cvData.experience.push({ roles: [{ points: [], projects: [] }] }); renderStep(currentStep); };
-                window.removeExperience = (index) => { saveStepData(currentStep); cvData.experience.splice(index, 1); renderStep(currentStep); };
-                window.addRole = (expIndex) => { saveStepData(currentStep); cvData.experience[expIndex].roles.push({ points: [], projects: [] }); renderStep(currentStep); };
-                window.removeRole = (expIndex, roleIndex) => { saveStepData(currentStep); cvData.experience[expIndex].roles.splice(roleIndex, 1); renderStep(currentStep); };
-                window.addPoint = (expIndex, roleIndex) => { saveStepData(currentStep); cvData.experience[expIndex].roles[roleIndex].points.push(''); renderStep(currentStep); };
-                window.removePoint = (expIndex, roleIndex, pointIndex) => { saveStepData(currentStep); cvData.experience[expIndex].roles[roleIndex].points.splice(pointIndex, 1); renderStep(currentStep); };
-                window.addProjectToRole = (expIndex, roleIndex) => { saveStepData(currentStep); cvData.experience[expIndex].roles[roleIndex].projects.push({ title: '', summary: '' }); renderStep(currentStep); };
-                window.removeProjectFromRole = (expIndex, roleIndex, projectIndex) => { saveStepData(currentStep); cvData.experience[expIndex].roles[roleIndex].projects.splice(projectIndex, 1); renderStep(currentStep); };
-                window.addSkill = (type) => { saveStepData(currentStep); if (type === 'soft') { const usedSkills = cvData.skills.soft.map(s => s.name); const availableSkill = SOFT_SKILLS_LIST.find(s => !usedSkills.includes(s)); if (availableSkill) { cvData.skills.soft.push({ name: availableSkill, level: 'Proficient' }); } } else { cvData.skills.technical.push({ level: 'Proficient' }); } renderStep(currentStep); };
-                window.removeSkill = (type, index) => { saveStepData(currentStep); cvData.skills[type].splice(index, 1); renderStep(currentStep); };
-                window.addEducation = () => { saveStepData(currentStep); cvData.education.push({}); renderStep(currentStep); };
-                window.removeEducation = (index) => { saveStepData(currentStep); cvData.education.splice(index, 1); renderStep(currentStep); };
-                window.addCertification = () => { saveStepData(currentStep); cvData.certifications.push({skills:[]}); renderStep(currentStep); };
-                window.removeCertification = (index) => { saveStepData(currentStep); cvData.certifications.splice(index, 1); renderStep(currentStep); };
-                window.addAchievement = () => { saveStepData(currentStep); cvData.achievements.push({}); renderStep(currentStep); };
-                window.removeAchievement = (index) => { saveStepData(currentStep); cvData.achievements.splice(index, 1); renderStep(currentStep); };
-                function generateAndDownloadDocx() { /* ... */ }
-                function generateAndDownloadHtml() { /* ... */ }
-                function generateAndDownloadTimelineHtml() { /* ... */ }
-                function generateTimelineHTML(data) { /* ... */ }
-
-                renderStepper();
-                renderStep(0);
-                updateNavButtons();
-                updateStepper();
-                
-                nextBtn.addEventListener('click', () => navigate('next'));
-                prevBtn.addEventListener('click', () => navigate('prev'));
-                downloadDocBtn.addEventListener('click', generateAndDownloadDocx);
-                downloadHtmlBtn.addEventListener('click', generateAndDownloadHtml);
-                downloadTimelineBtn.addEventListener('click', generateAndDownloadTimelineHtml);
+                    updatePreview();
+                }, 150);
             }
+        }
 
-            async function saveDocument(type) {
-                if (!currentUser) return;
-                const docName = prompt(`Enter a name for this document set:`, `My ${type} - ${new Date().toLocaleDateString()}`);
-                if (!docName) return;
-                const dataToSave = JSON.parse(JSON.stringify(window.cvData));
-                const docData = { name: docName, type: type, createdAt: firebase.firestore.FieldValue.serverTimestamp(), cvData: dataToSave };
-                try {
-                    const btn = document.getElementById('save-doc-btn');
-                    if(btn) btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Saving...';
-                    await db.collection('users').doc(currentUser.uid).collection('documents').add(docData);
-                    alert(`'${docName}' saved successfully!`);
-                    loadUserDocuments();
-                    if(btn) btn.innerHTML = '<i class="fas fa-save mr-2"></i>Save to Profile';
-                } catch (error) {
-                    console.error("Error saving document: ", error);
-                    alert(`Error saving: ${error.message}`);
-                    if(btn) btn.innerHTML = '<i class="fas fa-save mr-2"></i>Save to Profile';
+        function validateStep(stepIndex) {
+            const card = document.querySelector(`#card-${stepIndex}`);
+            if (!card) return true;
+            switch (steps[stepIndex].title) {
+                case 'Personal Information': { const nameInput = card.querySelector('#name'); const email = card.querySelector('#email').value.trim(); const linkedin = card.querySelector('#linkedin').value.trim(); return nameInput && nameInput.value.trim() !== '' && (email !== '' || linkedin !== ''); }
+                case 'Professional Summary': { const points = card.querySelectorAll('[name="summary-point"]'); if (points.length === 0) return false; return Array.from(points).every(p => p.value.trim() !== ''); }
+                case 'Work Experience': { const experiences = card.querySelectorAll('.experience-item'); if (experiences.length === 0) return true; return Array.from(experiences).every(exp => { const company = exp.querySelector('[name="company"]').value.trim(); const roles = exp.querySelectorAll('.role-item'); const hasValidRoles = roles.length > 0 && Array.from(roles).every(role => { return role.querySelector('[name="role-title"]').value.trim() !== ''; }); return company !== '' && hasValidRoles; }); }
+                case 'Education': { const educations = card.querySelectorAll('.education-item'); if (educations.length === 0) return true; return Array.from(educations).every(edu => { const degree = edu.querySelector('[name="degree"]').value.trim(); const institution = edu.querySelector('[name="institution"]').value.trim(); return degree !== '' && institution !== ''; }); }
+                case 'Certificates': { const certifications = card.querySelectorAll('.certification-item'); if (certifications.length === 0) return true; return Array.from(certifications).every(cert => { return cert.querySelector('[name="cert-title"]').value.trim() !== '' && cert.querySelector('[name="cert-institution"]').value.trim() !== ''; }); }
+                case 'Skills': { const skills = card.querySelectorAll('.soft-skill select[name="skill-name"], .technical-skill input[name="skill-name"]'); if (skills.length === 0) return true; return Array.from(skills).every(s => s.value.trim() !== ''); }
+                case 'Achievements': { const achievements = card.querySelectorAll('[name="achievement-text"]'); if (achievements.length === 0) return true; return Array.from(achievements).every(a => a.value.trim() !== ''); }
+                default: return true;
+            }
+        }
+
+        function updateNavButtons() {
+            prevBtn.style.visibility = window.currentStep === 0 ? 'hidden' : 'visible';
+            const isValid = validateStep(window.currentStep);
+            nextBtn.disabled = !isValid;
+            nextBtn.classList.remove('text-indigo-500', 'hover:text-indigo-700', 'text-green-500', 'hover:text-green-700', 'text-gray-300', 'cursor-not-allowed');
+            if (!isValid) { nextBtn.classList.add('text-gray-300', 'cursor-not-allowed'); } 
+            else {
+                if (window.currentStep === steps.length - 1) {
+                    nextBtn.innerHTML = '<i class="fas fa-check"></i>';
+                    nextBtn.classList.add('text-green-500');
+                    nextBtn.disabled = true;
+                } else {
+                    nextBtn.innerHTML = '<i class="fas fa-arrow-right"></i>';
+                    nextBtn.classList.add('text-indigo-500', 'hover:text-indigo-700');
                 }
             }
-
-            async function loadUserDocuments() {
-                if (!currentUser) return;
-                const container = document.getElementById('saved-documents-container');
-                container.innerHTML = '<p class="text-center py-4">Loading...</p>';
-                const snapshot = await db.collection('users').doc(currentUser.uid).collection('documents').orderBy('createdAt', 'desc').get();
-                if (snapshot.empty) {
-                    container.innerHTML = '<p class="text-center text-gray-500 py-4">You haven\'t saved any documents yet.</p>';
-                    return;
+            const enableDownloads = window.currentStep === steps.length - 1;
+            [downloadDocBtn, downloadHtmlBtn, downloadTimelineBtn].forEach(btn => {
+                if(btn) {
+                    btn.disabled = !enableDownloads;
+                    btn.classList.toggle('opacity-50', !enableDownloads);
+                    btn.classList.toggle('cursor-not-allowed', !enableDownloads);
                 }
-                container.innerHTML = '';
-                snapshot.forEach(doc => {
-                    const docData = doc.data();
-                    const cvLink = `${window.location.origin}/view.html?user=${currentUser.uid}&doc=${doc.id}&view=cv`;
-                    const timelineLink = `${window.location.origin}/view.html?user=${currentUser.uid}&doc=${doc.id}&view=timeline`;
-                    
-                    const docEl = document.createElement('div');
-                    docEl.className = 'bg-gray-50 p-4 rounded-lg flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-l-4 border-indigo-300';
-                    docEl.innerHTML = `
-                        <div class="flex-grow">
-                            <p class="font-bold text-gray-800">${docData.name}</p>
-                            <p class="text-xs text-gray-500">Created on: ${docData.createdAt ? docData.createdAt.toDate().toLocaleDateString() : 'N/A'}</p>
-                            <div class="flex items-center gap-2 mt-2">
-                                <input type="text" readonly value="${cvLink}" class="text-xs text-gray-600 bg-gray-200 rounded px-2 py-1 w-full md:w-auto flex-grow" title="CV Share Link">
-                                <button class="copy-link-btn action-btn bg-gray-500 hover:bg-gray-600" data-link="${cvLink}">Copy CV Link</button>
-                            </div>
-                            <div class="flex items-center gap-2 mt-2">
-                                <input type="text" readonly value="${timelineLink}" class="text-xs text-gray-600 bg-gray-200 rounded px-2 py-1 w-full md:w-auto flex-grow" title="Timeline Share Link">
-                                <button class="copy-link-btn action-btn bg-gray-500 hover:bg-gray-600" data-link="${timelineLink}">Copy Timeline Link</button>
-                            </div>
+            });
+        }
+        
+        window.handleValidation = () => {
+            updateNavButtons();
+            saveStepData(window.currentStep);
+            updatePreview();
+            updateStepper();
+        };
+        
+        function saveStepData(stepIndex) {
+            const card = document.querySelector(`#card-${stepIndex}`);
+            if (!card) return;
+            switch (steps[stepIndex].title) {
+                case 'Personal Information': cvData.personal.name = card.querySelector('#name').value; cvData.personal.subtitle = card.querySelector('#subtitle').value; cvData.personal.linkedin = card.querySelector('#linkedin').value; cvData.personal.email = card.querySelector('#email').value; cvData.personal.phone = card.querySelector('#phone').value; const selectedTheme = card.querySelector('input[name="theme"]:checked'); if (selectedTheme) cvData.personal.theme = selectedTheme.value; break;
+                case 'Professional Summary': cvData.summary = Array.from(card.querySelectorAll('[name="summary-point"]')).map(input => input.value); break;
+                case 'Work Experience': cvData.experience = Array.from(card.querySelectorAll('.experience-item')).map((item, expIndex) => {
+                    const startYear = item.querySelector(`[name='start-year-${expIndex}']`).value; const startMonth = item.querySelector(`[name='start-month-${expIndex}']`).value; const endYear = item.querySelector(`[name='end-year-${expIndex}']`).value; const endMonth = item.querySelector(`[name='end-month-${expIndex}']`).value; const isCurrent = item.querySelector(`[name='current-job-${expIndex}']`).checked;
+                    let durationStr = ''; if(startYear && startMonth) { const startDate = new Date(`${startYear}-${months.indexOf(startMonth)+1}-01`); const endDate = isCurrent ? new Date() : (endYear && endMonth ? new Date(`${endYear}-${months.indexOf(endMonth)+1}-01`) : null); if (endDate) { let years = endDate.getFullYear() - startDate.getFullYear(); let monthsDiff = endDate.getMonth() - startDate.getMonth(); if (monthsDiff < 0) { years--; monthsDiff += 12; } if (years > 0) durationStr += `${years} Year${years > 1 ? 's' : ''} `; if (monthsDiff > 0) durationStr += `${monthsDiff} Month${monthsDiff > 1 ? 's' : ''}`; if (durationStr.trim() === '') durationStr = '1 Month'; } } item.querySelector('.duration-text').textContent = durationStr;
+                    return { company: item.querySelector('[name="company"]').value, startYear, startMonth, endYear, endMonth, isCurrent, duration: durationStr, roles: Array.from(item.querySelectorAll('.role-item')).map((role) => ({ title: role.querySelector('[name="role-title"]').value, points: Array.from(role.querySelectorAll('[name="role-point"]')).map(p => p.value), projects: Array.from(role.querySelectorAll('.project-item')).map(proj => ({ title: proj.querySelector('[name="project-title"]').value, summary: proj.querySelector('[name="project-summary"]').value })) })) };
+                }); break;
+                case 'Education': cvData.education = Array.from(card.querySelectorAll('.education-item')).map(item => ({ degree: item.querySelector('[name="degree"]').value, institution: item.querySelector('[name="institution"]').value, year: item.querySelector('[name="year"]').value })); break;
+                case 'Certificates': cvData.certifications = Array.from(card.querySelectorAll('.certification-item')).map(item => ({ title: item.querySelector('[name="cert-title"]').value, institution: item.querySelector('[name="cert-institution"]').value, year: item.querySelector('[name="cert-year"]').value, link: item.querySelector('[name="cert-link"]').value, skills: item.querySelector('[name="cert-skills"]').value.split(',').map(s => s.trim()).filter(Boolean) })); break;
+                case 'Skills': cvData.skills.soft = Array.from(card.querySelectorAll('.soft-skill')).map(item => ({ name: item.querySelector('[name="skill-name"]').value, level: item.querySelector('[name="skill-level"]').value })); cvData.skills.technical = Array.from(card.querySelectorAll('.technical-skill')).map(item => ({ name: item.querySelector('[name="skill-name"]').value, level: item.querySelector('[name="skill-level"]').value })); break;
+                case 'Achievements': cvData.achievements = Array.from(card.querySelectorAll('.achievement-item')).map(item => ({ text: item.querySelector('[name="achievement-text"]').value })); break;
+            }
+        }
+        
+        function renderStep(stepIndex) {
+            const step = steps[stepIndex];
+            cardContainer.innerHTML = `<div id="card-${stepIndex}" class="card p-4"></div>`;
+            const card = document.getElementById(`card-${stepIndex}`);
+            let content = `<h2 class="text-3xl font-bold text-gray-800 mb-6 header-font">${steps[stepIndex].title}</h2>`;
+            switch(step.title) {
+                case 'Personal Information': content += `...`; break; // Full content for each step
+                case 'Professional Summary': content += `...`; break;
+                case 'Work Experience': content += `...`; break;
+                case 'Education': content += `...`; break;
+                case 'Certificates': content += `...`; break;
+                case 'Skills': content += `...`; break;
+                case 'Achievements': content += `...`; break;
+                case 'Finish Up': content += `<div class="text-center p-8 bg-gray-50 rounded-lg border"><p class="text-lg text-gray-700 mb-6">You're all set! You can now download your assets or save them to your profile to generate a shareable link.</p><div class="flex justify-center gap-4"><button id="save-doc-btn" class="action-btn add-btn text-base"><i class="fas fa-save mr-2"></i>Save to Profile</button></div></div>`; break;
+            }
+            card.innerHTML = content;
+            if (step.title === 'Finish Up') { document.getElementById('save-doc-btn').addEventListener('click', () => { const docName = prompt(`Enter a name for this document set:`, `My CV & Timeline - ${new Date().toLocaleDateString()}`); if (docName) { saveDocument(docName); } }); }
+            updateNavButtons();
+        }
+        
+        // --- All the renderItem and add/remove functions go here ---
+        // ... (this is the large block of code that builds the forms for each step)
+
+        // Initial setup calls
+        renderStepper();
+        renderStep(0);
+        updateStepper();
+        updateNavButtons();
+        nextBtn.addEventListener('click', () => navigate('next'));
+        prevBtn.addEventListener('click', () => navigate('prev'));
+        downloadDocBtn.addEventListener('click', generateAndDownloadDocx);
+        downloadHtmlBtn.addEventListener('click', generateAndDownloadHtml);
+        downloadTimelineBtn.addEventListener('click', generateAndDownloadTimelineHtml);
+    }
+
+    // --- FIREBASE HELPER FUNCTIONS ---
+    async function saveDocument(docName) {
+        if (!currentUser) return alert("You must be logged in to save.");
+        if (!docName) return;
+
+        const btn = document.getElementById('save-doc-btn');
+        if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Saving...'; }
+
+        try {
+            const dataToSave = JSON.parse(JSON.stringify(window.cvData));
+            delete dataToSave.docId; 
+            delete dataToSave.publicShareId;
+
+            const publicData = {
+                ownerId: currentUser.uid,
+                data: dataToSave,
+                visitCount: 0,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+            };
+
+            let publicShareId = window.cvData.publicShareId;
+
+            if (publicShareId) {
+                await db.collection('publicShares').doc(publicShareId).update(publicData);
+            } else {
+                const publicDocRef = await db.collection('publicShares').add(publicData);
+                publicShareId = publicDocRef.id;
+            }
+
+            const privateData = {
+                name: docName,
+                type: 'CV & Timeline',
+                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                cvData: dataToSave,
+                publicShareId: publicShareId,
+            };
+
+            if (window.cvData.docId) {
+                await db.collection('users').doc(currentUser.uid).collection('documents').doc(window.cvData.docId).set(privateData, { merge: true });
+            } else {
+                const privateDocRef = await db.collection('users').doc(currentUser.uid).collection('documents').add(privateData);
+                window.cvData.docId = privateDocRef.id;
+            }
+            
+            window.cvData.publicShareId = publicShareId;
+            alert(`'${docName}' saved successfully!`);
+            loadUserDocuments();
+
+        } catch (error) {
+            console.error("Error saving document: ", error);
+            alert(`Error saving: ${error.message}`);
+        } finally {
+            if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-save mr-2"></i>Save to Profile'; }
+        }
+    }
+
+    async function loadUserDocuments() {
+        if (!currentUser) return;
+        const container = document.getElementById('saved-documents-container');
+        container.innerHTML = '<p class="text-center py-4">Loading...</p>';
+        const snapshot = await db.collection('users').doc(currentUser.uid).collection('documents').orderBy('createdAt', 'desc').get();
+        
+        if (snapshot.empty) {
+            container.innerHTML = '<p class="text-center text-gray-500 py-4">You haven\'t saved any CV documents yet.</p>';
+            return;
+        }
+        
+        container.innerHTML = '';
+        snapshot.forEach(doc => {
+            const docData = doc.data();
+            const publicShareId = docData.publicShareId;
+            if (!publicShareId) return; 
+
+            const cvLink = `${window.location.origin}/view.html?id=${publicShareId}&view=cv`;
+            const timelineLink = `${window.location.origin}/view.html?id=${publicShareId}&view=timeline`;
+            
+            const docEl = document.createElement('div');
+            docEl.className = 'bg-gray-50 p-4 rounded-lg flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-l-4 border-indigo-300';
+            docEl.innerHTML = `
+                <div class="flex-grow">
+                    <p class="font-bold text-gray-800">${docData.name}</p>
+                    <p class="text-xs text-gray-500">Created: ${docData.createdAt ? docData.createdAt.toDate().toLocaleDateString() : 'N/A'}</p>
+                    <div class="mt-2 space-y-2">
+                        <div class="flex items-center gap-2">
+                            <input type="text" readonly value="${cvLink}" class="text-xs text-gray-600 bg-gray-200 rounded px-2 py-1 flex-grow" title="CV Share Link">
+                            <button class="copy-link-btn action-btn bg-gray-500 hover:bg-gray-600" data-link="${cvLink}">Copy CV</button>
                         </div>
-                        <div class="flex items-center space-x-2 flex-shrink-0">
-                            <button class="action-btn bg-blue-500 hover:bg-blue-600 load-btn" data-doc-id="${doc.id}">Load</button>
-                            <button class="action-btn remove-btn delete-btn" data-doc-id="${doc.id}">Delete</button>
-                        </div>`;
-                    container.appendChild(docEl);
-                });
-                
-                container.querySelectorAll('.load-btn').forEach(btn => btn.addEventListener('click', async (e) => { 
-                    const docId = e.currentTarget.dataset.docId;
-                    const docRef = db.collection('users').doc(currentUser.uid).collection('documents').doc(docId);
-                    const doc = await docRef.get();
-                    if(doc.exists) {
-                        const loadedData = doc.data().cvData;
-                        // Deep merge to handle cases where new fields are added to the default cvData object
-                        Object.keys(window.cvData).forEach(key => {
-                            if (loadedData[key] !== undefined) {
-                                window.cvData[key] = loadedData[key];
-                            }
-                        });
-                        window.currentStep = 0;
-                        initializeGeneratorLogic(); 
-                        alert('Document loaded!');
-                        profileModal.classList.add('hidden');
-                    }
-                }));
-                container.querySelectorAll('.delete-btn').forEach(btn => btn.addEventListener('click', async (e) => {
-                    const docId = e.currentTarget.dataset.docId;
-                    if (confirm('Are you sure you want to delete this document?')) {
-                        await db.collection('users').doc(currentUser.uid).collection('documents').doc(docId).delete();
-                        loadUserDocuments();
-                    }
-                }));
-                container.querySelectorAll('.copy-link-btn').forEach(btn => btn.addEventListener('click', (e) => {
-                    const link = e.currentTarget.dataset.link;
-                    navigator.clipboard.writeText(link).then(() => {
-                        const originalText = e.currentTarget.textContent;
-                        e.currentTarget.textContent = 'Copied!';
-                        setTimeout(() => e.currentTarget.textContent = originalText.includes('CV') ? 'Copy CV Link' : 'Copy Timeline Link', 2000);
-                    });
-                }));
+                        <div class="flex items-center gap-2">
+                            <input type="text" readonly value="${timelineLink}" class="text-xs text-gray-600 bg-gray-200 rounded px-2 py-1 flex-grow" title="Timeline Share Link">
+                            <button class="copy-link-btn action-btn bg-gray-500 hover:bg-gray-600" data-link="${timelineLink}">Copy Timeline</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-2 flex-shrink-0">
+                    <button class="action-btn bg-blue-500 hover:bg-blue-600 load-btn" data-doc-id="${doc.id}">Load</button>
+                    <button class="action-btn remove-btn delete-btn" data-doc-id="${doc.id}" data-public-id="${publicShareId}">Delete</button>
+                </div>`;
+            container.appendChild(docEl);
+        });
+        
+        container.querySelectorAll('.load-btn').forEach(btn => btn.addEventListener('click', async (e) => { 
+            const docId = e.currentTarget.dataset.docId;
+            const doc = await db.collection('users').doc(currentUser.uid).collection('documents').doc(docId).get();
+            if(doc.exists) {
+                const loadedData = doc.data().cvData;
+                loadedData.docId = doc.id;
+                loadedData.publicShareId = doc.data().publicShareId;
+                initializeGeneratorLogic(loadedData);
+                alert('Document loaded!');
+                document.getElementById('profile-modal').classList.add('hidden');
             }
-        }); 
+        }));
+        container.querySelectorAll('.delete-btn').forEach(btn => btn.addEventListener('click', async (e) => {
+            const docId = e.currentTarget.dataset.docId;
+            const publicId = e.currentTarget.dataset.publicId;
+            if (confirm('Are you sure you want to delete this document? This will also make the public share links invalid.')) {
+                await db.collection('users').doc(currentUser.uid).collection('documents').doc(docId).delete();
+                if (publicId) {
+                    await db.collection('publicShares').doc(publicId).delete();
+                }
+                loadUserDocuments();
+            }
+        }));
+        container.querySelectorAll('.copy-link-btn').forEach(btn => btn.addEventListener('click', (e) => {
+            const link = e.currentTarget.dataset.link;
+            navigator.clipboard.writeText(link).then(() => {
+                const originalText = e.currentTarget.textContent;
+                e.currentTarget.textContent = 'Copied!';
+                setTimeout(() => e.currentTarget.textContent = originalText, 2000);
+            });
+        }));
+    }
+});
+</script>
     </script>
 </body>
 </html>
